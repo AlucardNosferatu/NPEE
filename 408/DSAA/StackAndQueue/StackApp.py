@@ -50,7 +50,8 @@ def polish_notation(infix_expr, reverse=False):
                     polish_n.append(elem)
         elif char in ['+', '-', '*', '/']:
             while len(stack) > 0:
-                if stack[-1] is parentheses_case[reverse][0] or stop_loop(stack[-1], char, reverse):
+                if stack[-1] is parentheses_case[reverse][0] or stop_loop(stack[-1], char,
+                                                                          reverse):
                     break
                 else:
                     elem = stack.pop(-1)
@@ -65,7 +66,62 @@ def polish_notation(infix_expr, reverse=False):
     return polish_n
 
 
+def infix_calculation(infix_expr, reverse=False):
+    operand_stack = []
+    op_stack = []
+    infix_expr_copy = infix_expr.copy()
+    if not reverse:
+        infix_expr_copy.reverse()
+    for char in infix_expr_copy:
+        if char is parentheses_case[reverse][0]:
+            op_stack.append(char)
+        elif char is parentheses_case[reverse][1]:
+            while len(op_stack) > 0:
+                elem = op_stack.pop(-1)
+                if elem is parentheses_case[reverse][0]:
+                    break
+                else:
+                    operand_2 = operand_stack.pop(-1)
+                    operand_1 = operand_stack.pop(-1)
+                    if reverse:
+                        operand_res = str(eval(operand_1 + elem + operand_2))
+                    else:
+                        operand_res = str(eval(operand_2 + elem + operand_1))
+                    operand_stack.append(operand_res)
+        elif char in ['+', '-', '*', '/']:
+            while len(op_stack) > 0:
+                if op_stack[-1] is parentheses_case[reverse][0] or stop_loop(
+                        op_stack[-1],
+                        char,
+                        reverse
+                ):
+                    break
+                else:
+                    elem = op_stack.pop(-1)
+                    operand_2 = operand_stack.pop(-1)
+                    operand_1 = operand_stack.pop(-1)
+                    if reverse:
+                        operand_res = str(eval(operand_1 + elem + operand_2))
+                    else:
+                        operand_res = str(eval(operand_2 + elem + operand_1))
+                    operand_stack.append(operand_res)
+            op_stack.append(char)
+        else:
+            operand_stack.append(char)
+
+    while len(op_stack) > 0:
+        elem = op_stack.pop(-1)
+        operand_2 = operand_stack.pop(-1)
+        operand_1 = operand_stack.pop(-1)
+        if reverse:
+            operand_res = str(eval(operand_1 + elem + operand_2))
+        else:
+            operand_res = str(eval(operand_2 + elem + operand_1))
+        operand_stack.append(operand_res)
+    return eval(operand_stack.pop(-1))
+
+
 if __name__ is '__main__':
-    i_expr = ['1', '+', '(', '(', '2', '+', '3', ')', '*', '4', ')', '-', '5']
-    res = polish_notation(i_expr, True)
+    i_expr = ['(', '1', '+', '(', '(', '2', '+', '3', ')', '*', '4', ')', ')', '/', '5']
+    res = infix_calculation(i_expr, True)
     print(res)
