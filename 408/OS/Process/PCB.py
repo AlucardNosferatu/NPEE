@@ -1,10 +1,11 @@
 import psutil
 import win32api
 import win32con
+import win32process
 
 
-def using_psutil():
-    a = psutil.Process(14792)
+def using_psutil(pid):
+    a = psutil.Process(pid)
     print(a.name())
     print(a.username())
     print(a.cpu_times())
@@ -13,9 +14,10 @@ def using_psutil():
 
 
 def using_win32api(pid):
-    handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
-    win32api.TerminateProcess(handle, 20291224)
-    print('Done')
+    h_process = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
+    info_dict = win32process.GetProcessMemoryInfo(h_process)
+    win32api.TerminateProcess(h_process, 20291224)
+    print(info_dict)
 
 
 def get_target_pid():
