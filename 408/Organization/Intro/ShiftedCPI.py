@@ -12,7 +12,10 @@ text_cond = {
 
 
 def before_change(ins_types_count):
-    all_conditions = conditions_gen(int_gcpi=False, specify_ins_types_count=ins_types_count)
+    all_conditions = conditions_gen(
+        int_gcpi=False,
+        specify_ins_types_count=ins_types_count
+    )
 
     ins_ratio = []
     for ins_occ in all_conditions['ins_occ']:
