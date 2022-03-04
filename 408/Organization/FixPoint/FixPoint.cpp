@@ -7,9 +7,13 @@ int main()
 {
     int a = 2147483647;
     int b = -2147483648;
-    char buf[33];
-    _itoa_s(a, buf, 2);
-    printf("二进制：%s\n", buf);
+    char bin_buf[33];
+    char hex_buf[9];
+    _itoa_s(a, bin_buf, 2);
+    printf("二进制：%s\n", bin_buf);
+    _itoa_s(a, hex_buf, 16);
+    printf("十六进制：%s\n", hex_buf);
+
 }
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
