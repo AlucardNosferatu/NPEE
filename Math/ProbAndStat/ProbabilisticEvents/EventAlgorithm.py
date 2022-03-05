@@ -7,7 +7,7 @@ class RandomEvent:
     prob = None
     include = None
     exclude = None
-    independent = None
+    ind = None
     be_included = None
     Calculable = False
 
@@ -15,7 +15,7 @@ class RandomEvent:
         self.Calculable = False
         self.include = []
         self.exclude = []
-        self.independent = []
+        self.ind = []
         self.be_included = []
         if prob_de is not None and prob_nu is not None:
             self.set_prob(prob_de=prob_de, prob_nu=prob_nu)
@@ -23,11 +23,8 @@ class RandomEvent:
     def refresh_prob(self):
         self.prob = sympy.Rational(self.prob_nu, self.prob_de)
         if self.prob in [sympy.Rational(0, 1), sympy.Rational(1, 1)]:
-            self.include.clear()
-            self.exclude.clear()
-            self.independent.clear()
-            self.be_included.clear()
-            self.independent.append('all')
+            self.ind.clear()
+            self.ind.append('all')
         self.Calculable = True
 
     def set_prob(
@@ -116,8 +113,8 @@ class RandomEvent:
 
             if b_event in self.include:
                 self.include.remove(b_event)
-            if b_event in self.independent:
-                self.independent.remove(b_event)
+            if b_event in self.ind:
+                self.ind.remove(b_event)
             if b_event in self.be_included:
                 self.be_included.remove(b_event)
             self.exclude.append(b_event)
@@ -145,7 +142,7 @@ class RandomEvent:
                     self.be_included.remove(b_event)
                 if b_event in self.exclude:
                     self.exclude.remove(b_event)
-                self.independent.append(b_event)
+                self.ind.append(b_event)
             if recursive > 0:
                 for b_inc in b_event.include:
                     self.set_relation(b_inc, 'IND', recursive - 1, True)
@@ -159,7 +156,7 @@ class RandomEvent:
             '包含': b_event in self.include,
             '包含于': b_event in self.be_included,
             '互斥': b_event in self.exclude,
-            '独立': b_event in self.independent
+            '独立': b_event in self.ind or 'all' in b_event.ind + self.ind
         }
         mutual_inclusion = not (not rel_list['包含'] or not rel_list['包含于'])
         neither_exc_nor_ind = not rel_list['互斥'] and not rel_list['独立']
@@ -169,8 +166,8 @@ class RandomEvent:
         return rel_list
 
     def uninstall(self, b_event: 'RandomEvent'):
-        if self in b_event.independent:
-            b_event.independent.remove(self)
+        if self in b_event.ind:
+            b_event.ind.remove(self)
         if self in b_event.include:
             b_event.include.remove(self)
         if self in b_event.be_included:
@@ -188,9 +185,9 @@ class RandomEvent:
             product.uninstall(self)
             product.uninstall(other)
             del product
-        ne_poss_1or0 = 'all' in new_event.independent
-        self_poss_1or0 = 'all' in self.independent
-        other_poss_1or0 = 'all' in other.independent
+        ne_poss_1or0 = 'all' in new_event.ind
+        self_poss_1or0 = 'all' in self.ind
+        other_poss_1or0 = 'all' in other.ind
         if not ne_poss_1or0 and not self_poss_1or0:
             new_event.set_relation(self, 'INC', 0, True)
         if not ne_poss_1or0 and not other_poss_1or0:
@@ -206,13 +203,13 @@ class RandomEvent:
             new_event.set_prob(prob=other.prob)
         if self in other.include and other in self.be_included and self.Calculable:
             new_event.set_prob(prob=self.prob)
-        self_poss_1or0 = 'all' in self.independent
-        other_poss_1or0 = 'all' in other.independent
+        self_poss_1or0 = 'all' in self.ind
+        other_poss_1or0 = 'all' in other.ind
         if other.Calculable and self.Calculable:
-            mutual_ind = other in self.independent and self in other.independent
+            mutual_ind = other in self.ind and self in other.ind
             if self_poss_1or0 or other_poss_1or0 or mutual_ind:
                 new_event.set_prob(prob=self.prob * other.prob)
-        ne_poss_1or0 = 'all' in new_event.independent
+        ne_poss_1or0 = 'all' in new_event.ind
         if not ne_poss_1or0 and not self_poss_1or0:
             new_event.set_relation(self, 'BE_INC', 0, True)
         if not ne_poss_1or0 and not other_poss_1or0:
@@ -228,7 +225,7 @@ class RandomEvent:
             new_event.set_relation(e, 'INC', 0, True)
         for e in self.include:
             new_event.set_relation(e, 'EXC', 0, True)
-        for e in self.independent:
+        for e in self.ind:
             new_event.set_relation(e, 'IND', 0, True)
         return new_event
 
