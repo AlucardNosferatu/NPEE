@@ -103,7 +103,9 @@ def bin2number(bin_code, shift=0):
 # endregion
 
 if __name__ is '__main__':
-    res = mantissa_code2number(
-        [1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    )
-    print(res)
+    # res = mantissa_code2number(
+    #     [1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    # )
+    res = exponent_code2number([0, 1, 0, 0, 0, 0, 1, 0, 1])
+    bin_list = number2bin(res)
+    print(bin_list)
