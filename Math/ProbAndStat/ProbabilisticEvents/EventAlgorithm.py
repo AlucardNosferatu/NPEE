@@ -69,6 +69,8 @@ class RandomEvent:
                 self.include.append(b_event)
             if b_event in self.exclude:
                 self.exclude.remove(b_event)
+            if b_event in self.ind:
+                self.ind.remove(b_event)
             # endregion
 
             # region process included events of b_event
@@ -96,6 +98,8 @@ class RandomEvent:
                 self.be_included.append(b_event)
             if b_event in self.exclude:
                 self.exclude.remove(b_event)
+            if b_event in self.ind:
+                self.ind.remove(b_event)
             # endregion
 
             # region process be_included events of b_event
@@ -113,10 +117,11 @@ class RandomEvent:
 
             if b_event in self.include:
                 self.include.remove(b_event)
-            if b_event in self.ind:
-                self.ind.remove(b_event)
             if b_event in self.be_included:
                 self.be_included.remove(b_event)
+            if b_event in self.ind:
+                self.ind.remove(b_event)
+
             self.exclude.append(b_event)
 
             if recursive > 0:
@@ -127,6 +132,7 @@ class RandomEvent:
                 b_event.set_relation(self, 'EXC', recursive)
 
         elif rel == 'IND':
+
             poss_1or0_self = self.Calculable and self.prob in [
                 sympy.Rational(0, 1),
                 sympy.Rational(1, 1)
@@ -148,6 +154,7 @@ class RandomEvent:
                     self.set_relation(b_inc, 'IND', recursive - 1, True)
             if both_side:
                 b_event.set_relation(self, 'IND', recursive)
+
         else:
             print('You moron!')
 
