@@ -18,8 +18,9 @@ def cofactor_problems():
     mat = mat[0].tolist()
     swap_row = numpy.random.randint(0, 10, size=(1, 3))
     coefficients = mat[selected_row]
-    p_text = str(coefficients[0]) + '*A' + str(selected_row + 1) + '1+' + str(coefficients[1]) + '*A' + str(
-        selected_row + 1) + '2+' + str(coefficients[2]) + '*A' + str(selected_row + 1) + '3'
+    p_text = str(coefficients[0]) + '*A' + str(selected_row + 1) + '1+' + \
+             str(coefficients[1]) + '*A' + str(selected_row + 1) + '2+' + \
+             str(coefficients[2]) + '*A' + str(selected_row + 1) + '3'
     p_text = 'Need to solve:\n' + p_text
     mat[selected_row] = swap_row.tolist()[0]
     # noinspection PyTypeChecker
