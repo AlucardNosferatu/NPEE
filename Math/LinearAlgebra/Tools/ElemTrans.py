@@ -47,8 +47,8 @@ def et_once(mat):
     return res_mat
 
 
-def generate_mat_by_et(dim=4, et_count=5):
-    mat_p = mat_proto(dim, dim - 1)
+def generate_mat_by_et(dim=3, et_count=5):
+    mat_p = mat_proto(dim, dim)
     mat = mat_p
     while et_count > 0:
         mat = et_once(mat)
