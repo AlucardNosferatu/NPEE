@@ -2,8 +2,9 @@ import numpy
 import random
 
 
-def mat_proto(dim):
-    rank = random.randint(round(dim / 2), dim)
+def mat_proto(dim, rank=None):
+    if rank is None:
+        rank = random.randint(round(dim / 2), dim)
     mat_list = []
     for i in range(0, rank):
         mat_row = [0] * dim
@@ -46,8 +47,8 @@ def et_once(mat):
     return res_mat
 
 
-def generate_mat_by_et(dim=4, et_count=10):
-    mat_p = mat_proto(dim)
+def generate_mat_by_et(dim=4, et_count=5):
+    mat_p = mat_proto(dim, dim - 1)
     mat = mat_p
     while et_count > 0:
         mat = et_once(mat)
