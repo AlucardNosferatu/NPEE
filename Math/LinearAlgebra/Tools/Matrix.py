@@ -19,12 +19,12 @@ def mat_question(conditions, parent_op=None, max_depth=3, max_length=3):
     # region get_op
     if max_depth > 2 and max_length > 2:
         op = random.choice(['+', '*'])
-    elif max_depth is 1 or max_length is 1:
-        if random.choice(['matr', 'expr']) is 'matr' or parent_op is 'T':
+    elif max_depth == 1 or max_length == 1:
+        if random.choice(['matr', 'expr']) == 'matr' or parent_op == 'T':
             return random.choice(list(conditions.keys()))
         else:
             return ['T', random.choice(list(conditions.keys()))]
-    elif parent_op is 'T':
+    elif parent_op == 'T':
         op = random.choice(['+', '*'])
     else:
         op = random.choice(['+', '*', 'T'])
@@ -37,7 +37,7 @@ def mat_question(conditions, parent_op=None, max_depth=3, max_length=3):
     else:
         operand_count = 1
     for i in range(0, operand_count):
-        if random.choice(['matr', 'expr']) is 'matr' or max_depth is 1 or max_length is 1:
+        if random.choice(['matr', 'expr']) == 'matr' or max_depth == 1 or max_length == 1:
             operand = random.choice(list(conditions.keys()))
         else:
             operand = mat_question(conditions, op, max_depth - 1, max_length - 1)
