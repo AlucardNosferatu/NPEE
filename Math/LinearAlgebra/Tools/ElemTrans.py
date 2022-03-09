@@ -26,29 +26,32 @@ def et_once(mat):
     et_mat_list = [[int(elem) for elem in row_list] for row_list in et_mat_list]
     first_r_index = random.choice(rows)
     k = random.randint(2, 4)
-    op_type = 'times_add'
-    if op_type is 'const_mul':
+    # op_type = 'times_add'
+    if op_type == 'const_mul':
         et_mat_list[first_r_index] = [elem * k for elem in et_mat_list[first_r_index]]
     else:
         rows.remove(first_r_index)
         second_r_index = random.choice(rows)
         first_r = et_mat_list[first_r_index]
         second_r = et_mat_list[second_r_index]
-        if op_type is 'switch':
+        if op_type == 'switch':
             et_mat_list[first_r_index] = second_r
             et_mat_list[second_r_index] = first_r
         else:
             et_mat_list[second_r_index][first_r.index(1)] = k
     et_mat_array = numpy.array(et_mat_list)
-    if random.choice(['row', 'col']) is 'row':
+    if random.choice(['row', 'col']) == 'row':
         res_mat = numpy.matmul(et_mat_array, mat)
     else:
         res_mat = numpy.matmul(mat, et_mat_array)
     return res_mat
 
 
-def generate_mat_by_et(dim=3, et_count=5):
-    mat_p = mat_proto(dim, dim)
+def generate_mat_by_et(dim=3, et_count=5, rank=None):
+    if rank is not None:
+        mat_p = mat_proto(dim, rank)
+    else:
+        mat_p = mat_proto(dim, dim)
     mat = mat_p
     while et_count > 0:
         mat = et_once(mat)
@@ -56,7 +59,7 @@ def generate_mat_by_et(dim=3, et_count=5):
     return mat_p, mat
 
 
-if __name__ is '__main__':
+if __name__ == '__main__':
     res = generate_mat_by_et()
     print(res[0])
     print(res[1])
