@@ -17,12 +17,16 @@ def cofactor_problems():
     selected_row = numpy.random.choice([0, 1, 2], 1).max()
     mat = mat[0].tolist()
     swap_row = numpy.random.randint(0, 10, size=(1, 3))
+    # noinspection PyUnresolvedReferences
     coefficients = mat[selected_row]
-    p_text = str(coefficients[0]) + '*A' + str(selected_row + 1) + '1+' + \
-             str(coefficients[1]) + '*A' + str(selected_row + 1) + '2+' + \
-             str(coefficients[2]) + '*A' + str(selected_row + 1) + '3'
+    s1 = str(coefficients[0]) + '*A' + str(selected_row + 1) + '1+'
+    s2 = str(coefficients[1]) + '*A' + str(selected_row + 1) + '2+'
+    s3 = str(coefficients[2]) + '*A' + str(selected_row + 1) + '3'
+    p_text = s1 + s2 + s3
     p_text = 'Need to solve:\n' + p_text
-    mat[selected_row] = swap_row.tolist()[0]
+    sr_list = swap_row.tolist()
+    # noinspection PyUnresolvedReferences
+    mat[selected_row] = sr_list[0]
     # noinspection PyTypeChecker
     mat = numpy.array(mat)
     return [mat, p_text], mat_d, 'cof'
@@ -61,12 +65,12 @@ def problem_interface(conditions, the_answer, problem_type):
 # p, ans, p_type = cofactor_problems()
 # problem_interface(p, ans, p_type)
 if __name__ == '__main__':
-    conditions = mat_conditions()
-    question = mat_question(conditions, None, 5, 3)
-    res, qs = mat_operation(conditions, question)
-    for key in conditions:
+    cond = mat_conditions()
+    question = mat_question(cond, None, 5, 3)
+    res, qs = mat_operation(cond, question)
+    for key in cond:
         print(key)
-        print(conditions[key])
+        print(cond[key])
     print()
     print()
     print(qs)
