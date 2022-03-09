@@ -28,7 +28,7 @@ def row_reduce(mat):
     return rank
 
 
-if __name__ == '__main__':
+def test_rank():
     mat_proto, test_mat = generate_mat_by_et(dim=5, et_count=10, rank=4)
     # test_mat = numpy.array(
     #     [
@@ -48,3 +48,7 @@ if __name__ == '__main__':
     print(r1, r2)
     print(e1 - s1)
     print(e2 - s2)
+
+
+if __name__ == '__main__':
+    print('Done')
