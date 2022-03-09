@@ -9,8 +9,26 @@ def is_invertible(mat):
     return det != 0
 
 
-def upper_tri_mat(mat: numpy.ndarray):
+def non_zero_diagonal(mat: numpy.ndarray):
     dim = mat.shape[0]
+    swapped = []
+    for j in range(0, dim):
+        if mat[j, j] == 0:
+            for i in range(0, dim):
+                if i != j:
+                    if mat[i, j] != 0:
+                        if i not in swapped:
+                            swapped.append(i)
+                            swapped.append(j)
+                            mat[[i, j], :] = mat[[j, i], :]
+                            break
+    return mat
+
+
+def upper_tri_mat(mat: numpy.ndarray, need_nzd=False):
+    dim = mat.shape[0]
+    if need_nzd:
+        mat = non_zero_diagonal(mat)
     for j in range(0, dim):
         for i in range(0, dim - j - 1):
             row = dim - 1 - i
@@ -21,10 +39,10 @@ def upper_tri_mat(mat: numpy.ndarray):
             b = mat[second_ri, col]
             et_mat = numpy.identity(dim)
             if b == 0:
-                et_mat[:, [second_ri, first_ri]] = et_mat[:, [first_ri, second_ri]]
+                if a != 0:
+                    et_mat[:, [second_ri, first_ri]] = et_mat[:, [first_ri, second_ri]]
             else:
                 k = -a / b
-
                 et_mat[first_ri, second_ri] = k
             mat = numpy.matmul(et_mat, mat)
     return mat
@@ -34,7 +52,8 @@ def upward_elimination(mat: numpy.ndarray):
     dim = mat.shape[0]
     et_mat = numpy.identity(dim)
     for j in range(0, dim):
-        et_mat[j, j] = 1 / mat[j, j]
+        if mat[j, j] != 0:
+            et_mat[j, j] = 1 / mat[j, j]
     mat = numpy.matmul(et_mat, mat)
     for j in range(1, dim):
         for i in range(0, j):
@@ -52,6 +71,7 @@ def inverse_by_row_et(mat: numpy.ndarray):
     dim = mat_inv.shape[0]
     elem_mat = mat_proto(dim, dim)
     mat_inv = numpy.hstack((mat_inv, elem_mat))
+    mat_inv = non_zero_diagonal(mat_inv)
     mat_inv = upper_tri_mat(mat_inv)
     mat_inv = upward_elimination(mat_inv)
     right_half = mat_inv[:, dim:2 * dim]
@@ -80,16 +100,35 @@ def adjugate_by_cofactor(mat: numpy.ndarray):
 
 def test_inv():
     matrix = mat_conditions(5, 1)
-    matrix = matrix[list(matrix.keys())[0]]
+    # matrix = matrix[list(matrix.keys())[0]]
+    # matrix = generate_mat_by_et(dim=5, rank=4)[1]
+    # matrix = numpy.array(
+    #     [
+    #         [1, 0, 0, 0, 0],
+    #         [0, 1, 0, 24, 0],
+    #         [0, 0, 0, 0, 0],
+    #         [0, 3, 0, 80, 0],
+    #         [0, 0, 1, 0, 0]
+    #     ]
+    # )
     inv_matrix = inverse_by_row_et(matrix)
-    inv_matrix_2 = numpy.linalg.inv(matrix)
+    # inv_matrix_2 = numpy.linalg.inv(matrix)
     test1 = numpy.matmul(matrix, inv_matrix)
     test2 = numpy.matmul(inv_matrix, matrix)
+    print(test1)
+    print(test2)
+
+
+def test_adj():
+    test_mat = generate_mat_by_et(dim=5, rank=5)[1]
+    # test_mat = numpy.array([[1, 27, 6], [0, 9, 2], [0, 40, 9]])
+    adj_matrix = adjugate_by_cofactor(test_mat)
+    adj_matrix_2 = numpy.linalg.inv(test_mat) * numpy.linalg.det(test_mat)
+    print(adj_matrix)
+    print(adj_matrix_2)
 
 
 if __name__ == '__main__':
-    # test_mat = generate_mat_by_et()[1]
-    test_mat = numpy.array([[1, 27, 6], [0, 9, 2], [0, 40, 9]])
-    adj_matrix = adjugate_by_cofactor(test_mat)
-    adj_matrix_2 = numpy.linalg.inv(test_mat) * numpy.linalg.det(test_mat)
+    test_inv()
+
     print('Done')
