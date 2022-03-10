@@ -179,8 +179,13 @@ class HyperGeometricDist(DiscreteRandomVar):
 
 
 class BinomialDist(DiscreteRandomVar):
+    n = None
+    p = None
+
     def __init__(self, n_exp_times, p):
-        assert 1 <= p <= 0
+        self.n = n_exp_times
+        self.p = p
+        assert 0 <= p <= 1
         laws_list = []
         k_var = sympy.Symbol('k')
         laws_func = sympy.binomial(
@@ -194,6 +199,9 @@ class BinomialDist(DiscreteRandomVar):
             laws=laws_list,
             seg_p=seg_p
         )
+
+    def poisson_theorem(self):
+        return PoissonDist(self.n * self.p)
 
 
 class ZeroOneDist(BinomialDist):
@@ -289,9 +297,28 @@ def test_drv_6():
     return [[gp0_0, gp1_0], [gp0_1, gp1_1], [hg0, hg1, hg2, hg3, hg4, hg5]]
 
 
-if __name__ == '__main__':
+def test_drv_7():
     pd = PoissonDist(2)
     pp0 = pd.get_prob(0)
     pp1 = pd.get_prob(1)
     pp2 = pd.get_prob(2)
+    return [pp0, pp1, pp2]
+
+
+def test_drv_8():
+    n = 10
+    bd = BinomialDist(n_exp_times=n, p=sympy.Rational(1, 2))
+    pd = bd.poisson_theorem()
+    x = range(0, n)
+    y1 = []
+    y2 = []
+    for i in x:
+        y1.append(bd.get_prob(i))
+        y2.append(pd.get_prob(i))
+    plt.plot(list(x), y1)
+    plt.plot(list(x), y2)
+    plt.show()
+
+
+if __name__ == '__main__':
     print('Done')
