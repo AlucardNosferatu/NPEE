@@ -11,7 +11,7 @@ def trunc(values, decs=0):
     return numpy.trunc(values * 10 ** decs) / (10 ** decs)
 
 
-class RandomVar:
+class DiscreteRandomVar:
     dist_laws = None
     dist_funcs = None
     regions = None
@@ -45,14 +45,15 @@ class RandomVar:
             self.dist_laws = self.get_laws_from_funcs()
 
     def get_prob(self, x, use_law=False):
+        # P{X<=x}
         p = 0
         if self.rv_type == 'finite':
             for i in range(0, len(self.regions) - 1):
                 region = self.regions[i]
-                if region[0] <= x:
+                if region[0] < x:
                     if use_law:
                         p += self.dist_laws[i]
-                    if x < region[1]:
+                    if x <= region[1]:
                         if not use_law:
                             p = self.dist_funcs[i]
                         break
@@ -118,6 +119,28 @@ class RandomVar:
             return laws
 
 
+class BinomialDist(DiscreteRandomVar):
+    def __init__(self, n_exp_times, p):
+        laws_list = []
+        k_var = sympy.Symbol('k')
+        laws_func = sympy.binomial(
+            n_exp_times,
+            k_var
+        ) * (p ** k_var) * ((1 - p) ** (n_exp_times - k_var))
+        seg_p = list(range(0, n_exp_times + 1))
+        for i in seg_p:
+            laws_list.append(laws_func.evalf(subs={k_var: i}))
+        super().__init__(
+            laws=laws_list,
+            seg_p=seg_p
+        )
+
+
+class ZeroOneDist(BinomialDist):
+    def __init__(self, p):
+        super().__init__(n_exp_times=1, p=p)
+
+
 def test_drv_1():
     # m=2
     # a=2/(m*(m+1))=1/3
@@ -125,7 +148,7 @@ def test_drv_1():
     m = 10
     f1 = n / sympy.E
     f2 = 2 * n / (m * (m + 1))
-    rv = RandomVar(seg_p=[f1], laws=f2)
+    rv = DiscreteRandomVar(seg_p=[f1], laws=f2)
     x = range(1, m)
     y1 = []
     y2 = []
@@ -145,7 +168,7 @@ def test_drv_2():
     m = 100
     f1 = x / sympy.E
     f2 = 2 * x / (m * (m + 1))
-    rv = RandomVar(seg_p=[f1], laws=f2)
+    rv = DiscreteRandomVar(seg_p=[f1], laws=f2)
     f = rv.get_funcs_from_laws()
     return f
 
@@ -153,14 +176,14 @@ def test_drv_2():
 def test_drv_3():
     sp1 = [-1, 0, 1]
     f1 = [0, 0.3, 0.8, 1]
-    rv1 = RandomVar(seg_p=sp1, funcs=f1)
+    rv1 = DiscreteRandomVar(seg_p=sp1, funcs=f1)
     p1_1 = rv1.get_prob(0.5, True)
     p1_2 = rv1.get_prob(0.5, False)
     x = sympy.Symbol('x')
     sp2 = [x / sympy.E]
     m = 100
     f2 = x * (x + 1) / (m * (m + 1))
-    rv2 = RandomVar(seg_p=sp2, funcs=f2)
+    rv2 = DiscreteRandomVar(seg_p=sp2, funcs=f2)
     p2 = rv2.get_prob(5 / sympy.E, False)
     print(p1_1, p1_2)
     print(p2)
@@ -171,13 +194,25 @@ def test_drv_4():
     sp = [x / sympy.E]
     m = 100
     f1 = x * (x + 1) / (m * (m + 1))
-    rv1 = RandomVar(seg_p=sp, funcs=f1)
+    rv1 = DiscreteRandomVar(seg_p=sp, funcs=f1)
     l1 = rv1.get_laws_from_funcs()
-    rv2 = RandomVar(seg_p=sp, laws=l1)
+    rv2 = DiscreteRandomVar(seg_p=sp, laws=l1)
     f2 = rv2.get_funcs_from_laws()
     print(f2 == f1)
 
 
+def test_drv_5():
+    b = BinomialDist(n_exp_times=4, p=sympy.Rational(1, 2))
+    zo = ZeroOneDist(p=sympy.Rational(3, 4))
+    zop0 = zo.get_prob(0)
+    zop1 = zo.get_prob(1)
+    bp0 = b.get_prob(0)
+    bp1 = b.get_prob(1)
+    bp2 = b.get_prob(2)
+    bp3 = b.get_prob(3)
+    return [zop0, zop1, bp0, bp1, bp2, bp3]
+
+
 if __name__ == '__main__':
-    test_drv_1()
+    test_drv_5()
     print('Done')
