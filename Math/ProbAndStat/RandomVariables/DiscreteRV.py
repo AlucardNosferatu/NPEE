@@ -128,7 +128,7 @@ def test_drv_1():
     rv = RandomVar(seg_p=[f1], laws=f2)
     x = range(1, m)
     y1 = []
-    y2=[]
+    y2 = []
     for i in tqdm.tqdm(x):
         p1 = rv.get_prob(i / sympy.E, True)
         y1.append(p1)
