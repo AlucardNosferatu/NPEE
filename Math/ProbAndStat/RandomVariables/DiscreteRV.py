@@ -44,17 +44,17 @@ class DiscreteRandomVar:
             self.dist_funcs = funcs
             self.dist_laws = self.get_laws_from_funcs()
 
-    def get_prob(self, x, use_law=False):
+    def get_prob(self, x, use_pmf=False):
         # P{X<=x}
         p = 0
         if self.rv_type == 'finite':
             for i in range(0, len(self.regions) - 1):
                 region = self.regions[i]
                 if region[0] < x:
-                    if use_law:
+                    if use_pmf:
                         p += self.dist_laws[i]
                     if x <= region[1]:
-                        if not use_law:
+                        if not use_pmf:
                             p = self.dist_funcs[i]
                         break
             if self.regions[-1][0] <= x < self.regions[-1][1]:
@@ -64,8 +64,8 @@ class DiscreteRandomVar:
             n = list(self.regions.free_symbols)[0]
             if len(self.cache) == 0:
                 self.cache.append(0.0)
-            while self.regions.evalf(subs={n: n0}) <= x.evalf():
-                if use_law:
+            while self.regions.evalf(subs={n: n0}) <= sympy.sympify(x).evalf():
+                if use_pmf:
                     if len(self.cache) >= n0 + 1:
                         pass
                     else:
@@ -78,7 +78,7 @@ class DiscreteRandomVar:
                         break
                 # endregion
                 n0 += 1
-            if not use_law:
+            if not use_pmf:
                 p = self.dist_funcs.evalf(subs={n: n0 - 1})
         if type(p) is not float:
             p = float(p)
@@ -119,8 +119,68 @@ class DiscreteRandomVar:
             return laws
 
 
+class PoissonDist(DiscreteRandomVar):
+    def __init__(self, _lambda):
+        assert _lambda > 0
+        k_var = sympy.Symbol('k')
+        laws_func = (_lambda ** k_var) / (sympy.factorial(k_var) * sympy.exp(_lambda))
+        super().__init__(
+            laws=laws_func,
+            seg_p=[k_var]
+        )
+        self.cache.append(self.dist_laws.evalf(subs={k_var: 0}))
+
+    def get_prob(self, x, use_pmf=True):
+        if not use_pmf:
+            use_pmf = True
+            print('Poisson Dist Prob can only be calculated using PMF.')
+        return super().get_prob(x=x, use_pmf=use_pmf)
+
+
+class GeometricDist(DiscreteRandomVar):
+    def __init__(self, p):
+        assert 1 <= p <= 0
+        k_var = sympy.Symbol('k')
+        laws_func = p * ((1 - p) ** (k_var - 1))
+        super().__init__(
+            laws=laws_func,
+            seg_p=[k_var]
+        )
+
+    def get_prob(self, x, use_pmf=False, include_success=True):
+        if not include_success:
+            x += 1
+        return super().get_prob(x=x, use_pmf=use_pmf)
+
+
+class HyperGeometricDist(DiscreteRandomVar):
+    def __init__(self, total_count, defect_count, n_exp_times):
+        assert total_count >= defect_count
+        assert total_count >= n_exp_times
+        laws_list = []
+        k_var = sympy.Symbol('k')
+        laws_func = sympy.binomial(
+            defect_count,
+            k_var
+        ) * sympy.binomial(
+            total_count - defect_count,
+            n_exp_times - k_var
+        ) / sympy.binomial(
+            total_count,
+            n_exp_times
+        )
+        seg_p = list(range(0, n_exp_times + 1))
+        for i in seg_p:
+            laws_list.append(laws_func.evalf(subs={k_var: i}))
+        super().__init__(
+            laws=laws_list,
+            seg_p=seg_p
+        )
+
+
 class BinomialDist(DiscreteRandomVar):
     def __init__(self, n_exp_times, p):
+        assert 1 <= p <= 0
         laws_list = []
         k_var = sympy.Symbol('k')
         laws_func = sympy.binomial(
@@ -213,6 +273,25 @@ def test_drv_5():
     return [zop0, zop1, bp0, bp1, bp2, bp3]
 
 
+def test_drv_6():
+    g = GeometricDist(sympy.Rational(1, 8))
+    hg = HyperGeometricDist(10, 3, 5)
+    gp0_0 = g.get_prob(x=0, include_success=True)
+    gp1_0 = g.get_prob(x=1, include_success=True)
+    gp0_1 = g.get_prob(x=0, include_success=False)
+    gp1_1 = g.get_prob(x=1, include_success=False)
+    hg0 = hg.get_prob(0)
+    hg1 = hg.get_prob(1)
+    hg2 = hg.get_prob(2)
+    hg3 = hg.get_prob(3)
+    hg4 = hg.get_prob(4)
+    hg5 = hg.get_prob(5)
+    return [[gp0_0, gp1_0], [gp0_1, gp1_1], [hg0, hg1, hg2, hg3, hg4, hg5]]
+
+
 if __name__ == '__main__':
-    test_drv_5()
+    pd = PoissonDist(2)
+    pp0 = pd.get_prob(0)
+    pp1 = pd.get_prob(1)
+    pp2 = pd.get_prob(2)
     print('Done')
