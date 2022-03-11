@@ -10,7 +10,7 @@ from flask import Flask, request
 app = Flask(__name__)
 send_stack = {'max_order': 1, 'next_order': -1, 'ack_order': -1, 'resend_cache': ''}
 recv_stack = {'max_order': 1, 'next_order': -1}
-time_out = 20
+time_out = 10
 ack_delay = 2
 send_delay = 2
 timer_active = False
@@ -30,13 +30,6 @@ def sr_interaction(url, req_dict):
         response.raise_for_status()
         result = json.loads(response.content.decode('utf-8'))
     return result
-
-
-def resend_after_timeout():
-    sr_interaction(
-        '/send',
-        {'ack_order': -1}
-    )
 
 
 def send_new_frame(ss):
@@ -76,14 +69,14 @@ def alive_timer():
                 print('timer:', timer)
         if timer > 10 * time_out:
             print('timeout, resend old frame')
-            # timer_sof = threading.Timer(send_delay, send_old_frame, (send_stack,))
-            # timer_sof.start()
+            timer_sof = threading.Timer(send_delay, send_old_frame, (send_stack,))
+            timer_sof.start()
             reset_timer = True
 
 
 @app.route("/send", methods=['POST'])
 def send():
-    global send_stack
+    global send_stack, timer_active, reset_timer
     if send_stack['next_order'] == -1:
         send_stack['next_order'] = 0
     if send_stack['ack_order'] == -1:
@@ -92,19 +85,28 @@ def send():
         c_da = request.data
         data = json.loads(c_da.decode())
         if 'start' in data:
+            timer_active = False
+            reset_timer = True
             print('get signal, send new frame')
             timer_snf = threading.Timer(send_delay, send_new_frame, (send_stack,))
             timer_snf.start()
+            timer_active = True
         elif 'ack_order' in data:
             print('need ack', send_stack['ack_order'], 'get ack', data['ack_order'])
             if data['ack_order'] == send_stack['ack_order']:
+                timer_active = False
+                reset_timer = True
                 print('ack OK, send new frame')
                 timer_snf = threading.Timer(send_delay, send_new_frame, (send_stack,))
                 timer_snf.start()
+                timer_active = True
             else:
+                timer_active = False
+                reset_timer = True
                 print('ack NG, resend old frame')
                 timer_sof = threading.Timer(send_delay, send_old_frame, (send_stack,))
                 timer_sof.start()
+                timer_active = True
         else:
             pass
         return json.dumps(
@@ -157,12 +159,8 @@ def recv():
 if __name__ == '__main__':
     thread_at = threading.Thread(target=alive_timer)
     thread_at.start()
-    timer_active = True
-    reset_timer = True
-    timer_active = False
-    timer_active = True
-    # app.run(
-    #     host="0.0.0.0",
-    #     port=int("20291"),
-    #     debug=True, threaded=True
-    # )
+    app.run(
+        host="0.0.0.0",
+        port=int("20291"),
+        debug=True, threaded=True
+    )
