@@ -84,6 +84,7 @@ def test_0():
     array_0_1 = mat_tm_2_1darr(matrix_0, utm=False, row_major=False)
     array_1_0 = mat_tm_2_1darr(matrix_1, utm=True, row_major=True)
     array_1_1 = mat_tm_2_1darr(matrix_1, utm=True, row_major=False)
+    return [array_0_0, array_0_1, array_1_0, array_1_1]
 
 
 if __name__ == '__main__':
