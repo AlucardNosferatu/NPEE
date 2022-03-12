@@ -10,7 +10,7 @@ def is_invertible(mat):
 
 
 def non_zero_diagonal(mat: numpy.ndarray):
-    dim = mat.shape[0]
+    dim = min(mat.shape[0], mat.shape[1])
     swapped = []
     for j in range(0, dim):
         if mat[j, j] == 0:
@@ -22,13 +22,12 @@ def non_zero_diagonal(mat: numpy.ndarray):
                             swapped.append(j)
                             mat[[i, j], :] = mat[[j, i], :]
                             break
+        swapped.append(j)
     return mat
 
 
-def upper_tri_mat(mat: numpy.ndarray, need_nzd=False):
-    dim = mat.shape[0]
-    if need_nzd:
-        mat = non_zero_diagonal(mat)
+def upper_tri_mat(mat: numpy.ndarray):
+    dim = min(mat.shape[0], mat.shape[1])
     for j in range(0, dim):
         for i in range(0, dim - j - 1):
             row = dim - 1 - i
@@ -37,7 +36,7 @@ def upper_tri_mat(mat: numpy.ndarray, need_nzd=False):
             second_ri = row - 1
             a = mat[first_ri, col]
             b = mat[second_ri, col]
-            et_mat = numpy.identity(dim)
+            et_mat = numpy.identity(mat.shape[0])
             if b == 0:
                 if a != 0:
                     et_mat[:, [second_ri, first_ri]] = et_mat[:, [first_ri, second_ri]]
@@ -49,8 +48,8 @@ def upper_tri_mat(mat: numpy.ndarray, need_nzd=False):
 
 
 def upward_elimination(mat: numpy.ndarray):
-    dim = mat.shape[0]
-    et_mat = numpy.identity(dim)
+    dim = min(mat.shape[0], mat.shape[1])
+    et_mat = numpy.identity(mat.shape[0])
     for j in range(0, dim):
         if mat[j, j] != 0:
             et_mat[j, j] = 1 / mat[j, j]
@@ -60,7 +59,7 @@ def upward_elimination(mat: numpy.ndarray):
             row = i
             col = j
             k = -mat[row, col]
-            et_mat = numpy.identity(dim)
+            et_mat = numpy.identity(mat.shape[0])
             et_mat[row, col] = k
             mat = numpy.matmul(et_mat, mat)
     return mat
