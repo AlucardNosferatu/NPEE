@@ -49,6 +49,9 @@ def et_once(mat):
 
 def generate_mat_by_et(dim=3, et_count=5, rank=None):
     if rank is not None:
+        if rank > dim:
+            print('Rank cannot be larger than Dim, you idiot!')
+            rank = dim
         mat_p = mat_proto(dim, rank)
     else:
         mat_p = mat_proto(dim, dim)
