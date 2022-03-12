@@ -1,6 +1,6 @@
 import numpy
 import datetime
-from AdjugateAndInverse import upper_tri_mat
+from AdjugateAndInverse import upper_tri_mat, non_zero_diagonal
 from ElemTrans import generate_mat_by_et
 
 
@@ -20,7 +20,8 @@ def enumerate_nz_sd(mat):
 
 
 def row_reduce(mat):
-    mat_reduced = upper_tri_mat(mat, True)
+    mat_reduced = non_zero_diagonal(mat)
+    mat_reduced = upper_tri_mat(mat_reduced)
     rank = mat_reduced.shape[0]
     for i in range(0, mat_reduced.shape[0]):
         if not mat_reduced[i, :].any():
