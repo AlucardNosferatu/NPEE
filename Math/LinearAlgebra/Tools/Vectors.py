@@ -131,6 +131,30 @@ def vec_groups_are_equivalent(vec_group_1, vec_group_2):
     return conclusion_1 and conclusion_2, [[cl_1, hl_1], [cl_2, hl_2]]
 
 
+def vec_operation(conditions, question):
+    question_str = str(question)
+    for i in range(1, len(question)):
+        if type(question[i]) == list:
+            question[i], qs = vec_operation(conditions, question[i])
+        if type(question[i]) is int:
+            question[i] = conditions[question[i]].copy()
+        try:
+            if i != 1:
+                if question[0] == '*':
+                    question[1] = numpy.dot(question[1], question[i])
+                elif question[0] == '+':
+                    question[1] += question[i]
+                elif question[0] == '×':
+                    question[1] = numpy.cross(question[1], question[i])
+            elif question[0] == 'mag':
+                question[i] = numpy.linalg.norm(question[i])
+            elif question[0] == 'uni':
+                question[i] = question[i] / numpy.linalg.norm(question[i])
+        except Exception as e:
+            return e, question_str
+    return question[1], question_str
+
+
 def test_1():
     # vl1 = gen_vectors(dim=3, count=4, rank=3)
     # vl2 = gen_vectors(dim=3, count=2, rank=3)
@@ -191,4 +215,6 @@ def test_2():
 
 
 if __name__ == '__main__':
+    vec_cond = gen_vectors(dim=3, count=4, rank=3)
+    vec_res = vec_operation(conditions=vec_cond, question=['*', ['+', 0, 1], ['×', 2, 3]])
     print('Done')
