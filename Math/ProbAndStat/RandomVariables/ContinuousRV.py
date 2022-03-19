@@ -93,6 +93,55 @@ class ContinuousRandomVar:
         return b_prob - a_prob
 
 
+class UniformDist(ContinuousRandomVar):
+    upper_bound = None
+    lower_bound = None
+
+    def __init__(self, a, b):
+        self.lower_bound = min(a, b)
+        self.upper_bound = max(a, b)
+        x = sympy.Symbol('x')
+        pdf = sympy.Piecewise(
+            (0, x < self.lower_bound),
+            (
+                sympy.sympify(1 / (self.upper_bound - self.lower_bound)),
+                x < self.upper_bound
+            ),
+            (0, True),
+        )
+        super().__init__(pdf=pdf)
+
+
+class ExponentialDist(ContinuousRandomVar):
+    lambda_coe = None
+
+    def __init__(self, lambda_coe):
+        self.lambda_coe = lambda_coe
+        x = sympy.Symbol('x')
+        pdf = sympy.Piecewise(
+            (0, x <= 0),
+            (
+                self.lambda_coe * sympy.exp(-self.lambda_coe * x),
+                True
+            )
+        )
+        super().__init__(pdf=pdf)
+
+
+class NormalDist(ContinuousRandomVar):
+    sigma_std_dev = None
+    mu_exp_val = None
+
+    def __init__(self, ssd, mev):
+        self.sigma_std_dev = ssd
+        self.mu_exp_val = mev
+        x = sympy.Symbol('x')
+        pdf = sympy.exp(
+            -((x - self.mu_exp_val) ** 2) / (2 * (self.sigma_std_dev ** 2))
+        ) / (sympy.sqrt(2 * sympy.pi) * self.sigma_std_dev)
+        super().__init__(pdf=pdf)
+
+
 def test_1():
     x = sympy.Symbol('x')
     pdf_1 = sympy.Piecewise(
@@ -133,6 +182,17 @@ def test_2():
     return crv1, crv2
 
 
+def test_3():
+    u = UniformDist(a=1, b=2)
+    res1 = u.get_prob_between(1, 2)
+    e = ExponentialDist(lambda_coe=2)
+    res2 = e.get_prob_between(3, 5)
+    res3 = e.get_prob_less_than(0.5)
+    n = NormalDist(ssd=sympy.Rational(3, 4), mev=sympy.Rational(1, 4))
+    res4 = n.get_prob_less_than(0)
+    return res1, res2, res3, res4
+
+
 if __name__ == '__main__':
-    test_2()
+    res = test_3()
     print('Done')
