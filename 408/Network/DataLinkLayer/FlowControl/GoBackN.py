@@ -8,6 +8,8 @@ from flask import request
 from FlowControl.MediaAgent import sr_interaction, app
 
 sender_inst = None
+recv_need_frame = 0
+last_recv_frame = -1
 
 
 class Sender:
@@ -86,6 +88,7 @@ class Sender:
             self.timer_table.append(0)
             self.timer_active.append(False)
             self.timer_reset.append(True)
+        print('第' + str(ack_frame) + '帧的ACK已收到，滑窗已更新')
 
     def recv_com(self, com_str):
         if com_str == 'send':
@@ -133,31 +136,71 @@ def init():
         )
 
 
-@app.route("/kill", methods=['POST'])
-def kill():
-    global sender_inst
+@app.route("/recv", methods=['POST'])
+def recv():
+    global recv_need_frame, last_recv_frame
     if request.method == "POST":
-        if sender_inst is not None:
-            # noinspection PyUnresolvedReferences
-            sender_inst.kill_timer()
-            sender_inst = None
+        c_da = request.data
+        data = json.loads(c_da.decode())
+        if 'src' in data and 'data' in data:
+            if data['src'] == '/send':
+                if int(data['data']['no']) == recv_need_frame:
+                    last_recv_frame = recv_need_frame
+                    recv_need_frame += 1
+                    print(data['data']['content'])
+                frame_to_send = {'ack_no': last_recv_frame}
+                frame_to_send = {'data': frame_to_send, 'src': '/recv', 'dst': '/send'}
+                timer_ack = threading.Timer(
+                    2,
+                    sr_interaction,
+                    (
+                        "/forward",
+                        frame_to_send
+                    )
+                )
+                timer_ack.start()
+                info = '第' + str(data['data']['no']) + '帧的ACK已发送。'
+            else:
+                info = '未定义其它src的有效响应'
+        else:
+            info = '格式错误，请指定src和data字段'
+        # todo:接收端功能
         return json.dumps(
             {
-                'info': '全局Sender对象已经被干掉了'
+                'info': info
             },
             ensure_ascii=False
         )
 
 
-@app.route("/recv", methods=['POST'])
-def recv():
+# noinspection PyUnresolvedReferences
+@app.route("/send", methods=['POST'])
+def send():
+    global sender_inst
     if request.method == "POST":
         c_da = request.data
         data = json.loads(c_da.decode())
-        print(data)
+        if type(sender_inst) is Sender:
+            if 'src' in data and 'data' in data:
+                if data['src'] == '/ctrl':
+                    if 'send_1' in data['data']:
+                        sender_inst.send_new()
+                    elif 'send_n' in data['data']:
+                        n = int(data['data']['send_n'])
+                        for i in range(0, min(n, sender_inst.window_size)):
+                            time.sleep(1)
+                            sender_inst.send_new()
+                elif data['src'] == '/recv':
+                    if 'ack_no' in data['data']:
+                        sender_inst.recv_ack(ack_frame=data['data']['ack_no'])
+                info = '你调用了send接口。'
+            else:
+                info = '格式错误，请指定src和data字段'
+        else:
+            info = '全局Sender对象未初始化，先对/init进行POST以初始化全局Sender对象！'
         return json.dumps(
             {
-                'info': '你调用了recv接口。'
+                'info': info
             },
             ensure_ascii=False
         )
