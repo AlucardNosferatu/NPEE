@@ -2,7 +2,7 @@ import threading
 import time
 import uuid
 
-from FlowControl.StopWait import sr_interaction
+from InfraStruct.MediaAgent import sr_interaction
 
 
 class Sender:
