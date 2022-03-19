@@ -7,6 +7,8 @@ from flask import request
 
 from FlowControl.MediaAgent import sr_interaction, app
 
+sender_inst = None
+
 
 class Sender:
     window_size = None
@@ -18,6 +20,7 @@ class Sender:
     timer_table = None
     timer_active = None
     timer_reset = None
+    timer_kill = None
     time_out = None
     send_delay = None
 
@@ -33,8 +36,20 @@ class Sender:
         self.frame_cursor = 0
         self.time_out = 10
         self.send_delay = 2
+        self.start_timer()
+
+    def kill_timer(self):
+        while self.timer_thread.is_alive():
+            self.timer_kill = True
+            time.sleep(1)
+
+    def start_timer(self):
         self.timer_thread = threading.Thread(target=self.alive_timer)
         self.timer_thread.start()
+
+    def restart_timer(self):
+        self.kill_timer()
+        self.start_timer()
 
     def send_new(self):
         if self.frame_cursor < self.window_size:
@@ -79,6 +94,7 @@ class Sender:
             self.resend_old(int(com_str.split('_')[0]))
 
     def alive_timer(self):
+        self.timer_kill = False
         self.timer_table = []
         self.timer_active = []
         self.timer_reset = []
@@ -86,11 +102,11 @@ class Sender:
             self.timer_table.append(0)
             self.timer_active.append(False)
             self.timer_reset.append(True)
-        while True:
+        while not self.timer_kill:
             time.sleep(0.1)
             for i in range(0, self.window_size):
                 if self.timer_reset[i]:
-                    print('timer has been reset')
+                    print('timer ' + str(i) + ' has been reset')
                     self.timer_table[i] = 0
                     self.timer_reset[i] = False
                 if self.timer_active[i]:
@@ -98,11 +114,39 @@ class Sender:
                     if self.timer_table[i] % 10 == 0:
                         print('timer ' + str(i) + ':', self.timer_table[i])
                 if self.timer_table[i] > 10 * self.time_out:
-                    print('timeout, resend old frame')
+                    print(str(i) + ' timeout, resend old frame')
                     self.resend_old(i)
+        print('Timer thread has been killed.')
 
 
-sender_inst = None
+@app.route("/init", methods=['POST'])
+def init():
+    global sender_inst
+    if request.method == "POST":
+        if sender_inst is None:
+            sender_inst = Sender()
+        return json.dumps(
+            {
+                'info': '全局Sender对象已初始化。'
+            },
+            ensure_ascii=False
+        )
+
+
+@app.route("/kill", methods=['POST'])
+def kill():
+    global sender_inst
+    if request.method == "POST":
+        if sender_inst is not None:
+            # noinspection PyUnresolvedReferences
+            sender_inst.kill_timer()
+            sender_inst = None
+        return json.dumps(
+            {
+                'info': '全局Sender对象已经被干掉了'
+            },
+            ensure_ascii=False
+        )
 
 
 @app.route("/recv", methods=['POST'])
@@ -110,10 +154,10 @@ def recv():
     if request.method == "POST":
         c_da = request.data
         data = json.loads(c_da.decode())
-
+        print(data)
         return json.dumps(
             {
-                '经典的错误': '标注的零分'
+                'info': '你调用了recv接口。'
             },
             ensure_ascii=False
         )
@@ -123,5 +167,5 @@ if __name__ == '__main__':
     app.run(
         host="0.0.0.0",
         port=int("20291"),
-        debug=True, threaded=True
+        debug=True, threaded=False
     )
