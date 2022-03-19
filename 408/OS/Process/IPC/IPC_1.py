@@ -1,6 +1,7 @@
 import time
 import uuid
-from multiprocessing import shared_memory, Pipe, Process
+from multiprocessing import shared_memory, Pipe, Process, Queue
+from IPC_2 import ipc_q_p2
 
 
 def ipc_sm():
@@ -39,5 +40,14 @@ def ipc_pipe_p2(pipe):
         pipe.send(['p2', str(uuid.uuid4())])
 
 
+def ipc_q_p1():
+    q = Queue(3)
+    p2 = Process(target=ipc_q_p2, args=(q,))
+    p2.start()
+    while True:
+        time.sleep(0.5)
+        q.put(str(uuid.uuid4()))
+
+
 if __name__ == "__main__":
-    ipc_pipe()
+    ipc_q_p1()
