@@ -143,8 +143,8 @@ def recv():
 
 
 if __name__ == '__main__':
-    thread_at = threading.Thread(target=alive_timer)
-    thread_at.start()
+    # thread_at = threading.Thread(target=alive_timer)
+    # thread_at.start()
     app.run(
         host="0.0.0.0",
         port=int("20291"),
