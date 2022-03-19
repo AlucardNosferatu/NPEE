@@ -39,8 +39,8 @@ def forward():
 
 @app.route("/setting", methods=['POST'])
 def setting():
+    global random_slots
     if request.method == "POST":
-        global random_slots
         c_da = request.data
         data = json.loads(c_da.decode())
         if 'lr' in data:
