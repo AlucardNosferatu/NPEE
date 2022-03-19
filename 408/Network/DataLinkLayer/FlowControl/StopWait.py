@@ -6,7 +6,7 @@ import random
 
 from flask import Flask, request
 
-from InfraStruct.MediaAgent import sr_interaction
+from FlowControl.MediaAgent import sr_interaction
 
 app = Flask(__name__)
 send_stack = {'max_order': 1, 'next_order': -1, 'ack_order': -1, 'resend_cache': ''}
