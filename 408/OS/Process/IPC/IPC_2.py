@@ -1,4 +1,5 @@
-from multiprocessing import shared_memory
+import time
+from multiprocessing import shared_memory, Queue
 
 
 def ipc_sm():
@@ -7,5 +8,13 @@ def ipc_sm():
     print(content)
 
 
+def ipc_q_p2(q_inst: Queue):
+    while True:
+        time.sleep(1)
+        res = q_inst.get()
+        print(res)
+
+
 if __name__ == "__main__":
-    ipc_sm()
+    q = Queue()
+    ipc_q_p2(q)
