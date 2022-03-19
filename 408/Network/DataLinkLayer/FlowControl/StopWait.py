@@ -4,8 +4,9 @@ import time
 import uuid
 import random
 
-import requests as requests
 from flask import Flask, request
+
+from InfraStruct.MediaAgent import sr_interaction
 
 app = Flask(__name__)
 send_stack = {'max_order': 1, 'next_order': -1, 'ack_order': -1, 'resend_cache': ''}
@@ -15,21 +16,6 @@ ack_delay = 2
 send_delay = 2
 timer_active = False
 reset_timer = True
-
-
-def sr_interaction(url, req_dict):
-    server_url = 'http://127.0.0.1:20291'
-    server_url += url
-    headers = {
-        "Content-Type": "application/json; charset=UTF-8"
-    }
-    json_dict = json.dumps(req_dict)
-    response = requests.post(server_url, data=json_dict, headers=headers)
-    result = None
-    if response is not None:
-        response.raise_for_status()
-        result = json.loads(response.content.decode('utf-8'))
-    return result
 
 
 def send_new_frame(ss):
