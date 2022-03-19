@@ -8,7 +8,7 @@ from flask import Flask, request
 app = Flask(__name__)
 
 send_delay = 2
-random_slots = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+random_slots = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 
 @app.route("/forward", methods=['POST'])
