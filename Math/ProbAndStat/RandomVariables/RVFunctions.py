@@ -29,12 +29,7 @@ def drv_function(drv_x: DiscreteRandomVar, gx):
             new_law_list.append(new_pair_list[i][1])
         drv_y = DiscreteRandomVar(seg_p=new_seg_list, laws=new_law_list)
     else:
-        y_equ_to_gx = sympy.Symbol('y')
-        new_regions = gx.subs(gx_var, drv_x.regions)
-        xs_with_same_gx = sympy.solve(sympy.Eq(new_regions, y_equ_to_gx), gx_var)
-        new_laws = drv_x.dist_laws
-
-        drv_y = None
+        raise NotImplementedError('无法对无限可列型DRV进行函数变换')
     return drv_y
 
 
