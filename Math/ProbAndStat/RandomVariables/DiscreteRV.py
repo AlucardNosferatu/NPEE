@@ -139,7 +139,7 @@ class PoissonDist(DiscreteRandomVar):
 
 class GeometricDist(DiscreteRandomVar):
     def __init__(self, p):
-        assert 1 <= p <= 0
+        assert 0 <= p <= 1
         k_var = sympy.Symbol('k')
         laws_func = p * ((1 - p) ** (k_var - 1))
         super().__init__(
