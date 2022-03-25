@@ -65,9 +65,14 @@ def vec_can_be_rep_by_vec_group(vec, vec_group):
         print('系数阵的秩等于增广矩阵的秩小于系数向量个数')
         print('方程组有无穷多解')
         print('非齐次项向量可由系数向量组线性表示，且表达式不唯一。')
+
+        # region 化行最简
         sol_mat = non_zero_diagonal(aug_mat)
         sol_mat = upper_tri_mat(mat=sol_mat)
         sol_mat = upward_elimination(sol_mat)
+        # endregion
+
+        # region 确定约束变量位置
         x_template = []
         x_list = []
         const_var_list = []
@@ -76,38 +81,64 @@ def vec_can_be_rep_by_vec_group(vec, vec_group):
                 const_var = sol_mat[i, 0:cv_count] != 0
                 const_var = const_var.argmax(axis=0)
                 const_var_list.append(const_var)
+        # endregion
+
+        # region 构造自由变量全0向量（非齐次特解）
         for i in range(0, cv_count):
             if i in const_var_list:
                 x_template.append(-1)
             else:
                 x_template.append(0)
         x_list.append(x_template)
+        # endregion
+
+        # region 构造自由变量独热码（基础解系）
         for i in range(0, cv_count):
             if i not in const_var_list:
                 x_list.append(x_template.copy())
                 x_list[-1][i] = 1
+        # endregion
+
+        # region 代入x取值求出非齐次特解和基础解系
         basic_sol_sys = []
-        nhs = True
+        nss = True
         for x_bss in x_list:
             smb = sol_mat.copy()
-            if not nhs:
+            if not nss:
+                # 求基础解系，同系数阵的齐次方程组（Ax=0）常数列变0
                 smb[:, -1] = smb[:, -1] - smb[:, -1]
-            nhs = False
+            else:
+                # 非齐次特解，保留非0常数列（Ax=b）
+                pass
+            nss = False
+            # 只有第一次代入是求非齐次特解
             shift = 0
             for i in range(0, cv_count):
+                # -1代表约束变量，所在列不会动
                 if x_bss[i] != -1:
                     if x_bss[i] == 1:
+                        # 自由变量为1，从常数列减去自由变量所在列
                         smb[:, -1] = smb[:, -1] - smb[:, i + shift]
+                    else:
+                        # 自由变量为0，不改变常数列
+                        pass
+                    # 从系数阵里删去自由变量列（物理消元）
                     smb = numpy.delete(smb, i + shift, axis=1)
                     shift -= 1
             sol_vec = []
+            # 求出约束变量取值，打包解向量
             for i in range(0, cv_count):
                 if i in const_var_list:
+                    # 约束变量此时系数为1（前面化行最简确保）
+                    # 可直接取对应行常数列的值
                     sol_vec.append(smb[i, -1])
                 else:
+                    # 自由变量取值以独热码设定为准
                     sol_vec.append(x_bss[i])
             sol_vec = numpy.array([sol_vec]).T
             basic_sol_sys.append(sol_vec)
+        # endregion
+
         return True, basic_sol_sys
     else:
         print('输入参数错误！')
