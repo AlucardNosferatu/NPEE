@@ -245,7 +245,19 @@ def test_2():
     return [res1, res2, res3, res4, res5, res6]
 
 
-if __name__ == '__main__':
+def test_3():
     vec_cond = gen_vectors(dim=3, count=4, rank=3)
     vec_res = vec_operation(conditions=vec_cond, question=['*', ['+', 0, 1], ['×', 2, 3]])
+    return vec_res
+
+
+if __name__ == '__main__':
+    vec1 = numpy.array([[3, 2, 7, 12]]).T
+    vg1 = [
+        numpy.array([[1, 1, 2, 3]]).T,
+        numpy.array([[2, 3, 7, 7]]).T,
+        numpy.array([[3, 4, 9, 10]]).T,
+        numpy.array([[1, 2, 3, 2]]).T
+    ]
+    res = vec_can_be_rep_by_vec_group(vec1, vg1)
     print('Done')
