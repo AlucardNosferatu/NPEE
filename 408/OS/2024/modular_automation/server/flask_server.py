@@ -6,7 +6,7 @@ import uuid
 from flask import Flask, request, Response
 from flask_cors import CORS
 
-from server.task_engine import create_waiting_task, kill_running_task, suspend_or_resume
+from core.task_engine import create_waiting_task, kill_running_task, suspend_or_resume
 
 flask_app = Flask(__name__)
 CORS(flask_app)

@@ -264,14 +264,4 @@ class FlowChart:
 
 
 if __name__ == '__main__':
-    fc = FlowChart()
-    fc.load_map(hook_script='bin_scan.py', map_json='静态测试.pos')
-    end = False
-    fc.params_bus['project_id'] = 'OW3.0PR5_R231'
-    fc.params_bus['product_id'] = 'X30E'
-    fc.params_bus['baseline_project'] = 'OW3.0PR5_R221'
-    fc.params_bus[
-        'bin_url'
-    ] = 'http://10.52.16.112:20290/%E5%9B%BD%E5%86%85/X30E-R231/EW_3.0%281%29B11P231_X30E_10231920_install.bin'
-    while not end:
-        end = fc.run_step()
+    print('Done')

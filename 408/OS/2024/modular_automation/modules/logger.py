@@ -4,8 +4,7 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
-from modules.misc import time_format
-
+time_format = "%Y年%m月%d日-%H时%M分%S秒"
 locale.setlocale(locale.LC_CTYPE, 'Chinese')
 
 
