@@ -1,0 +1,508 @@
+{
+    "nmap": {
+        "command_line": "nmap -oX - -p 1-65535 -A -T4 -v -Pn -sU -sT 192.168.110.1",
+        "scaninfo": {
+            "error": [
+                "Host discovery disabled (-Pn). All addresses will be marked 'up' and scan times may be slower.\r\n"
+            ],
+            "tcp": {
+                "method": "connect",
+                "services": "1-65535"
+            },
+            "udp": {
+                "method": "udp",
+                "services": "1-65535"
+            }
+        },
+        "scanstats": {
+            "timestr": "Wed Dec  6 11:20:59 2023",
+            "elapsed": "75578.85",
+            "uphosts": "1",
+            "downhosts": "0",
+            "totalhosts": "1"
+        }
+    },
+    "scan": {
+        "192.168.110.1": {
+            "hostnames": [
+                {
+                    "name": "",
+                    "type": ""
+                }
+            ],
+            "addresses": {
+                "ipv4": "192.168.110.1",
+                "mac": "04:30:41:41:31:66"
+            },
+            "vendor": {},
+            "status": {
+                "state": "up",
+                "reason": "arp-response"
+            },
+            "uptime": {
+                "seconds": "77287",
+                "lastboot": "Tue Dec  5 13:52:52 2023"
+            },
+            "tcp": {
+                "53": {
+                    "state": "open",
+                    "reason": "syn-ack",
+                    "name": "domain",
+                    "product": "NLnet Labs NSD",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "10",
+                    "cpe": "cpe:/a:nlnetlabs:nsd"
+                },
+                "80": {
+                    "state": "open",
+                    "reason": "syn-ack",
+                    "name": "http",
+                    "product": "lighttpd",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "10",
+                    "cpe": "cpe:/a:lighttpd:lighttpd",
+                    "script": {
+                        "http-methods": "\n  Supported Methods: OPTIONS GET HEAD POST",
+                        "http-title": "Site doesn't have a title (text/html)."
+                    }
+                },
+                "443": {
+                    "state": "open",
+                    "reason": "syn-ack",
+                    "name": "http",
+                    "product": "lighttpd",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "10",
+                    "cpe": "cpe:/a:lighttpd:lighttpd",
+                    "script": {
+                        "ssl-cert": "Subject: organizationName=Internet Widgits Pty Ltd/stateOrProvinceName=Some-State/countryName=AU\nIssuer: organizationName=Internet Widgits Pty Ltd/stateOrProvinceName=Some-State/countryName=AU\nPublic Key type: rsa\nPublic Key bits: 2048\nSignature Algorithm: sha256WithRSAEncryption\nNot valid before: 2022-05-26T07:42:09\nNot valid after:  2122-05-02T07:42:09\nMD5:   4db3 fc34 0f7f 71b0 bd0b 8196 9aeb 3d1e\nSHA-1: 340b bbb5 8992 3e87 ec47 516f 8a1a c210 9093 5305",
+                        "ssl-date": "TLS randomness does not represent time",
+                        "http-title": "Site doesn't have a title (text/html).",
+                        "http-methods": "\n  Supported Methods: OPTIONS GET HEAD POST"
+                    }
+                },
+                "1883": {
+                    "state": "open",
+                    "reason": "syn-ack",
+                    "name": "mqtt",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": "",
+                    "script": {
+                        "ssl-date": "TLS randomness does not represent time",
+                        "ssl-cert": "Subject: commonName=0.0.0.0/organizationName=Internet Widgits Pty Ltd/stateOrProvinceName=Some-State/countryName=AU\nIssuer: commonName=admin/organizationName=Internet Widgits Pty Ltd/stateOrProvinceName=Some-State/countryName=AU\nPublic Key type: rsa\nPublic Key bits: 2048\nSignature Algorithm: sha256WithRSAEncryption\nNot valid before: 2023-10-25T13:06:19\nNot valid after:  2123-10-01T13:06:19\nMD5:   a0c4 4014 3427 9670 bfe1 a3fd 5d36 2bf2\nSHA-1: e235 ded0 a144 209e 5bdf 5a12 f0cb a94a 72d9 fcb7",
+                        "mqtt-subscribe": "Connection rejected: Not Authorized"
+                    }
+                },
+                "22867": {
+                    "state": "open",
+                    "reason": "syn-ack",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "54133": {
+                    "state": "open",
+                    "reason": "syn-ack",
+                    "name": "ssh",
+                    "product": "Dropbear sshd",
+                    "version": "",
+                    "extrainfo": "protocol 2.0",
+                    "conf": "10",
+                    "cpe": "cpe:/o:linux:linux_kernel"
+                }
+            },
+            "udp": {
+                "53": {
+                    "state": "open",
+                    "reason": "udp-response",
+                    "name": "domain",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": "",
+                    "script": {
+                        "fingerprint-strings": "\n  DNS-SD: \n    _services\n    _dns-sd\n    _udp\n    local\n  Kerberos: \n    ^0\\xa0\n    krbtgt\n    19700101000000Z\n  NBTStat: \n    CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                    }
+                },
+                "67": {
+                    "state": "open",
+                    "reason": "udp-response",
+                    "name": "dhcps",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": ""
+                },
+                "2603": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "servicemeter",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": ""
+                },
+                "5248": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "caacws",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": ""
+                },
+                "5252": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "movaz-ssc",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": ""
+                },
+                "5293": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "unknown",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": ""
+                },
+                "5803": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "19868": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "unknown",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": ""
+                },
+                "20603": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "21202": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "unknown",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": ""
+                },
+                "21314": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "21407": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "unknown",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": ""
+                },
+                "23244": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "25099": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "25674": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "28759": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "30046": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "unknown",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": ""
+                },
+                "30606": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "31250": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "39733": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "unknown",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": ""
+                },
+                "39763": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "unknown",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": ""
+                },
+                "43256": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "unknown",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": ""
+                },
+                "43561": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "43562": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "46246": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "47506": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "49220": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "unknown",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": ""
+                },
+                "53122": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "55562": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "58144": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "60167": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                },
+                "61579": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "unknown",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "3",
+                    "cpe": ""
+                },
+                "62543": {
+                    "state": "open|filtered",
+                    "reason": "no-response",
+                    "name": "",
+                    "product": "",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "",
+                    "cpe": ""
+                }
+            },
+            "portused": [
+                {
+                    "state": "open",
+                    "proto": "tcp",
+                    "portid": "53"
+                },
+                {
+                    "state": "closed",
+                    "proto": "udp",
+                    "portid": "1"
+                }
+            ],
+            "osmatch": [
+                {
+                    "name": "Linux 3.0",
+                    "accuracy": "100",
+                    "line": "62537",
+                    "osclass": [
+                        {
+                            "type": "general purpose",
+                            "vendor": "Linux",
+                            "osfamily": "Linux",
+                            "osgen": "3.X",
+                            "accuracy": "100",
+                            "cpe": [
+                                "cpe:/o:linux:linux_kernel:3.0"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "OpenWrt Barrier Breaker (Linux 3.10)",
+                    "accuracy": "100",
+                    "line": "66865",
+                    "osclass": [
+                        {
+                            "type": "WAP",
+                            "vendor": "Linux",
+                            "osfamily": "Linux",
+                            "osgen": "3.X",
+                            "accuracy": "100",
+                            "cpe": [
+                                "cpe:/o:linux:linux_kernel:3.10"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

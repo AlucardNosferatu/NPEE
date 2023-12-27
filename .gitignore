@@ -1,3 +1,5 @@
 *.vs
 *.idea
 408/Organization/FixPoint/Debug/
+*.log
+__pycache__
