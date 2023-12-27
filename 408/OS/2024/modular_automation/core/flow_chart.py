@@ -13,7 +13,7 @@ from modules.webhook_api import webhook_send
 
 finished_tasks = []
 suspend_handle = {}
-debug = False
+debug = True
 
 singleton_modules = [
     'CHARIOT', 'MISC_S', 'WINDOWS_UI', 'ZAP'
@@ -282,12 +282,17 @@ def run_flow_chart(task_id, hook_script, map_json, involved_modules, prerequisit
         while t[0]:
             time.sleep(0.1)
 
+    suspend_handle[task_id] = [False]
     print('任务id:{}'.format(task_id))
     print('任务脚本:{}'.format(hook_script))
     print('任务流程图:{}'.format(map_json))
     print('任务调用模块:{}'.format(involved_modules))
     if debug:
-        time.sleep(random.randint(5, 15))
+        cd = random.randint(5, 15)
+        for i in range(cd):
+            wait(suspend_handle[task_id])
+            print('任务id:{}运行中,持续{}/{}秒'.format(task_id, i + 1, cd))
+            time.sleep(1)
     else:
         profiler = cProfile.Profile()
         profiler.enable()
@@ -298,7 +303,6 @@ def run_flow_chart(task_id, hook_script, map_json, involved_modules, prerequisit
         # todo: makeshift patch
         fc.params_bus = log_logger_init(params=fc.params_bus)
         fc.params_bus = log_handler_init(params=fc.params_bus)
-        suspend_handle[task_id] = [False]
         end = False
         while not end:
             wait(suspend_handle[task_id])

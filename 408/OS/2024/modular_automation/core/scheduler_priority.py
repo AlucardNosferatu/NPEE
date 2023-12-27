@@ -1,5 +1,6 @@
 import threading
 import time
+import uuid
 
 from kill_thread import kill_thread
 
@@ -211,8 +212,58 @@ def std_execute_runnable_task(task_id):
 
 def std_remove_finished_task(task_id_r):
     finished_tasks.remove(task_id_r)
+    print('任务完成，移出执行队列，id:{}'.format(task_id_r))
     if cpu['task'][0] == task_id_r:
         kill_thread(cpu['thread'])
         cpu['task'] = None
         cpu['thread'] = None
+
+
 # todo: pending test
+if __name__ == '__main__':
+    pqt_thread = threading.Thread(target=api_process_queued_task)
+    pqt_thread.start()
+    # def keep_generate_task():
+    #     while True:
+    #         task_ = [
+    #             str(uuid.uuid4()),
+    #             'task_hook.py',
+    #             'task_map.pos',
+    #             list(
+    #                 set(
+    #                     [
+    #                         random.choice(
+    #                             singleton_modules + [
+    #                                 'ANDROID', 'AWVS', 'CONSOLE', 'DATABASE', 'EXCEL', 'HTTP', 'EWEB', 'MACC', 'LOG',
+    #                                 'MISC', 'NESSUS', 'NMAP', 'RGSCAN', 'RSAS', 'ROTATE_PLATFORM', 'ROTATE_SHELF',
+    #                                 'WEB_UI'
+    #                             ]
+    #                         ) for _ in range(random.randint(1, 10))
+    #                     ]
+    #                 )
+    #             ),
+    #             {
+    #                 'priority': random.randint(2, 10)
+    #             }
+    #         ]
+    #         api_create_waiting_task(task=task_)
+    #         time.sleep(1)
+    # kgt_thread = threading.Thread(target=keep_generate_task)
+    # kgt_thread.start()
+
+    task1 = [str(uuid.uuid4()), '钩子1', '流程图1', [], {'priority': 1}]
+    task2 = [str(uuid.uuid4()), '钩子2', '流程图2', [], {'priority': 2}]
+    task3 = [str(uuid.uuid4()), '钩子3', '流程图3', [], {'priority': 3}]
+    task4 = [str(uuid.uuid4()), '钩子4', '流程图4', [], {'priority': 4}]
+    api_create_waiting_task(task=task2)
+    time.sleep(1)
+    api_create_waiting_task(task=task1)
+    time.sleep(1)
+    api_create_waiting_task(task=task4)
+    time.sleep(1)
+    api_create_waiting_task(task=task3)
+    time.sleep(1)
+
+    while True:
+        r_task_id_ = input()
+        api_kill_running_task(r_task_id=r_task_id_)
