@@ -8,7 +8,7 @@ if __name__ == '__main__':
         'tes': {
             # 'work_dir': r'C:\Users\16413\Desktop\Job\Business\RJ_HIBG\安全扫描\国内\X30E-R231',
             'scan_folder': '升级文件',
-            'pic_path': r'C:\Users\16413\Desktop\Job\Business\RJ_HIBG\安全扫描\海外\EW1300G-ExtDDR-R303\TES扫描结果.png'
+            'pic_path': r'C:\Users\16413\Desktop\Job\Business\RJ_HIBG\安全扫描\国内\X30E-R231\TES扫描结果.png'
         }
     }
     fc = FlowChart(prerequisite=params)

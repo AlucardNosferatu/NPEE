@@ -5,8 +5,8 @@ from modules.webhook_api import webhook_send
 
 if __name__ == '__main__':
     params = {
-        'project_id': 'OW3.0PR5_R303', 'product_id': 'EW1300G-ExtDDR', 'baseline_project': 'OW3.0PR5_R222',
-        'bin_url': 'http://10.101.7.24:20290/%E6%B5%B7%E5%A4%96/EW1300G-ExtDDR-R303/%E5%8D%87%E7%BA%A7%E6%96%87%E4%BB%B6/EW_3.0%281%29B11P303_EW1300GI_10242013_install.bin',
+        'project_id': 'OW3.0PR5_R231', 'product_id': 'X30E', 'baseline_project': 'OW3.0PR5_R221',
+        'bin_url': 'http://10.101.7.24:20290/%E5%9B%BD%E5%86%85/X30E-R231/%E5%8D%87%E7%BA%A7%E6%96%87%E4%BB%B6/EW_3.0%281%29B11P231_X30E-PRO_10242602_install.bin',
         'web': {'browser_path': r'C:\Program Files\Google\Chrome\Application\chromedriver.exe'},
         'dont_create': True
     }

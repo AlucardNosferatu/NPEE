@@ -10,7 +10,7 @@ if __name__ == '__main__':
             'scan_folder': '升级文件',
             'log_path': r'C:\Program Files (x86)\360\360safe\business\runtime\antivirus\avlog\avlog.db',
             'log_table': 'scandetail',
-            'txt_path': r'C:\Users\16413\Desktop\Job\Business\RJ_HIBG\安全扫描\海外\EW1300G-ExtDDR-R303\360扫描结果.txt',
+            'txt_path': r'C:\Users\16413\Desktop\Job\Business\RJ_HIBG\安全扫描\国内\X30E-R231\360扫描结果.txt',
         }
     }
     fc = FlowChart(prerequisite=params)
