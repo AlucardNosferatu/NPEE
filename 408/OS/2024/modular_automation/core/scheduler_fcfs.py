@@ -138,7 +138,8 @@ if __name__ == '__main__':
     #                         ) for _ in range(random.randint(1, 10))
     #                     ]
     #                 )
-    #             )
+    #             ),
+    #             None
     #         ]
     #         api_create_waiting_task(task=task_)
     #         time.sleep(1)
