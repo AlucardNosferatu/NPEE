@@ -1,5 +1,3 @@
-import cProfile
-import pstats
 import random
 import threading
 import time
@@ -7,24 +5,17 @@ import uuid
 
 from kill_thread import kill_thread
 
-from core.flow_chart import FlowChart
-from modules.logger import log_logger_init, log_handler_init
-from modules.webhook_api import webhook_send
+from core.flow_chart import finished_tasks, suspend_handle, debug, run_flow_chart, singleton_modules
 
-singleton_modules = [
-    'CHARIOT', 'MISC_S', 'WINDOWS_UI', 'ZAP'
-]
 running_tasks = {}
 workers_count = 16
 waiting_tasks = {}
 waiting_order = []
-finished_tasks = []
-suspend_handle = {}
 rt_lock = threading.Lock()
+
 
 # task = [task_id, hook_script, map_json, involved_modules, prerequisite]
 # r_task = [task_id, hook_script, map_json, involved_modules, prerequisite, running_thread]
-debug = False
 
 
 def process_queued_task():
@@ -123,56 +114,6 @@ def kill_running_task(r_task_id):
     return exists
 
 
-def run_flow_chart(task_id, hook_script, map_json, involved_modules, prerequisite):
-    def wait(t):
-        while t[0]:
-            time.sleep(0.1)
-
-    print('任务id:{}'.format(task_id))
-    print('任务脚本:{}'.format(hook_script))
-    print('任务流程图:{}'.format(map_json))
-    print('任务调用模块:{}'.format(involved_modules))
-    if debug:
-        time.sleep(random.randint(5, 15))
-    else:
-        profiler = cProfile.Profile()
-        profiler.enable()
-        _ = involved_modules
-        # prerequisite = None
-        fc = FlowChart(prerequisite=prerequisite)
-        fc.load_map(hook_script=hook_script, map_json=map_json)
-        # todo: makeshift patch
-        fc.params_bus = log_logger_init(params=fc.params_bus)
-        fc.params_bus = log_handler_init(params=fc.params_bus)
-        suspend_handle[task_id] = [False]
-        end = False
-        while not end:
-            wait(suspend_handle[task_id])
-            end = fc.run_step()
-        # todo: makeshift patch
-        fc.params_bus['webhook'] = {
-            'webhook_url': 'https://open.feishu.cn/open-apis/bot/v2/hook/49487983-e106-49c8-a527-4b8a4dfeddf5',
-            'send_string': '任务id:{}已完成\n脚本:{}\n流程图:{}\n调用模块:{}'.format(
-                task_id, hook_script, map_json, involved_modules
-            )
-        }
-        fc.params_bus = webhook_send(params=fc.params_bus)
-        profiler.disable()
-        pstats.Stats(
-            profiler,
-            stream=open(
-                file='reports/{}'.format(
-                    '性能分析-任务id={}-脚本={}-流程图={}-调用模块={}.txt'.format(
-                        task_id, hook_script, map_json, involved_modules
-                    )
-                ),
-                mode='w'
-            )
-        ).sort_stats(pstats.SortKey.CUMULATIVE)
-    print('任务完成，id:{}'.format(task_id))
-    finished_tasks.append(task_id)
-
-
 def suspend_or_resume(task_id, suspend):
     if task_id in suspend_handle.keys():
         status = suspend_handle[task_id]
@@ -181,9 +122,6 @@ def suspend_or_resume(task_id, suspend):
     else:
         return False
 
-
-pqt_thread = threading.Thread(target=process_queued_task)
-pqt_thread.start()
 
 if __name__ == '__main__':
     def keep_generate_task():
