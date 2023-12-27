@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import json
+import threading
 import uuid
 
 from flask import Flask, request, Response
 from flask_cors import CORS
 
-from core.scheduler_fcfs import create_waiting_task, kill_running_task, suspend_or_resume
+from core.scheduler_fcfs import api_create_waiting_task, api_kill_running_task, api_suspend_or_resume, api_process_queued_task
 
 flask_app = Flask(__name__)
 CORS(flask_app)
+pqt_thread = threading.Thread(target=api_process_queued_task)
+pqt_thread.start()
 
 
 def resp_wrapper(ret: bool, msg: str | list | dict):
@@ -28,7 +31,7 @@ def create_task():
         task_id = str(uuid.uuid4())
         task = [task_id] + data['task_params_list']
         # data['task_params_list'] = ['task_hook.py', 'task_map.pos', ['ZAP', 'WINDOWS_UI'], None]
-        create_waiting_task(task=task)
+        api_create_waiting_task(task=task)
         resp = resp_wrapper(ret=True, msg={'task_id': task_id})
         return resp
 
@@ -41,7 +44,7 @@ def abort_task():
         # print(data)
         # print(params)
         r_task_id = data['r_task_id']
-        exists = kill_running_task(r_task_id=r_task_id)
+        exists = api_kill_running_task(r_task_id=r_task_id)
         resp = resp_wrapper(ret=True, msg={'exists': exists})
         return resp
 
@@ -55,7 +58,7 @@ def suspend_task():
         # print(params)
         task_id = data['task_id']
         suspend = data['suspend']
-        exists = suspend_or_resume(task_id=task_id, suspend=suspend)
+        exists = api_suspend_or_resume(task_id=task_id, suspend=suspend)
         resp = resp_wrapper(ret=True, msg={'exists': exists})
         return resp
 
