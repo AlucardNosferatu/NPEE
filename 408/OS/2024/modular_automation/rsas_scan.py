@@ -6,8 +6,8 @@ from modules.webhook_api import webhook_send
 
 if __name__ == '__main__':
     params = {'rsas': {}}
-    params['rsas']['target_ip'] = '10.51.132.240'
-    params['rsas']['target_desc'] = 'EW1300G-ExtDDR_' + time.strftime('%m%d%M%S', time.localtime(time.time()))
+    params['rsas']['target_ip'] = '10.51.132.72'
+    params['rsas']['target_desc'] = 'EW300T_' + time.strftime('%m%d%M%S', time.localtime(time.time()))
     fc = FlowChart(prerequisite=params)
     fc.load_map(hook_script='rsas_scan.py', map_json='绿盟扫描测试.pos')
     end = False
