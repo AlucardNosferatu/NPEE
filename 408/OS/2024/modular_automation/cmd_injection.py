@@ -17,7 +17,8 @@ if __name__ == '__main__':
             'tp_size': 4,
             'payload_list': [],
             'slowdown_after': 3480,
-            'template_path': 'reports/template_payloads.xlsx'
+            'template_path': 'reports/template_payloads.xlsx',
+            'wait_per_injection': 1,
         }
     }
     fc = FlowChart(prerequisite=params)

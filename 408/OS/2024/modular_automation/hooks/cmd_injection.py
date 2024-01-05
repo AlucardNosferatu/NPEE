@@ -2,6 +2,7 @@ import datetime
 import json
 import random
 import string
+import time
 
 from kill_thread import kill_thread
 
@@ -133,6 +134,8 @@ def h7(params):
     params['wvt']['injected_cmd'] = cmd_dict
     params['wvt']['injected_api'] = next_case['api']
     params['wvt']['inject_method'] = next_case['method']
+    if 'wait_per_injection' in params['wvt'].keys():
+        time.sleep(params['wvt']['wait_per_injection'])
     return params
 
 
