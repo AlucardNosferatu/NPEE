@@ -1,50 +1,20 @@
 import random
 import string
 
-debug = True
-ssh = True
-ab_addr = '127.0.0.1'
+db_addr = '127.0.0.1'
 
 
 def h1(params):
     logger = params['log']['logger']
-    params['misc'] = {
-        'sn': 'G1RUBGA002337',
-        'user': '林昊波',
-        'product': 'H20M',
-        'project': 'R226'
-    }
-    params['misc']['new_mac_list'] = []
-    params['loop_cd'] = 4
+    ssh = params['disable_fm_ssh']
+    debug = params['disable_fm_debug']
     logger.info({True: '使用SSH连接设备', False: '使用串口连接设备'}[ssh])
     logger.info({True: '当前运行模式为DEBUG模式', False: '当前运行模式为RUN模式'}[debug])
-    if ssh:
-        if debug:
-            dut_ip = '192.168.110.1'
-            ssh_pass = '57e541f69676ce62'
-        else:
-            dut_ip = '10.44.77.254'
-            ssh_pass = 'ruijie@ap#ykhwzx!'
-        params['console'] = {  # SSH连WAN口模式
-            'console_type': 'ssh',
-            'dut_ip': dut_ip,
-            'ssh_pass': ssh_pass
-        }
-    else:
-        params['console'] = {  # 串口模式
-            'console_type': 'serial',
-            'port': 'COM4',
-            'baud_rate': 115200,
-            'serial_pass': 'ruijie@ap#ykhwzx!',
-            'serial_type': 'RJ'
-        }
-    # 指定SN
-    serial_number = 'MACC4607H30M3'
-    # # 不指定SN（生成新的随机SN）
-    # serial_number = None
+    serial_number = params['misc']['sn']
     logger.info({True: '使用随机生成的序列号', False: '使用人工指定的序列号'}[serial_number is None])
     if serial_number is None:
         serial_number = 'MACC' + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(9))
+        params['misc']['sn'] = serial_number
     logger.info('##########注意！##########')
     logger.info('##########注意！##########')
     logger.info('##########注意！##########')

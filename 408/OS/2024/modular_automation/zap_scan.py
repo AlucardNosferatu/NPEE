@@ -5,14 +5,14 @@ from core.flow_chart import FlowChart
 from modules.webhook_api import webhook_send
 
 if __name__ == '__main__':
-    target_addr = 'http://10.51.132.240/'
+    target_addr = 'http://192.168.110.1/'
     params = {
         'zap': {
             'exe_dir': r"C:\Program Files\OWASP\Zed Attack Proxy",
             'api_key': 'home',
             'proxy_port': '8081',
             'target_url': {True: target_addr, False: 'http://{}'.format(target_addr)}['http' in target_addr],
-            'target_desc': 'EW1300G-ExtDDR_' + time.strftime('%m%d%M%S', time.localtime(time.time())),
+            'target_desc': 'EW300T_' + time.strftime('%m%d%M%S', time.localtime(time.time())),
             'target_eweb_pass': 'LostXmas20291224'
         }
     }
