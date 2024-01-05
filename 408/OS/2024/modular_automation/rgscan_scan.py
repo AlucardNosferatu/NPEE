@@ -6,9 +6,9 @@ from modules.webhook_api import webhook_send
 
 if __name__ == '__main__':
     params = {'rgscan': {}}
-    params['rgscan']['login_token'] = '4dj5zm2bbfspqk8naue3gyctx76c9wad'
-    params['rgscan']['target_ip'] = '10.51.132.240'
-    params['rgscan']['target_desc'] = 'EW1300G-ExtDDR_' + time.strftime('%m%d%M%S', time.localtime(time.time()))
+    params['rgscan']['login_token'] = 'v6maeunbf7wx95ydpce8b4tg2zdhaqkc'
+    params['rgscan']['target_ip'] = '10.51.132.26'
+    params['rgscan']['target_desc'] = 'EW300T_' + time.strftime('%m%d%M%S', time.localtime(time.time()))
     fc = FlowChart(prerequisite=params)
     fc.load_map(hook_script='rgscan_scan.py', map_json='RGSCAN扫描测试.pos')
     end = False

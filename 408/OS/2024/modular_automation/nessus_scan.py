@@ -4,7 +4,7 @@ from core.flow_chart import FlowChart
 from modules.webhook_api import webhook_send
 
 if __name__ == '__main__':
-    params = {'product_id': 'EW1300G-ExtDDR', 'scan_hosts': '10.51.132.240'}
+    params = {'product_id': 'EW300T', 'scan_hosts': '10.51.132.26'}
     fc = FlowChart(prerequisite=params)
     fc.load_map(hook_script='nessus_scan.py', map_json='NESSUS渗透测试.pos')
     end = False
