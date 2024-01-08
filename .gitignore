@@ -3,3 +3,6 @@
 408/Organization/FixPoint/Debug/
 *.log
 __pycache__
+build
+*.spec
+*.exe

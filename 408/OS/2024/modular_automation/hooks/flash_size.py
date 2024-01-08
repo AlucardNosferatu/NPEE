@@ -14,4 +14,19 @@ def h1(params):
 def h2(params):
     echo_string = params['console']['echo_string']
     echo_string = echo_string.split('\r\n')
+    while not echo_string[0].startswith('mtd'):
+        echo_string.pop(0)
+    while 'firmware' not in echo_string[-1] and 'backup' not in echo_string[-1]:
+        echo_string.pop(-1)
+    flash_size_total = 0
+    for part in echo_string:
+        part = part.split(' ')[1]
+        part = int(part, 16)
+        flash_size_total += part
+    print(echo_string)
+    print(
+        'Flash容量:{}(10进制)/{}(16进制)字节'.format(
+            flash_size_total, hex(flash_size_total)
+        )
+    )
     return params
