@@ -3,7 +3,7 @@ def h0(params):
     send_string = ' && '.join(send_string)
     params['console']['send_string'] = send_string
     params['console']['format'] = 'str'
-    params['console']['wait'] = 5
+    params['console']['wait'] = 1
     return params
 
 
@@ -20,10 +20,10 @@ def h2(params):
         echo_string.pop(-1)
     flash_size_total = 0
     for part in echo_string:
+        print(part)
         part = part.split(' ')[1]
         part = int(part, 16)
         flash_size_total += part
-    print(echo_string)
     print(
         'Flash容量:{}(10进制)/{}(16进制)字节'.format(
             flash_size_total, hex(flash_size_total)
