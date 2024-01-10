@@ -12,6 +12,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 def web_start(params):
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--ignore-certificate-errors')
+    chrome_options.add_argument(
+        '--disable-blink-features=AutomationControlled'
+    )  # 关闭自动控制blink特征
     chrome_options.add_argument('--ignore-urlfetcher-cert-requests')
     if 'web' in params.keys():
         if 'proxy' in params['web'].keys():
@@ -20,7 +23,8 @@ def web_start(params):
             chrome_options.add_argument('--proxy-server={}'.format(proxy))
     else:
         params['web'] = {}
-    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_experimental_option(
+        "excludeSwitches", ["enable-automation"])
     chrome_options.add_experimental_option("useAutomationExtension", False)
     if 'browser_path' in params['web'].keys():
         service = Service(executable_path=params['web']['browser_path'])
@@ -58,7 +62,8 @@ def web_find(params):
     web_find_value = web_find_params['find_value']
     del web_find_params['find_value']
     try:
-        web_find_result = web_driver.find_element(by=by_dict[web_find_by], value=web_find_value)
+        web_find_result = web_driver.find_element(
+            by=by_dict[web_find_by], value=web_find_value)
     except Exception as e:
         web_find_result = e
     web_find_params.__setitem__('find_result', web_find_result)
@@ -128,7 +133,8 @@ def web_find_input(params):
     try:
         found = web_find_by_xpath(params=params, xpath=web_find_value)
         if type(found) is not NoSuchElementException:
-            params = web_input_compact(params=params, input_obj=found, input_text=web_input_text)
+            params = web_input_compact(
+                params=params, input_obj=found, input_text=web_input_text)
         else:
             raise found
         web_params['exception'] = None

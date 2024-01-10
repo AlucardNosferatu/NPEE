@@ -18,7 +18,8 @@ def zap_kill_java(params):
 def zap_start_exe(params):
     zap_params = params['zap']
     exe_dir = zap_params['exe_dir']
-    os.system('cd "{}" && ZAP.exe'.format(exe_dir))
+    disk = exe_dir[:2]
+    os.system('{} && cd "{}" && ZAP.exe'.format(disk, exe_dir))
     time.sleep(45)
     return params
 
@@ -29,7 +30,8 @@ def zap_init_adapter(params):
     proxy_port = zap_params['proxy_port']
     adapter_obj = ZAPv2(
         apikey=api_key,
-        proxies={'http': 'http://127.0.0.1:{}'.format(proxy_port), 'https': 'http://127.0.0.1:{}'.format(proxy_port)}
+        proxies={'http': 'http://127.0.0.1:{}'.format(
+            proxy_port), 'https': 'http://127.0.0.1:{}'.format(proxy_port)}
     )
     zap_params['adapter_obj'] = adapter_obj
     return params

@@ -119,6 +119,38 @@ def console_send(params: dict):
     return params
 
 
+def console_read(params):
+    console_params = params['console']
+    console_type = console_params['console_type']
+    try:
+        if console_type == 'serial':
+            ser: serial.Serial = console_params['serial']
+            echo_string = ser.read_all().decode('utf-8')
+        elif console_type == 'ssh':
+            ssh_shell: paramiko.Channel = console_params['ssh']
+            echo_string = echo_string = ssh_shell.recv(65535).decode('utf-8')
+        else:
+            raise ValueError(
+                'Only telnet, ssh and serial console are supported.')
+        console_params['echo_string'] = echo_string
+        console_params['exception'] = None
+    except Exception as e:
+        console_params['echo_string'] = None
+        console_params['exception'] = e
+    return params
+
+
+def console_read_loop(params):
+    console_params = params['console']
+    while console_params['read_loop']:
+        time.sleep(console_params['read_loop_interval'])
+        params = console_read(params=params)
+        if 'read_loop_callbacks' in console_params.keys():
+            for read_loop_callback in console_params['read_loop_callbacks']:
+                params = read_loop_callback(params=params)
+    return params
+
+
 def console_get_ap_cli(params):
     params['console']['send_string'] = "iwconfig"
     params['console']['format'] = 'str'

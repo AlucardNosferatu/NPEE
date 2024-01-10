@@ -10,15 +10,15 @@ if __name__ == '__main__':
     profiler.enable()
     params = {
         'wvt': {
-            'dut_ip': '192.168.110.1',
-            'ssh_pass': '09184c4986463316',
-            'save_path': 'reports/EW300T-命令注入.xlsx',
+            'dut_ip': '10.51.132.72',
+            'ssh_pass': 'bc920c3125bda5a2',
+            'save_path': 'reports/X30E-命令注入.xlsx',
             'eweb_pass': 'LostXmas20291224',
-            'tp_size': 4,
+            'tp_size': 16,
             'payload_list': [],
             'slowdown_after': 3480,
             'template_path': 'reports/template_payloads.xlsx',
-            'wait_per_injection': 1,
+            'wait_per_injection': 0.5,
         }
     }
     fc = FlowChart(prerequisite=params)

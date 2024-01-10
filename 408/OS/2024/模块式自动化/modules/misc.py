@@ -1,8 +1,22 @@
+import datetime
 import os
 
 from scapy.volatile import RandMAC
 
 time_format = "%Y年%m月%d日-%H时%M分%S秒"
+
+
+def timer(params):
+    timer_params = params['timer']
+    while not timer_params['start']:
+        pass
+    timer_params['time_start'] = datetime.datetime.now()
+    while not timer_params['stop']:
+        pass
+    timer_params['time_end'] = datetime.datetime.now()
+    timer_params['time_delta'] = timer_params['time_end'] - \
+        timer_params['time_start']
+    return params
 
 
 def process_kill(params):
@@ -94,7 +108,8 @@ def mac_input_record(params):
     params['misc']['new_mac_list'] = []
     for i in range(4):
         if i == 0:
-            params['misc']['new_mac'] = input('输入已知MAC的起始地址（例:38:db:35:46:82:a3）').lower()
+            params['misc']['new_mac'] = input(
+                '输入已知MAC的起始地址（例:38:db:35:46:82:a3）').lower()
         else:
             params = mac_increase(params=params)
         params['misc']['base_mac'] = params['misc']['new_mac']
@@ -153,7 +168,8 @@ def ip_ping(params):
     misc_params = params['misc']
     ping_host = misc_params['ping_host']
     ping_times = misc_params['ping_times']
-    response = os.system(f"ping -n {ping_times} {ping_host}")  # 在Linux/Mac上使用-c参数，在Windows上使用-n参数
+    # 在Linux/Mac上使用-c参数，在Windows上使用-n参数
+    response = os.system(f"ping -n {ping_times} {ping_host}")
     if response == 0:
         misc_params['ping_result'] = [True, f"{ping_host}可达"]
     else:
