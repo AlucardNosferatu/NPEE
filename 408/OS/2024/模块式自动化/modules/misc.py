@@ -7,15 +7,15 @@ time_format = "%Y年%m月%d日-%H时%M分%S秒"
 
 
 def timer(params):
-    timer_params = params['timer']
+    misc_params = params['misc']
+    timer_params = misc_params['timer']
     while not timer_params['start']:
         pass
     timer_params['time_start'] = datetime.datetime.now()
     while not timer_params['stop']:
-        pass
-    timer_params['time_end'] = datetime.datetime.now()
-    timer_params['time_delta'] = timer_params['time_end'] - \
-        timer_params['time_start']
+        timer_params['time_end'] = datetime.datetime.now()
+        timer_params['time_delta'] = timer_params['time_end'] - \
+            timer_params['time_start']
     return params
 
 

@@ -85,9 +85,11 @@ class FlowChart:
                     to_node = element['to']['id']
                     self.link_list.append([text, from_node, to_node])
                 else:
-                    raise ValueError('Only "process", "decision", "terminator" and "linker" are supported.')
+                    raise ValueError(
+                        'Only "process", "decision", "terminator" and "linker" are supported.')
             else:
-                raise AttributeError('Attribute "name" is required in JSON nodes.')
+                raise AttributeError(
+                    'Attribute "name" is required in JSON nodes.')
 
     def reg_links(self):
         if len(self.link_list) <= 0:
@@ -105,7 +107,8 @@ class FlowChart:
         node_info = self.key_map[nodes[i]]
         domain = node_info[0]
         assert domain in self.node_dict.keys()
-        self.node_dict[domain][nodes[i]].append({key_dict_1[set_from_node]: [text, nodes[j]]})
+        self.node_dict[domain][nodes[i]].append(
+            {key_dict_1[set_from_node]: [text, nodes[j]]})
 
     def find_start(self):
         self.start_node = ''
@@ -124,9 +127,11 @@ class FlowChart:
                         found_next = True
                         continue
                     else:
-                        raise ValueError('Terminals should only have 1 next node.')
+                        raise ValueError(
+                            'Terminals should only have 1 next node.')
                 else:
-                    raise ValueError('Cannot extract direction info from dict.')
+                    raise ValueError(
+                        'Cannot extract direction info from dict.')
             if is_start:
                 if self.start_node == '':
                     self.start_node = key
@@ -161,7 +166,8 @@ class FlowChart:
                 elif switch.split(':')[0] == 'F':
                     switch_dict[False] = switch.split(':')[1]
                 else:
-                    raise SyntaxError('T for True and F for False, other Alphabets are invalid.')
+                    raise SyntaxError(
+                        'T for True and F for False, other Alphabets are invalid.')
             assert self.params_bus['if_switch'] is not None
             print('现在判断:{}'.format(self.params_bus['if_switch']))
             self.next_link = switch_dict[self.params_bus['if_switch']]
@@ -172,17 +178,23 @@ class FlowChart:
                 if thread.startswith('MT:'):
                     self.next_link = thread.replace('MT:', '')
                 else:
-                    thread = thread.split(':')[1].replace('[', '').replace(']', '').split('-')
+                    thread = thread.split(':')[1].replace(
+                        '[', '').replace(']', '').split('-')
                     thread_func = None
+                    hook_text = ''
                     for link in self.link_list:
-                        if link[0] == thread[0]:
+                        if link[0].split('\n#')[0] == thread[0]:
                             thread_func = m_dict[self.node_dict[self.key_map[link[-1]][0]][link[-1]][0]]
+                            hook_text = link[0]
                             break
                     if thread_func is None:
-                        raise TypeError('Cannot find link with name:{}'.format(thread[0]))
+                        raise TypeError(
+                            'Cannot find link with name:{}'.format(thread[0]))
                     else:
-                        thread_obj = threading.Thread(target=thread_func, args=(self.params_bus,))
-                        print('立刻执行线程{}，线程函数{}'.format(thread_obj, thread_func))
+                        thread_obj = threading.Thread(
+                            target=self.serial_execution, args=([hook_text.lower(), thread_func],))
+                        print('立刻执行线程{}，线程函数{}'.format(
+                            thread_obj, [hook_text.lower(), thread_func]))
                         thread_obj.start()
                         self.thread_pool.append(
                             {
@@ -203,15 +215,18 @@ class FlowChart:
                 if cat in ['p', 't']:
                     if next_node == '':
                         if node[i][direction][0] is not None:
-                            self.execute_hook(hook_text=node[i][direction][0].lower())
+                            self.execute_hook(
+                                hook_text=node[i][direction][0].lower())
                         next_node = node[i][direction][1]
                     else:
-                        raise KeyError('Only 1 next node is allowed for Process & Terminal node.')
+                        raise KeyError(
+                            'Only 1 next node is allowed for Process & Terminal node.')
                 elif cat in ['j', 'pp']:
                     if self.next_link == node[i][direction][0].split('#')[0].strip():
                         if next_node == '':
                             if node[i][direction][0] is not None:
-                                self.execute_hook(hook_text=node[i][direction][0].lower())
+                                self.execute_hook(
+                                    hook_text=node[i][direction][0].lower())
                             next_node = node[i][direction][1]
                             self.next_link = None
                         else:
@@ -227,6 +242,13 @@ class FlowChart:
             print('End of task.')
             return True
 
+    def serial_execution(self, functions):
+        for function in functions:
+            if type(function) == str:
+                self.params_bus = self.execute_hook(hook_text=function)
+            else:
+                self.params_bus = function(params=self.params_bus)
+
     def execute_hook(self, hook_text):
         hook_name = hook_text.split('#')[0].strip()
         print('准备执行hook:{}'.format(hook_name))
@@ -240,7 +262,8 @@ class FlowChart:
                 if join_link[-1] == 'B':
                     thread_dict['thread_obj'].join()
                     self.thread_pool.remove(thread_dict)
-                    print('线程{}已停止于钩子{}前'.format(thread_dict['thread_obj'], hook_name))
+                    print('线程{}已停止于钩子{}前'.format(
+                        thread_dict['thread_obj'], hook_name))
                 elif join_link[-1] == 'A':
                     join_threads_after.append(thread_dict)
         if os.path.exists('hooks/{}'.format(self.hook_script)):
@@ -252,7 +275,8 @@ class FlowChart:
             # hooks为存放模块的文件夹名称，hook_script为hook代码的文件名，比如mt_test.py对应hook_script是mt_test
             self.params_bus: dict
             # 参数流水线（总线，类似日本人爱吃的流水素面），模块所有的数据交互都面向这个
-            self.params_bus = eval('{}.{}(params=self.params_bus)'.format(hook_script, hook_name))
+            self.params_bus = eval(
+                '{}.{}(params=self.params_bus)'.format(hook_script, hook_name))
             # 相当于params=mt_test.hook_name(self.params_bus)
             # Hook修改params里面的内容，增删改后把params返回
         while len(join_threads_after) > 0:

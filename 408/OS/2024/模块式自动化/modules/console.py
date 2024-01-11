@@ -53,12 +53,14 @@ def console_login(params):
                     if 'root@' in echo_string:
                         finished = True
                     elif 'Ruijie login:' in echo_string or 'Reyee login' in echo_string:
-                        ser.write(data='root\r'.encode('utf-8'))
+                        ser.write(data='root\r'.encode(
+                            'utf-8'))  # type: ignore
                     elif 'Password:' in echo_string:
                         ser.write(data='{}\r'.format(
+                            # type: ignore
                             console_serial_pass).encode('utf-8'))
                     else:
-                        ser.write(data='\r'.encode('utf-8'))
+                        ser.write(data='\r'.encode('utf-8'))  # type: ignore
                     time.sleep(0.5)
             console_login_params.__setitem__('serial', ser)
         elif console_type == 'ssh':
@@ -99,14 +101,15 @@ def console_send(params: dict):
         if console_type == 'serial':
             ser: serial.Serial = console_send_params['serial']
             if 'format' not in console_send_params.keys() or console_send_params['format'] == 'str':
-                ser.write(data='\r'.encode('utf-8'))
+                ser.write(data='\r'.encode('utf-8'))  # type: ignore
                 _ = ser.read_all().decode('utf-8')
-                ser.write(data='{}\r'.format(send_string).encode('utf-8'))
+                ser.write(data='{}\r'.format(
+                    send_string).encode('utf-8'))  # type: ignore
                 wait_for_echo(csp=console_send_params)
                 echo_string = ser.read_all().decode('utf-8')
             elif console_send_params['format'] == 'bytes':
                 _ = ser.read_all()
-                ser.write(data=send_string)
+                ser.write(data=send_string)  # type: ignore
                 wait_for_echo(csp=console_send_params)
                 echo_string = ser.read_all()
             else:
@@ -119,7 +122,7 @@ def console_send(params: dict):
             if 'format' not in console_send_params.keys() or console_send_params['format'] == 'str':
                 ssh_shell.send('{}\r'.format(send_string).encode('utf-8'))
             elif console_send_params['format'] == 'bytes':
-                ssh_shell.send(send_string)
+                ssh_shell.send(send_string)  # type: ignore
             else:
                 raise ValueError('format should be bytes or str.')
             wait_for_echo(csp=console_send_params)
@@ -163,6 +166,7 @@ def console_read_loop(params):
     while console_params['read_loop']:
         time.sleep(console_params['read_loop_interval'])
         params = console_read(params=params)
+        print('控制台读取输出:\n{}'.format(console_params['echo_string']))
         if 'read_loop_callbacks' in console_params.keys():
             for read_loop_callback in console_params['read_loop_callbacks']:
                 params = read_loop_callback(params=params)

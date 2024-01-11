@@ -2,12 +2,12 @@ from modules.awvs_api import awvs_start, awvs_add_target, awvs_add_scan, awvs_ge
     awvs_get_report_status, awvs_download_report
 from modules.chariot import chariot_init, chariot_set_duration, chariot_add_pairs, chariot_run, chariot_get_thr
 from modules.console import console_login, console_send, console_get_ap_cli, console_get_radio_info, \
-    console_iwpriv_site_survey, console_iwpriv_stat, console_iwpriv_reg
+    console_iwpriv_site_survey, console_iwpriv_stat, console_iwpriv_reg, console_close, console_read_loop
 from modules.database import db_connect, db_read_sql, db_disconnect, db_read_redis, db_write_redis, db_delete_redis, \
     db_exist_redis, db_write_sql, db_insert_sql
 from modules.excel_handler import read_template, read_testcases, write_summary
 from modules.http_eweb_api import eweb_inject_cmd, eweb_get_sid
-from modules.misc import ip_ping, mac_generate, mac_increase, mac_read_record, mac_write_record
+from modules.misc import ip_ping, mac_generate, mac_increase, mac_read_record, mac_write_record, timer
 from modules.misc_singleton import wifi_connect
 from modules.nessus_api import nessus_login, nessus_new_scan, nessus_find, nessus_start_pause, nessus_get_status, \
     nessus_export, nessus_delete_stop
@@ -22,9 +22,12 @@ from modules.winui_api import winui_get_desktop, winui_get_explorer, winui_locat
 
 from modules.zap_api import zap_kill_java, zap_start_exe, zap_init_adapter, zap_crawl_target, zap_get_crawl_status, \
     zap_scan_target, zap_get_scan_status, zap_download_report
+from modules.power_supply import ps_init, ps_reset, ps_acdc, ps_range, ps_freq, ps_toggle, ps_volt
 
 m_dict = {
-    'IP_PING': ip_ping, 'WIFI_CONNECT': wifi_connect,
+    'PS_INIT': ps_init, 'PS_RESET': ps_reset, 'PS_ACDC': ps_acdc, 'PS_RANGE': ps_range, 'PS_FREQ': ps_freq, 'PS_TOGGLE': ps_toggle, 'PS_VOLT': ps_volt,
+
+    'IP_PING': ip_ping, 'WIFI_CONNECT': wifi_connect, 'TIMER': timer,
 
     'CHARIOT_INIT': chariot_init, 'CHARIOT_SET_DURATION': chariot_set_duration, 'CHARIOT_ADD_PAIRS': chariot_add_pairs,
     'CHARIOT_RUN': chariot_run, 'CHARIOT_GET_THR': chariot_get_thr,
@@ -37,7 +40,7 @@ m_dict = {
     'CONSOLE_LOGIN': console_login, 'CONSOLE_SEND': console_send,
     'CONSOLE_GET_AP_CLI': console_get_ap_cli, 'CONSOLE_GET_RADIO_INFO': console_get_radio_info,
     'CONSOLE_IWPRIV_SITE_SURVEY': console_iwpriv_site_survey, 'CONSOLE_IWPRIV_STAT': console_iwpriv_stat,
-    'CONSOLE_IWPRIV_REG': console_iwpriv_reg,
+    'CONSOLE_IWPRIV_REG': console_iwpriv_reg, 'CONSOLE_CLOSE': console_close, 'CONSOLE_READ_LOOP': console_read_loop,
 
     'EWEB_GET_SID': eweb_get_sid, 'EWEB_INJECT_CMD': eweb_inject_cmd,
 
