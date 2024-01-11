@@ -10,6 +10,24 @@ from modules.console_parsers.iwpriv import IWPSiteSurvey, IWPStat, IWPReg
 from modules.console_parsers.wlanconfig import WCList, WCRadio
 
 
+def console_close(params):
+    console_params = params['console']
+    console_type = console_params['console_type']
+    try:
+        if console_type == 'serial':
+            console: serial.Serial = console_params['serial']  # type: ignore
+        elif console_type == 'ssh':
+            console: paramiko.Channel = console_params['ssh']
+        else:
+            raise ValueError(
+                'Only telnet, ssh and serial console are supported.')
+        console.close()
+        console_params['exception'] = None
+    except Exception as e:
+        console_params['exception'] = e
+    return params
+
+
 def console_login(params):
     # params = {
     #     'console': {
