@@ -24,8 +24,8 @@ def xml_filter(text):
 
 class FlowChart:
     def __init__(self, prerequisite=None):
-        self.hook_script = None
-        self.elements = None
+        self.hook_script = ''
+        self.elements = {}
         self.map_json = None
         self.process_dict = {}
         self.judge_dict = {}
@@ -47,7 +47,8 @@ class FlowChart:
 
     def load_map(self, hook_script, map_json='多线程实验.pos'):
         self.hook_script = hook_script
-        self.map_json = json.load(open(map_json, 'r', encoding='utf-8'))
+        self.map_json = json.load(
+            open(os.path.join('charts', map_json), 'r', encoding='utf-8'))
         self.elements = self.map_json['diagram']['elements']['elements']
         self.reg_links()
         self.find_start()

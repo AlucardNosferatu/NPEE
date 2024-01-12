@@ -1,3 +1,4 @@
+import json
 import os
 import time
 
@@ -5,40 +6,47 @@ from core.flow_chart import FlowChart
 from modules.webhook_api import webhook_send
 
 if __name__ == '__main__':
+    params_from_json = json.loads(
+        s='\n'.join(
+            open(
+                file='reports/power_cycle.json',
+                mode='r', encoding='utf-8'
+            ).readlines()
+        )
+    )
     params = {}
     params['ps'] = {
-        'res_name': 'ASRL1::INSTR',
-        'baud_rate': 115200,
+        'res_name': params_from_json['pcr']['res_name'],
+        'baud_rate': params_from_json['pcr']['baud_rate'],
         'acdc': 'ac',
-        'freq': 50,
-        'range': 150,
-        'debug': True
+        'freq': params_from_json['pcr']['freq'],
+        'range': params_from_json['pcr']['range'],
+        'debug': params_from_json['pcr']['debug']
     }
     params['excel'] = {
         'template_path': 'reports/template_pc.xlsx'
     }
     params['misc'] = {
-        'ping_host': '192.168.110.1',
-        'ping_times': 5
+        'ping_host': params_from_json['dut']['lan_ip'],
+        'ping_times': params_from_json['dut']['ping_times']
     }
     testcase_template = {
         'volt': 220, 'ton': 1, 'toff': 1, 'tgap': 1, 'max_tboot': 120,
-        'max_tcheck': 60, 'max_tcheck_5g': 60, 'ssid': '@Ruijie-s69DD', 'ssid_5g': '',
-        'wait_after_boot': 10,
-        # 'sim_test': 'ubus call monet getstatus',
-        'sim_test': 'ubus call sniffer show',
-        'console_port': 'COM7', 'console_baud_rate': 115200, 'console_password': '1b762f4ae9e6a903',
+        'max_tcheck': 60, 'max_tcheck_5g': 60, 'ssid': params_from_json['dut']['ssid'], 'ssid_5g': params_from_json['dut']['ssid_5g'],
+        'wait_after_boot': params_from_json['test']['wait_after_boot'],
+        'sim_test': params_from_json['dut']['sim_test'],
+        'console_port': params_from_json['dut']['port'], 'console_baud_rate': params_from_json['dut']['baud_rate'], 'console_password': params_from_json['dut']['console_password'],
         'boot_count': 0, 'boot_ok': False, 'tboot': -1.0, 'tcheck': -1.0, 'tcheck_5g': '',
         'wifi_ok': False, 'wifi_5g_ok': '', 'ping_ok': False, 'ping_5g_ok': '', 'sim_ok': ''
     }
-    volt_combo = [90, 220, 264]
-    ton_combo = [1.0]
-    toff_combo = [0.01, 0.02, 0.05, 0.1, 0.25, 0.5, 1.0]
-    tboot_combo = [120]
-    tcheck_combo = [60]
-    tcheck_5g_combo = [60]
-    tgap_combo = [1.0]
-    repeat = 30
+    volt_combo = params_from_json['test']['volt_combo']
+    ton_combo = params_from_json['test']['ton_combo']
+    toff_combo = params_from_json['test']['toff_combo']
+    tboot_combo = params_from_json['test']['tboot_combo']
+    tcheck_combo = params_from_json['test']['tcheck_combo']
+    tcheck_5g_combo = params_from_json['test']['tcheck_5g_combo']
+    tgap_combo = params_from_json['test']['tgap_combo']
+    repeat = params_from_json['test']['repeat']
     params['pc_testcases'] = []
     for volt in volt_combo:
         for ton in ton_combo:
@@ -56,14 +64,14 @@ if __name__ == '__main__':
                                 testcase['max_tcheck_5g'] = tcheck_5g
                                 testcase['tgap'] = tgap
                                 params['pc_testcases'].append(testcase)
-    params['pc_report_savepath'] = 'reports/EW300T电源切变循环测试.xlsx'
+    params['pc_report_savepath'] = params_from_json['pc_report_savepath']
     fc = FlowChart(prerequisite=params)
     fc.load_map(hook_script='power_cycle.py', map_json='电源切变循环测试.pos')
     end = False
     while not end:
         end = fc.run_step()
     fc.params_bus['webhook'] = {
-        'webhook_url': 'https://open.feishu.cn/open-apis/bot/v2/hook/49487983-e106-49c8-a527-4b8a4dfeddf5',
+        'webhook_url': params_from_json['webhook_url'],
         'send_string': '电源切变循环测试已完成'
     }
     fc.params_bus = webhook_send(params=fc.params_bus)

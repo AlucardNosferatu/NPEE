@@ -48,7 +48,7 @@ def console_login(params):
                 console_serial_pass = console_login_params['serial_pass']
                 finished = False
                 while not finished:
-                    echo_string = ser.read_all().decode('utf-8')
+                    echo_string = ser.read_all().decode('utf-8')  # type: ignore
                     print(echo_string)
                     if 'root@' in echo_string:
                         finished = True
@@ -102,11 +102,11 @@ def console_send(params: dict):
             ser: serial.Serial = console_send_params['serial']
             if 'format' not in console_send_params.keys() or console_send_params['format'] == 'str':
                 ser.write(data='\r'.encode('utf-8'))  # type: ignore
-                _ = ser.read_all().decode('utf-8')
+                _ = ser.read_all().decode('utf-8')  # type: ignore
                 ser.write(data='{}\r'.format(
                     send_string).encode('utf-8'))  # type: ignore
                 wait_for_echo(csp=console_send_params)
-                echo_string = ser.read_all().decode('utf-8')
+                echo_string = ser.read_all().decode('utf-8')  # type: ignore
             elif console_send_params['format'] == 'bytes':
                 _ = ser.read_all()
                 ser.write(data=send_string)  # type: ignore
@@ -146,7 +146,7 @@ def console_read(params):
     try:
         if console_type == 'serial':
             ser: serial.Serial = console_params['serial']
-            echo_string = ser.read_all().decode('utf-8')
+            echo_string = ser.read_all().decode('utf-8')  # type: ignore
         elif console_type == 'ssh':
             ssh_shell: paramiko.Channel = console_params['ssh']
             echo_string = echo_string = ssh_shell.recv(65535).decode('utf-8')

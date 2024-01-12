@@ -1,0 +1,54 @@
+{
+    "pcr": {
+        "res_name": "ASRL1::INSTR",
+        "baud_rate": "115200",
+        "freq": 50,
+        "range": 300,
+        "debug": true
+    },
+    "dut": {
+        "lan_ip": "192.168.110.1",
+        "ping_times": 5,
+        "ssid": "@Ruijie-s69DD",
+        "ssid_5g": "",
+        "port": "COM7",
+        "baud_rate": 115200,
+        "console_password": "1b762f4ae9e6a903",
+        "sim_test": "ubus call monet getstatus"
+    },
+    "test": {
+        "volt_combo": [
+            90,
+            220,
+            264
+        ],
+        "ton_combo": [
+            1.0
+        ],
+        "toff_combo": [
+            0.01,
+            0.02,
+            0.05,
+            0.1,
+            0.25,
+            0.5,
+            1.0
+        ],
+        "tboot_combo": [
+            120
+        ],
+        "tcheck_combo": [
+            60
+        ],
+        "tcheck_5g_combo": [
+            60
+        ],
+        "tgap_combo": [
+            1.0
+        ],
+        "repeat": 30,
+        "wait_after_boot": 10
+    },
+    "pc_report_savepath": "reports/EW300T电源切变循环测试.xlsx",
+    "webhook_url": "https://open.feishu.cn/open-apis/bot/v2/hook/49487983-e106-49c8-a527-4b8a4dfeddf5"
+}

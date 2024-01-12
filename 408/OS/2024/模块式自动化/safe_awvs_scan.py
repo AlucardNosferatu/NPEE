@@ -7,8 +7,8 @@ from modules.webhook_api import webhook_send
 if __name__ == '__main__':
     params = {
         'awvs': {
-            'target_ip': '10.51.132.49',
-            'target_desc': 'X30E-PRO_' + time.strftime('%m%d%M%S', time.localtime(time.time()))
+            'target_ip': '10.51.132.240',
+            'target_desc': 'EW1300G-ExtDDR_' + time.strftime('%m%d%M%S', time.localtime(time.time()))
         }
     }
     fc = FlowChart(prerequisite=params)
