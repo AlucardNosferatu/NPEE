@@ -10,6 +10,7 @@ def ps_init(params):
         ps_instr = None  # type: ignore
     else:
         rm = pyvisa.ResourceManager()
+        # noinspection PyTypeChecker
         ps_instr: pyvisa.resources.SerialInstrument = rm.open_resource(
             resource_name=res_name)  # type: ignore
         ps_instr.baud_rate = int(baud_rate)
@@ -29,6 +30,7 @@ def ps_reset(params):
         ps_params['code'] = code
         ps_params['exception'] = None
     except Exception as e:
+        print('发生异常:{}'.format(repr(e)))
         ps_params['code'] = None
         ps_params['exception'] = e
     return params
@@ -52,6 +54,7 @@ def ps_acdc(params):
         ps_params['code'] = code
         ps_params['exception'] = None
     except Exception as e:
+        print('发生异常:{}'.format(repr(e)))
         ps_params['code'] = None
         ps_params['exception'] = e
     return params
@@ -70,6 +73,7 @@ def ps_freq(params):
         ps_params['code'] = code
         ps_params['exception'] = None
     except Exception as e:
+        print('发生异常:{}'.format(repr(e)))
         ps_params['code'] = None
         ps_params['exception'] = e
     return params
@@ -88,6 +92,7 @@ def ps_range(params):
         ps_params['code'] = code
         ps_params['exception'] = None
     except Exception as e:
+        print('发生异常:{}'.format(repr(e)))
         ps_params['code'] = None
         ps_params['exception'] = e
     return params
@@ -111,6 +116,7 @@ def ps_toggle(params):
         ps_params['code'] = code
         ps_params['exception'] = None
     except Exception as e:
+        print('发生异常:{}'.format(repr(e)))
         ps_params['code'] = None
         ps_params['exception'] = e
     return params
@@ -129,6 +135,7 @@ def ps_volt(params):
         ps_params['code'] = code
         ps_params['exception'] = None
     except Exception as e:
+        print('发生异常:{}'.format(repr(e)))
         ps_params['code'] = None
         ps_params['exception'] = e
     return params
