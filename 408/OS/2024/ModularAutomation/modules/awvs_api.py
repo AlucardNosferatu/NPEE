@@ -84,9 +84,9 @@ class Acunetix:
         params['http']['url'] = url
         params['http']['data'] = body
         params['http']['headers'] = self.headers
-        params = http_post(params=params)
+        params = http_get(params=params)
         result = params['http']['response']
-        result = result['scans'][0]['scan_id']
+        result = result['reports'][0]['report_id']
         return result
 
     def get_report_status(self, description):
