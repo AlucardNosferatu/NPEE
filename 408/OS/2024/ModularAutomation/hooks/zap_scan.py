@@ -77,5 +77,5 @@ def h10(params):
 
 
 def h11(params):
-    time.sleep(secs=120)
+    time.sleep(120)
     return params
