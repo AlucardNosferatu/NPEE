@@ -245,6 +245,7 @@ class FlowChart:
 
     def serial_execution(self, functions):
         for function in functions:
+            print('子线程顺序执行-开始执行{}'.format(function))
             if type(function) == str:
                 self.params_bus = self.execute_hook(hook_text=function)
             else:

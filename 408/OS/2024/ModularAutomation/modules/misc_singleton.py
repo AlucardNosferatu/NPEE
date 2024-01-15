@@ -5,6 +5,7 @@ from pywifi import const
 
 
 def wifi_connect(params):
+    print("开始连接WiFi")
     misc_params = params['misc']
     # wifi_excluded_iface = misc_params['wifi_excluded_iface']
     wifi_target_ssid = misc_params['wifi_target_ssid']
@@ -17,6 +18,8 @@ def wifi_connect(params):
     else:
         wifi_try_wait = 3
     wifi = pywifi.PyWiFi()
+    print("WiFi接口已初始化")
+    misc_params['wifi_result'] = [False, None]
     for iface in wifi.interfaces():
         # if wifi_excluded_iface is not None:
         #     if iface == wifi_excluded_iface:
@@ -77,5 +80,4 @@ def wifi_connect(params):
         else:
             print("这个网卡啥也没搜到，换张网卡")
     print("每张网卡都试过去了，还是不行！")
-    misc_params['wifi_result'] = [False, None]
     return params

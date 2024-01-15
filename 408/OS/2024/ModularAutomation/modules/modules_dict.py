@@ -11,7 +11,7 @@ from modules.misc import ip_ping, mac_generate, mac_increase, mac_read_record, m
 from modules.misc_singleton import wifi_connect
 from modules.nessus_api import nessus_login, nessus_new_scan, nessus_find, nessus_start_pause, nessus_get_status, \
     nessus_export, nessus_delete_stop
-from modules.nmap_api import nmap_init, nmap_scan
+# from modules.nmap_api import nmap_init, nmap_scan
 from modules.rgscan_api import rgscan_start, rgscan_scan_target, rgscan_get_scan_status, rgscan_generate_report, \
     rgscan_download_report
 from modules.rsas_api import rsas_start, rsas_scan_target, rsas_get_scan_status, rsas_generate_report, \
@@ -74,7 +74,7 @@ m_dict = {
     'RGSCAN_GET_SCAN_STATUS': rgscan_get_scan_status, 'RGSCAN_GENERATE_REPORT': rgscan_generate_report,
     'RGSCAN_DOWNLOAD_REPORT': rgscan_download_report,
 
-    'NMAP_INIT': nmap_init, 'NMAP_SCAN': nmap_scan,
+    # 'NMAP_INIT': nmap_init, 'NMAP_SCAN': nmap_scan,
 
     'MAC_GENERATE': mac_generate, 'MAC_INCREASE': mac_increase, 'MAC_READ_RECORD': mac_read_record,
     'MAC_WRITE_RECORD': mac_write_record
