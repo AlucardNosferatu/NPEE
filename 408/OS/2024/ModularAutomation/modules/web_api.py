@@ -16,6 +16,7 @@ def web_start(params):
         '--disable-blink-features=AutomationControlled'
     )  # 关闭自动控制blink特征
     chrome_options.add_argument('--ignore-urlfetcher-cert-requests')
+    chrome_options.add_argument('verify=False')
     if 'web' in params.keys():
         if 'proxy' in params['web'].keys():
             proxy = params['web']['proxy']
