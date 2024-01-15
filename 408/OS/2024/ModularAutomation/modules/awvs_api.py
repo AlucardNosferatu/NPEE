@@ -13,7 +13,8 @@ class Acunetix:
     def __init__(self, serve, api_key):
         self.api_key = api_key
         self.serve = serve
-        self.headers = {'X-Auth': self.api_key, 'Content-type': 'application/json; charset=utf8'}
+        self.headers = {'X-Auth': self.api_key,
+                        'Content-type': 'application/json; charset=utf8'}
 
     def add_target(self, address, description, criticality=10):
         url = self.serve + '/api/v1/targets'
@@ -48,17 +49,19 @@ class Acunetix:
         return result
 
     def get_scan_id(self, target_id):
-        url = self.serve + '/api/v1/scans?l=20&q=target_id:{}'.format(target_id)
+        url = self.serve + \
+            '/api/v1/scans?l=20&q=target_id:{}'.format(target_id)
         params = {'http': {}}
         params['http']['url'] = url
         params['http']['headers'] = self.headers
-        params = http_post(params=params)
+        params = http_get(params=params)
         result = params['http']['response']
         result = result['scans'][0]['scan_id']
         return result
 
     def get_scan_status(self, target_id):
-        url = self.serve + '/api/v1/scans?l=20&q=target_id:{}'.format(target_id)
+        url = self.serve + \
+            '/api/v1/scans?l=20&q=target_id:{}'.format(target_id)
         params = {'http': {}}
         params['http']['url'] = url
         params['http']['headers'] = self.headers
@@ -117,7 +120,8 @@ class Acunetix:
             params = {'http': {}}
             params['http']['url'] = url
             params['http']['headers'] = self.headers
-            params['http']['download_as'] = r"{}\{}\{}-WVS.html".format(report_download_path, description, description)
+            params['http']['download_as'] = r"{}\{}\{}-WVS.html".format(
+                report_download_path, description, description)
             http_get(params=params)
             return True
         else:
@@ -125,7 +129,8 @@ class Acunetix:
 
 
 def awvs_start(params):
-    params['awvs']['awvs_obj'] = Acunetix(serve='https://{}:{}'.format(awvs_ip, awvs_port), api_key=awvs_apikey)
+    params['awvs']['awvs_obj'] = Acunetix(
+        serve='https://{}:{}'.format(awvs_ip, awvs_port), api_key=awvs_apikey)
     return params
 
 
@@ -133,7 +138,8 @@ def awvs_add_target(params):
     awvs_obj: Acunetix = params['awvs']['awvs_obj']
     target_ip = params['awvs']['target_ip']
     target_desc = params['awvs']['target_desc']
-    target_id = awvs_obj.add_target(address=target_ip, description=target_desc)['target_id']
+    target_id = awvs_obj.add_target(
+        address=target_ip, description=target_desc)['target_id']
     params['awvs']['target_id'] = target_id
     return params
 
