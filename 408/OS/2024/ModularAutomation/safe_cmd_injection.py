@@ -10,9 +10,9 @@ if __name__ == '__main__':
     profiler.enable()
     params = {
         'wvt': {
-            'dut_ip': '10.51.132.240',
-            'ssh_pass': '80ecf9cba2851bf9',
-            'save_path': 'reports/EW1300G-ExtDDR-命令注入.xlsx',
+            'dut_ip': '10.51.132.29',
+            'ssh_pass': '9eb8e44d7f3bfb8c',
+            'save_path': 'reports/E5-命令注入.xlsx',
             'eweb_pass': 'LostXmas20291224',
             'tp_size': 16,
             'payload_list': [],

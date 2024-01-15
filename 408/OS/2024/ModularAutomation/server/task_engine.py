@@ -1,4 +1,5 @@
 import cProfile
+from concurrent.futures import thread
 import pstats
 import random
 import threading
@@ -30,7 +31,8 @@ debug = False
 def process_queued_task():
     while True:
         if debug:
-            print('当前队列状况，执行:{}，等待:{}'.format(len(running_tasks.keys()), len(waiting_tasks.keys())))
+            print('当前队列状况，执行:{}，等待:{}'.format(
+                len(running_tasks.keys()), len(waiting_tasks.keys())))
         rt_lock.acquire()
         check_waiting_task()
         remove_finished_task()
@@ -56,10 +58,12 @@ def check_conflict_task(runnable, task):
     for r_task_id in running_tasks.keys():
         r_task = running_tasks[r_task_id]
         r_involved_modules = r_task[3]
-        common_modules = list(set(involved_modules).intersection(set(r_involved_modules)))
+        common_modules = list(
+            set(involved_modules).intersection(set(r_involved_modules)))
         for m in common_modules:
             if m in singleton_modules:
-                print('任务:{}与执行中任务:{}存在资源冲突，冲突模块为:{}'.format(task[0], r_task[0], m))
+                print('任务:{}与执行中任务:{}存在资源冲突，冲突模块为:{}'.format(
+                    task[0], r_task[0], m))
                 runnable = False
                 break
         if not runnable:
@@ -88,7 +92,8 @@ def remove_finished_task():
         task_id = finished_tasks.pop(0)
         if task_id in suspend_handle.keys():
             status = suspend_handle.pop(task_id)
-            print('任务完成，最后执行状态:{}'.format({True: '暂停', False: '运行'}[status[0]]))
+            print('任务完成，最后执行状态:{}'.format(
+                {True: '暂停', False: '运行'}[status[0]]))
         running_tasks.pop(task_id)
         print('任务完成，移出执行队列，id:{}'.format(task_id))
 
@@ -112,7 +117,8 @@ def kill_running_task(r_task_id):
     if r_task_id in suspend_handle.keys():
         exists = True
         status = suspend_handle.pop(r_task_id)
-        print('任务终止前状态:{}，id:{}'.format({True: '暂停', False: '运行'}[status[0]], r_task_id))
+        print('任务终止前状态:{}，id:{}'.format(
+            {True: '暂停', False: '运行'}[status[0]], r_task_id))
     if r_task_id in finished_tasks:
         exists = True
         finished_tasks.remove(r_task_id)
@@ -140,6 +146,7 @@ def run_flow_chart(task_id, hook_script, map_json, involved_modules, prerequisit
         _ = involved_modules
         # prerequisite = None
         fc = FlowChart(prerequisite=prerequisite)
+        threading.current_thread.__setattr__('flow_chart_obj', fc)
         fc.load_map(hook_script=hook_script, map_json=map_json)
         # todo: makeshift patch
         fc.params_bus = log_logger_init(params=fc.params_bus)
@@ -182,6 +189,14 @@ def suspend_or_resume(task_id, suspend):
         return False
 
 
+def get_flow_chart(task_id):
+    if task_id in running_tasks.keys():
+        if hasattr(running_tasks[task_id], 'flow_chart_obj'):
+            flow_chart_obj = running_tasks[task_id].flow_chart_obj
+            return True, flow_chart_obj
+    return False, None
+
+
 pqt_thread = threading.Thread(target=process_queued_task)
 pqt_thread.start()
 
@@ -208,7 +223,6 @@ if __name__ == '__main__':
             ]
             create_waiting_task(task=task_)
             time.sleep(1)
-
 
     kgt_thread = threading.Thread(target=keep_generate_task)
     kgt_thread.start()
