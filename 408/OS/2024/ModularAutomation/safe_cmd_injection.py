@@ -16,7 +16,7 @@ if __name__ == '__main__':
             'eweb_pass': 'LostXmas20291224',
             'tp_size': 16,
             'payload_list': [],
-            'slowdown_after': 3480,
+            'slowdown_after': 40*88,
             'template_path': 'reports/template_payloads.xlsx',
             'wait_per_injection': 0.5,
         }
