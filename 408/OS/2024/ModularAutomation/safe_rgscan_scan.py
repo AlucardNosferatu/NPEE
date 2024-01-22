@@ -3,12 +3,14 @@ import time
 
 from core.flow_chart import FlowChart
 from modules.webhook_api import webhook_send
+from safe_common_config import scan_host, target_name
 
 if __name__ == '__main__':
     params = {'rgscan': {}}
-    params['rgscan']['login_token'] = 'v6maeunbf7wx95ydpce8b4tg2zdhaqkc'
-    params['rgscan']['target_ip'] = '10.51.132.26'
-    params['rgscan']['target_desc'] = 'EW300T_' + time.strftime('%m%d%M%S', time.localtime(time.time()))
+    login_token = input('请输入login token:')
+    params['rgscan']['login_token'] = login_token
+    params['rgscan']['target_ip'] = scan_host
+    params['rgscan']['target_desc'] = '{}_{}'.format(target_name, time.strftime('%m%d%M%S', time.localtime(time.time())))
     fc = FlowChart(prerequisite=params)
     fc.load_map(hook_script='rgscan_scan.py', map_json='RGSCAN扫描测试.pos')
     end = False

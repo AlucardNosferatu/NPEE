@@ -4,9 +4,9 @@ import os
 from modules.http_api import http_post, http_get
 
 report_download_path = 'reports'
-awvs_apikey = '1986ad8c0a5b3df4d7028d5f3c06e936cd7c4d8207dce4c6d8f1343a173df3872'
-awvs_ip = '10.51.132.222'
-awvs_port = '3443'
+awvs_apikey = '1986ad8c0a5b3df4d7028d5f3c06e936c6d2855cc1d984e72bef3d7de3a3b61ec'
+awvs_ip = '10.51.132.160'
+awvs_port = '3444'
 
 
 class Acunetix:

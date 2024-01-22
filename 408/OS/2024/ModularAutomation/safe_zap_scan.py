@@ -3,14 +3,19 @@ import time
 
 from core.flow_chart import FlowChart
 from modules.webhook_api import webhook_send
+from safe_common_config import scan_host, target_name
 
 if __name__ == '__main__':
     while True:
         target_ip = input('输入目标IP:\n')
         target_desc = input('输入目标型号:\n')
-        target_pass = input('输入目标密码，默认为LostXmas20291224:\n')
+        target_pass = input('输入目标密码，默认为NO_PASSWORD:\n')
+        if target_ip == '':
+            target_ip = scan_host
+        if target_desc == '':
+            target_desc = target_name
         if target_pass == '':
-            target_pass = 'LostXmas20291224'
+            target_pass = 'NO_PASSWORD'
         zap_api_key = input('输入ZAP的API密钥，默认为arbfu3ifd1ckb6i1l33cq22ckj:\n')
         if zap_api_key == '':
             zap_api_key = 'arbfu3ifd1ckb6i1l33cq22ckj'
@@ -18,7 +23,7 @@ if __name__ == '__main__':
         if zap_proxy_Port == '':
             zap_proxy_Port = '8080'
 
-        target_addr = 'http://{}/'.format(target_ip)
+        target_addr = 'https://{}/'.format(target_ip)
         params = {
             'zap': {
                 'exe_dir': r"C:\Program Files\OWASP\Zed Attack Proxy",

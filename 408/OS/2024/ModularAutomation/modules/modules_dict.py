@@ -1,3 +1,5 @@
+from modules.android import android_init_device, android_interact_device
+from modules.opencv import cv_cut_img, cv_ocr_img
 from modules.awvs_api import awvs_start, awvs_add_target, awvs_add_scan, awvs_get_scan_status, awvs_generate_report, \
     awvs_get_report_status, awvs_download_report
 from modules.chariot import chariot_init, chariot_set_duration, chariot_add_pairs, chariot_run, chariot_get_thr
@@ -25,6 +27,9 @@ from modules.zap_api import zap_kill_java, zap_start_exe, zap_init_adapter, zap_
 from modules.power_supply import ps_init, ps_reset, ps_acdc, ps_range, ps_freq, ps_toggle, ps_volt
 
 m_dict = {
+    'ANDROID_INIT_DEVICE': android_init_device, 'ANDROID_INTERACT_DEVICE': android_interact_device,
+    'CV_CUT_IMG': cv_cut_img, 'CV_OCR_IMG': cv_ocr_img,
+
     'PS_INIT': ps_init, 'PS_RESET': ps_reset, 'PS_ACDC': ps_acdc, 'PS_RANGE': ps_range, 'PS_FREQ': ps_freq, 'PS_TOGGLE': ps_toggle, 'PS_VOLT': ps_volt,
 
     'IP_PING': ip_ping, 'WIFI_CONNECT': wifi_connect, 'TIMER': timer,
