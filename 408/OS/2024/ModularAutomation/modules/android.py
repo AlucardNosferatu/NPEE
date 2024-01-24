@@ -176,10 +176,16 @@ def android_interact_device(params):
             del interact_device_params['screenshot_filepath']
             u2_obj.screenshot(filename=screenshot_filepath)
         else:
-            img_array = u2_obj.screenshot(format="opencv")
-            if 'cv' not in params:
-                params['cv'] = {}
-            params['cv']['img_array'] = img_array
+            finished = False
+            while not finished:
+                try:
+                    img_array = u2_obj.screenshot(format="opencv")
+                    if 'cv' not in params:
+                        params['cv'] = {}
+                    params['cv']['img_array'] = img_array
+                    finished = True
+                except Exception as e:
+                    _ = e
     elif device_action == 'double_click':
         coordinate = interact_device_params['coordinate']
         del interact_device_params['coordinate']

@@ -7,14 +7,13 @@ from modules.webhook_api import webhook_send
 
 if __name__ == '__main__':
     params = {}
-    uid = input('输入手机UID，可用adb devices查看确认:')
-    params['android'] = {
-        'uid': uid,
-        'device_action': 'screenshot'
-    }
     params['cv'] = {
-        'point_ul': {'x': 2029, 'y': 12},
-        'point_dr': {'x': 2109, 'y': 36}
+        # 'point_ul': {'x': 2289, 'y': 12},
+        # 'point_dr': {'x': 2369, 'y': 36},
+        'point_ul': {'x': 25, 'y': 25},
+        'point_dr': {'x': 125, 'y': 50},
+        'delay': 1,
+        'filename': 'reports/20240124-103534.mp4'
     }
     fc = FlowChart(prerequisite=params)
     fc.load_map(hook_script='mobile_game_delay.py', map_json='应用延迟测量.pos')

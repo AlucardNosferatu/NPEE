@@ -3,16 +3,14 @@ import time
 
 
 def h0(params):
-    # params['android'] = {
-    #     'uid': '手机UID',
-    #     'device_action': 'screenshot'
-    # }
-    # params['cv'] = {
-    #     'point_ul': {'x': 2029, 'y': 12},
-    #     'point_dr': {'x': 2109, 'y': 36}
-    # }
-    params['interval'] = 1
-    params['cv']['delay'] = 1000
+    offline = 'filename' in params['cv'].keys()
+    params['if_switch'] = offline
+    if not offline:
+        uid = input('输入手机UID，可用adb devices查看确认:')
+        params['android'] = {
+            'uid': uid,
+            'device_action': 'screenshot'
+        }
     return params
 
 
@@ -21,8 +19,17 @@ def h1(params):
 
 
 def h2(params):
+    return params
+
+
+def h3(params):
     logger = params['log']['logger']
     ocr_res = params['cv']['ocr_res']
     logger.info('测得延迟:{}'.format(ocr_res))
-    time.sleep(params['interval'])
+    params['if_switch'] = 'filename' in params['cv'].keys()
+    return params
+
+
+def h4(params):
+    params['if_switch'] = params['cv']['is_opened']
     return params

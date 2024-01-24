@@ -1,2 +1,2 @@
-scan_host = '47.111.80.157'
-target_name = 'MQTT-BROKER'
+scan_host = '121.40.163.27'
+target_name = 'APP-ERROR-LOG'
