@@ -2,6 +2,7 @@ import os
 
 from core.flow_chart import FlowChart
 from modules.logger import log_logger_init, log_handler_init
+from modules.webhook_api import webhook_send
 
 if __name__ == '__main__':
     params = {
@@ -25,4 +26,9 @@ if __name__ == '__main__':
     end = False
     while not end:
         end = fc.run_step()
+    fc.params_bus['webhook'] = {
+        'webhook_url': 'https://open.feishu.cn/open-apis/bot/v2/hook/49487983-e106-49c8-a527-4b8a4dfeddf5',
+        'send_string': '视频解析已完成'
+    }
+    fc.params_bus = webhook_send(params=fc.params_bus)
     os.abort()
