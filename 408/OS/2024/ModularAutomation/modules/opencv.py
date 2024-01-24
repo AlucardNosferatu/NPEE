@@ -41,7 +41,11 @@ def cv_ocr_img(params):
     cv_params = params['cv']
     img_array: np.array = cv_params['img_array']
     img_pillow = Image.fromarray(img_array)
-    ocr_res = pytesseract.image_to_string(image=img_pillow, config='--psm 6')
+    if 'ocr_extra_config' in cv_params.keys():
+        config = cv_params['ocr_extra_config']
+    else:
+        config = ''
+    ocr_res = pytesseract.image_to_string(image=img_pillow, config=config)
     cv_params['ocr_res'] = ocr_res
     return params
 
@@ -100,6 +104,15 @@ def cv_read_cap(params):
     else:
         cv_params['img_array'] = None
         cv_params['exception'] = 'VideoCap returned null frame array.'
+    return params
+
+
+def cv_grab_cap(params):
+    cv_params = params['cv']
+    video_cap: cv2.VideoCapture = cv_params['video_cap']
+    _ = video_cap.grab()
+    cv_params['frame_count'] -= 1
+    print('剩余帧个数:{}'.format(cv_params['frame_count']))
     return params
 
 

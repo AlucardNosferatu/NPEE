@@ -31,5 +31,13 @@ def h3(params):
 
 
 def h4(params):
-    params['if_switch'] = params['cv']['is_opened']
+    params['if_switch'] = params['cv']['frame_count'] > 0
+    return params
+
+
+def h5(params):
+    if 'skip' in params.keys():
+        params['if_switch'] = params['cv']['frame_count'] % params['skip'] == 0
+    else:
+        params['if_switch'] = True
     return params
