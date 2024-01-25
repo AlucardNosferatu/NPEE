@@ -3,6 +3,11 @@ import time
 
 
 def h0(params):
+    # params['cv']['point_ul'] = {'x': 2289, 'y': 12}
+    # params['cv']['point_dr'] = {'x': 2369, 'y': 36}
+    params['cv']['point_ul'] = {'x': 25, 'y': 25}
+    params['cv']['point_dr'] = {'x': 125, 'y': 50}
+    params['cv']['delay'] = 1
     offline = 'filename' in params['cv'].keys()
     params['if_switch'] = offline
     if not offline:
