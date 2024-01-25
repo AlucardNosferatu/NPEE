@@ -26,7 +26,7 @@ if __name__ == '__main__':
             )
         )
         params['flowchart'] = params_from_json
-    filename = input('输入本地视频文件路径，例："reports/20240124-103534.mp4"\n不输入则采用在线监测识别（最短采样周期约等于6s）：')
+    filename = input('输入本地视频文件路径，例："reports/20240125-155202.mp4"\n不输入则采用在线监测识别（最短采样周期约等于6s）：')
     if filename != '':
         params['cv']['filename'] = filename
         skip = input('输入跳帧个数，不输入默认12帧，输入0为取消跳帧（逐帧处理，贼慢）')
