@@ -6,6 +6,80 @@ import threading
 from modules.modules_dict import m_dict
 
 
+def flowchart_init(params):
+    fc_params = params['flowchart']
+    if 'fc_pools' not in fc_params.keys():
+        fc_params['fc_pools'] = {}
+    fc_pools = fc_params['fc_pools']
+    new_fc_name = fc_params['new_fc_name']
+    if 'new_fc_pre' in fc_params.keys():
+        new_fc_pre = fc_params['new_fc_pre']
+        fc = FlowChart(prerequisite=new_fc_pre)
+    else:
+        fc = FlowChart()
+    new_fc_hook = fc_params['new_fc_hook']
+    new_fc_map = fc_params['new_fc_map']
+    fc.load_map(hook_script=new_fc_hook, map_json=new_fc_map)
+    if 'new_fc_log' in fc_params.keys():
+        fc.params_bus['log'] = {'logger_name': fc_params['new_fc_log']}
+        fc.params_bus = m_dict['LOG_LOGGER_INIT'](params=fc.params_bus)
+        fc.params_bus = m_dict['LOG_HANDLER_INIT'](params=fc.params_bus)
+    fc_pools[new_fc_name] = fc
+    return params
+
+
+def flowchart_step(params):
+    fc_params = params['flowchart']
+    fc_pools = fc_params['fc_pools']
+    old_fc_name = fc_params['old_fc_name']
+    fc: FlowChart = fc_pools[old_fc_name]
+    end_status = fc.run_step()
+    if 'end_status' not in fc_params.keys():
+        fc_params['end_status'] = {}
+    fc_params['end_status'][old_fc_name] = end_status
+    return params
+
+
+def flowchart_restart(params):
+    fc_params = params['flowchart']
+    fc_pools = fc_params['fc_pools']
+    old_fc_name = fc_params['old_fc_name']
+    fc: FlowChart = fc_pools[old_fc_name]
+    fc.restart()
+    return params
+
+
+def flowchart_set_node(params):
+    fc_params = params['flowchart']
+    fc_pools = fc_params['fc_pools']
+    old_fc_name = fc_params['old_fc_name']
+    fc: FlowChart = fc_pools[old_fc_name]
+    node_cat = fc_params['node_cat']
+    node_type = fc_params['node_type']
+    if 'to_link' in fc_params.keys():
+        to_link = fc_params['to_link']
+    else:
+        to_link = None
+    if 'from_link' in fc_params.keys():
+        from_link = fc_params['from_link']
+    else:
+        from_link = None
+    if 'set_node_override' in fc_params.keys():
+        print('已禁用模块切换确认，模块切换允许:{}'.format(fc_params['set_node_override']))
+        cmd = {True: 'Y', False: 'N'}[fc_params['set_node_override']]
+    else:
+        print('<<<<<<<<<警告>>>>>>>>>')
+        print('<<<<<<<<<警告>>>>>>>>>')
+        print('<<<<<<<<<警告>>>>>>>>>')
+        print('很多模块的正常工作依赖于params参数的上下文\n强制切换会造成无法预料的后果！')
+        cmd = ''
+        while cmd not in ['Y', 'N']:
+            cmd = input('是否继续切换？(Y/N)')
+    if cmd == 'Y':
+        fc.set_node(cat=node_cat, node_type=node_type, to_link=to_link, from_link=from_link)
+    return params
+
+
 def xml_filter(text):
     text = list(text)
     in_label = False
@@ -20,6 +94,12 @@ def xml_filter(text):
     text = ''.join(text)
     text = text.replace('%', '').replace('<>', '')
     return text
+
+
+m_dict['FLOWCHART_INIT'] = flowchart_init
+m_dict['FLOWCHART_STEP'] = flowchart_step
+m_dict['FLOWCHART_SET_NODE'] = flowchart_set_node
+m_dict['FLOWCHART_RESTART'] = flowchart_restart
 
 
 class FlowChart:
@@ -142,14 +222,34 @@ class FlowChart:
     def restart(self):
         self.current_node = self.start_node
 
-    def set_node(self, cat, node_id):
+    # def set_node(self, cat, node_id):
+    #     if cat in ['p', 'j', 't']:
+    #         if node_id in self.node_dict[cat].keys():
+    #             self.current_node = node_id
+    #         else:
+    #             print('Cannot find label:', node_id, 'for category:', cat)
+    #     else:
+    #         print('Unrecognized category:', cat)
+
+    def set_node(self, cat, node_type, to_link=None, from_link=None):
         if cat in ['p', 'j', 't']:
-            if node_id in self.node_dict[cat].keys():
-                self.current_node = node_id
-            else:
-                print('Cannot find label:', node_id, 'for category:', cat)
-        else:
-            print('Unrecognized category:', cat)
+            for key in self.node_dict[cat]:
+                node = self.node_dict[cat][key]
+                if node[0] == node_type:
+                    links = node[1:]
+                    for link in links:
+                        if 'to' in link.keys() and to_link is not None:
+                            if link['to'][0].startswith(to_link):
+                                self.current_node = key
+                                return True
+                        if 'from' in link.keys() and from_link is not None:
+                            if link['from'][0].startswith(from_link):
+                                self.current_node = key
+                                return True
+                    self.current_node = key
+                    return True
+            return False
+        return False
 
     def run_step(self):
         cat = self.key_map[self.current_node][0]

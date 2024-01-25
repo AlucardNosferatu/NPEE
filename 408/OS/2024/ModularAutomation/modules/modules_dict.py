@@ -25,8 +25,11 @@ from modules.winui_api import winui_get_desktop, winui_get_explorer, winui_locat
 from modules.zap_api import zap_kill_java, zap_start_exe, zap_init_adapter, zap_crawl_target, zap_get_crawl_status, \
     zap_scan_target, zap_get_scan_status, zap_download_report
 from modules.power_supply import ps_init, ps_reset, ps_acdc, ps_range, ps_freq, ps_toggle, ps_volt
+from modules.logger import log_logger_init, log_handler_init
 
 m_dict = {
+    'LOG_LOGGER_INIT': log_logger_init, 'LOG_HANDLER_INIT': log_handler_init,
+
     'ANDROID_INIT_DEVICE': android_init_device, 'ANDROID_INTERACT_DEVICE': android_interact_device,
     'CV_CUT_IMG': cv_cut_img, 'CV_OCR_IMG': cv_ocr_img, 'CV_SHOW_IMG': cv_show_img, 'CV_INIT_CAP': cv_init_cap,
     'CV_IS_CAP_OPENED': cv_is_cap_opened, 'CV_READ_CAP': cv_read_cap, 'CV_CLOSE_CAP': cv_close_cap, 'CV_GRAB_CAP': cv_grab_cap,
