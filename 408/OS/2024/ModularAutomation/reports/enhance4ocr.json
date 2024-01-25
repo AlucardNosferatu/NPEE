@@ -1,0 +1,8 @@
+{
+    "old_fc_name": "图像增强",
+    "new_fc_name": "图像增强",
+    "new_fc_pre": {},
+    "new_fc_hook": "enhance4ocr.py",
+    "new_fc_map": "图像增强.pos",
+    "new_fc_log": "enhance4ocr"
+}

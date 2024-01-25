@@ -1,3 +1,4 @@
+import json
 import os
 
 from core.flow_chart import FlowChart
@@ -11,6 +12,20 @@ if __name__ == '__main__':
         }
     }
     print('OCR精度有限，持续改进中！')
+
+    enhance = input('输入图像强化处理流程参数的JSON文件路径\n默认为"reports/enhance4ocr.json"\n输入"NO_ENHANCE"则不进行图像强化:')
+    if enhance != 'NO_ENHANCE':
+        if enhance == '':
+            enhance = 'reports/enhance4ocr.json'
+        params_from_json = json.loads(
+            s='\n'.join(
+                open(
+                    file=enhance,
+                    mode='r', encoding='utf-8'
+                ).readlines()
+            )
+        )
+        params['flowchart'] = params_from_json
     filename = input('输入本地视频文件路径，例："reports/20240124-103534.mp4"\n不输入则采用在线监测识别（最短采样周期约等于6s）：')
     if filename != '':
         params['cv']['filename'] = filename

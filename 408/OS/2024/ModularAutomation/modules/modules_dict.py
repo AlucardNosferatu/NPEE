@@ -1,5 +1,5 @@
 from modules.android import android_init_device, android_interact_device
-from modules.opencv import cv_cut_img, cv_ocr_img, cv_show_img, cv_init_cap, cv_is_cap_opened, cv_read_cap, cv_close_cap, cv_grab_cap
+from modules.opencv import cv_cut_img, cv_ocr_img, cv_show_img, cv_init_cap, cv_is_cap_opened, cv_read_cap, cv_close_cap, cv_grab_cap, cv_key_img
 from modules.awvs_api import awvs_start, awvs_add_target, awvs_add_scan, awvs_get_scan_status, awvs_generate_report, \
     awvs_get_report_status, awvs_download_report
 from modules.chariot import chariot_init, chariot_set_duration, chariot_add_pairs, chariot_run, chariot_get_thr
@@ -31,8 +31,10 @@ m_dict = {
     'LOG_LOGGER_INIT': log_logger_init, 'LOG_HANDLER_INIT': log_handler_init,
 
     'ANDROID_INIT_DEVICE': android_init_device, 'ANDROID_INTERACT_DEVICE': android_interact_device,
+
     'CV_CUT_IMG': cv_cut_img, 'CV_OCR_IMG': cv_ocr_img, 'CV_SHOW_IMG': cv_show_img, 'CV_INIT_CAP': cv_init_cap,
     'CV_IS_CAP_OPENED': cv_is_cap_opened, 'CV_READ_CAP': cv_read_cap, 'CV_CLOSE_CAP': cv_close_cap, 'CV_GRAB_CAP': cv_grab_cap,
+    'CV_KEY_IMG': cv_key_img,
 
     'PS_INIT': ps_init, 'PS_RESET': ps_reset, 'PS_ACDC': ps_acdc, 'PS_RANGE': ps_range, 'PS_FREQ': ps_freq, 'PS_TOGGLE': ps_toggle, 'PS_VOLT': ps_volt,
 

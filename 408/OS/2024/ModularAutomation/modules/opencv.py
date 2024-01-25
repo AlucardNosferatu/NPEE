@@ -116,6 +116,18 @@ def cv_grab_cap(params):
     return params
 
 
+def cv_key_img(params):
+    cv_params = params['cv']
+    img_array: np.array = cv_params['img_array']
+    lower = np.array(cv_params['key_lb'])
+    upper = np.array(cv_params['key_ub'])
+    mask = cv2.inRange(img_array, lower, upper)
+    cv_params['img_mask'] = mask
+    img_array = cv2.bitwise_and(img_array, img_array, mask=mask)
+    cv_params['img_array'] = img_array
+    return params
+
+
 if __name__ == '__main__':
     params_ = {
         'cv': {
