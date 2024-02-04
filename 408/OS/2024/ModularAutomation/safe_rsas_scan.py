@@ -3,11 +3,16 @@ import time
 
 from core.flow_chart import FlowChart
 from modules.webhook_api import webhook_send
+from safe_common_config import scan_host, target_name
 
 if __name__ == '__main__':
     while True:
         target_ip = input('输入目标IP:\n')
         target_desc = input('输入目标型号:\n')
+        if target_ip == '':
+            target_ip = scan_host
+        if target_desc == '':
+            target_desc = target_name
         params = {'rsas': {}}
         params['rsas']['target_ip'] = target_ip
         params['rsas']['target_desc'] = '{}_{}'.format(

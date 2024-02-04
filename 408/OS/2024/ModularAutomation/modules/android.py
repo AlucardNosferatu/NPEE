@@ -6,7 +6,7 @@ import uiautomator2 as u2
 netsh_prefix_str = 'netsh interface portproxy add v4tov4'
 
 
-def forward_device(params):
+def android_forward_device(params):
     forward_device_params = params['android']
     uid = forward_device_params['uid']
     del forward_device_params['uid']
@@ -33,7 +33,7 @@ def forward_device(params):
     return params
 
 
-def connect_device(params):
+def android_connect_device(params):
     connect_device_params = params['android']
     uid = connect_device_params['uid']
     del connect_device_params['uid']
@@ -42,7 +42,7 @@ def connect_device(params):
     return params
 
 
-def init_device(params):
+def android_init_device(params):
     init_device_params = params['android']
     uid = init_device_params['uid']
     del init_device_params['uid']
@@ -52,7 +52,7 @@ def init_device(params):
     return params
 
 
-def app_control(params):
+def android_app_control(params):
     app_control_params = params['android']
     u2_obj: u2.Device = app_control_params['u2_obj']
     app_action = app_control_params['app_action']
@@ -117,7 +117,7 @@ def app_control(params):
     return params
 
 
-def get_element(params):
+def android_get_element(params):
     get_element_params = params['android']
     u2_obj: u2.Device = get_element_params['u2_obj']
     by = get_element_params['by']
@@ -136,12 +136,12 @@ def get_element(params):
     return params
 
 
-def interact_element(params):
+def android_interact_element(params):
     interact_element_params = params['android']
     element: u2.xpath.XPathSelector = interact_element_params['element']
     del interact_element_params['element']
     element_action = interact_element_params['element_action']
-    del interact_element_params['element_action']
+    # del interact_element_params['element_action']
     if element_action in ['click', 'input']:
         element.click()
         if element_action == 'input':
@@ -159,11 +159,11 @@ def interact_element(params):
     return params
 
 
-def interact_device(params):
+def android_interact_device(params):
     interact_device_params = params['android']
     u2_obj: u2.Device = interact_device_params['u2_obj']
     device_action = interact_device_params['device_action']
-    del interact_device_params['device_action']
+    # del interact_device_params['device_action']
     if device_action == 'unlock':
         u2_obj.unlock()
     elif device_action == 'screen_on':
@@ -171,9 +171,21 @@ def interact_device(params):
     elif device_action == 'screen_off':
         u2_obj.screen_off()
     elif device_action == 'screenshot':
-        screenshot_filepath = interact_device_params['screenshot_filepath']
-        del interact_device_params['screenshot_filepath']
-        u2_obj.screenshot(filename=screenshot_filepath)
+        if 'screenshot_filepath' in interact_device_params.keys():
+            screenshot_filepath = interact_device_params['screenshot_filepath']
+            del interact_device_params['screenshot_filepath']
+            u2_obj.screenshot(filename=screenshot_filepath)
+        else:
+            finished = False
+            while not finished:
+                try:
+                    img_array = u2_obj.screenshot(format="opencv")
+                    if 'cv' not in params:
+                        params['cv'] = {}
+                    params['cv']['img_array'] = img_array
+                    finished = True
+                except Exception as e:
+                    _ = e
     elif device_action == 'double_click':
         coordinate = interact_device_params['coordinate']
         del interact_device_params['coordinate']
@@ -201,7 +213,7 @@ def interact_device(params):
     return params
 
 
-def add_watcher(params):
+def android_add_watcher(params):
     add_watcher_params = params['android']
     u2_obj: u2.Device = add_watcher_params['u2_obj']
 
@@ -232,7 +244,7 @@ def add_watcher(params):
     return params
 
 
-def remove_watcher(params):
+def android_remove_watcher(params):
     remove_watcher_params = params['android']
     u2_obj: u2.Device = remove_watcher_params['u2_obj']
     watcher_name = remove_watcher_params['watcher_name']
@@ -246,7 +258,7 @@ def remove_watcher(params):
     return params
 
 
-def reset_watcher(params):
+def android_reset_watcher(params):
     reset_watcher_params = params['android']
     u2_obj: u2.Device = reset_watcher_params['u2_obj']
     u2_obj.watcher.reset()
@@ -261,15 +273,11 @@ def reset_watcher(params):
 if __name__ == '__main__':
     params_ = {
         'android': {
-            'uid': 'PKT0220910001455'
+            'uid': 'OZRCWWCYIFDMKFYL'
         }
     }
-    params_ = init_device(params=params_)
-    params_['android']['app_action'] = 'start'
-    params_['android']['app_name'] = 'tv.danmaku.bili'
-    params_ = app_control(params=params_)
-    params_['android']['device_action'] = 'swipe'
-    params_['android']['coordinate_1'] = {'x': 500, 'y': 500}
-    params_['android']['coordinate_2'] = {'x': 500, 'y': 250}
-    params_ = interact_device(params=params_)
+    params_ = android_init_device(params=params_)
+    params_['android']['device_action'] = 'screenshot'
+    params_['android']['screenshot_filepath'] = 'reports/WZRY.png'
+    params_ = android_interact_device(params=params_)
     print('Done')

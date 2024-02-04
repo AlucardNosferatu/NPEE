@@ -1,3 +1,4 @@
+import threading
 import time
 
 from fake_useragent import UserAgent
@@ -5,28 +6,36 @@ from fake_useragent import UserAgent
 from modules.encryption.eweb_password import encrypt_pass
 from modules.http_api import http_post
 
+p_lock = threading.Lock()
+
 
 def eweb_inject_cmd(params):
     while 'sid' not in params['eweb'] or params['eweb']['sid'] is None:
         params = eweb_get_sid(params=params)
     sid = params['eweb']['sid']
+    p_lock.acquire()
     api = params['wvt']['injected_api']
     del params['wvt']['injected_api']
-    params['http'].__setitem__('url', 'http://{}{}'.format(params['eweb']['ip'], api))
+    params['http'].__setitem__(
+        'url', 'http://{}{}'.format(params['eweb']['ip'], api))
     params['http'].__setitem__('params', {'auth': sid})
     injected_cmd = params['wvt']['injected_cmd']
     inject_method = params['wvt']['inject_method']
     del params['wvt']['injected_cmd']
     del params['wvt']['inject_method']
-    params['http'].__setitem__('data', {'params': injected_cmd, 'method': inject_method})
-    params['http'].__setitem__('headers', {'Content-Type': 'application/json', 'User-Agent': get_fake_ua()})
+    p_lock.release()
+    params['http'].__setitem__(
+        'data', {'params': injected_cmd, 'method': inject_method})
+    params['http'].__setitem__(
+        'headers', {'Content-Type': 'application/json', 'User-Agent': get_fake_ua()})
     params['http'].__setitem__('timeout', 10.0)
     try:
         params = http_post(params=params)
         print('对接口{}的{}方法注入{}请求完成'.format(api, inject_method, injected_cmd))
     except Exception as e:
         params['http']['response'] = e
-        print('对接口{}的{}方法注入{}发生错误{}'.format(api, inject_method, injected_cmd, repr(e)))
+        print('对接口{}的{}方法注入{}发生错误{}'.format(
+            api, inject_method, injected_cmd, repr(e)))
         params['wvt']['inject_error'] = True
     return params
 
@@ -34,7 +43,8 @@ def eweb_inject_cmd(params):
 def eweb_get_sid(params):
     if 'http' not in params.keys():
         params['http'] = {}
-    params['http'].__setitem__('url', 'http://{}/cgi-bin/luci/api/auth'.format(params['eweb']['ip']))
+    params['http'].__setitem__(
+        'url', 'http://{}/cgi-bin/luci/api/auth'.format(params['eweb']['ip']))
     params['http'].__setitem__('params', {})
     params['http'].__setitem__(
         'data', {

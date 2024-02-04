@@ -3,12 +3,13 @@ import time
 
 from core.flow_chart import FlowChart
 from modules.webhook_api import webhook_send
+from safe_common_config import scan_host, target_name
 
 if __name__ == '__main__':
     params = {
         'awvs': {
-            'target_ip': '10.51.132.240',
-            'target_desc': 'EW1300G-ExtDDR_' + time.strftime('%m%d%M%S', time.localtime(time.time()))
+            'target_ip': scan_host,
+            'target_desc': '{}_{}'.format(target_name, time.strftime('%m%d%M%S', time.localtime(time.time())))
         }
     }
     fc = FlowChart(prerequisite=params)

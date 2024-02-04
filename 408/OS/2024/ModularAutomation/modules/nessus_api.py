@@ -4,6 +4,9 @@ from selenium.common import NoSuchElementException
 
 from modules.web_api import web_start, web_goto, web_find, web_click, web_find_by_xpath, web_input_compact
 
+nessus_ip = '172.28.15.33'
+nessus_port = 8834
+
 page_types = [
     'unsafe https',
     'login',
@@ -49,7 +52,7 @@ def nessus_summary_action(params, status, msg, page):
 
 def nessus_login(params):
     params = web_start(params=params)
-    params['web'].__setitem__('goto_url', 'https://172.28.15.253:8834/#/')
+    params['web'].__setitem__('goto_url', 'https://{}:{}/#/'.format(nessus_ip, nessus_port))
     params = web_goto(params=params)
     time.sleep(5)
     if 'nessus' not in params.keys():
