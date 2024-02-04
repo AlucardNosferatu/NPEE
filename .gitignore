@@ -7,3 +7,6 @@ build
 *.spec
 *.exe
 *.vscode
+408/OS/2024/SimulateRTOS/STM32/Objects/
+408/OS/2024/SimulateRTOS/STM32/RTE/
+408/Organization/AssemblyLanguage/x64/Debug/
