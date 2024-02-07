@@ -3,7 +3,7 @@ import time
 
 from core.flow_chart import FlowChart
 from modules.webhook_api import webhook_send
-from safe_common_config import scan_host, target_name
+from safe_common_config import scan_host_web, target_name
 
 if __name__ == '__main__':
     while True:
@@ -11,7 +11,7 @@ if __name__ == '__main__':
         target_desc = input('输入目标型号:\n')
         target_pass = input('输入目标密码，默认为NO_PASSWORD:\n')
         if target_ip == '':
-            target_ip = scan_host
+            target_ip = scan_host_web
         if target_desc == '':
             target_desc = target_name
         if target_pass == '':
@@ -29,7 +29,7 @@ if __name__ == '__main__':
                 'exe_dir': r"C:\Program Files\OWASP\Zed Attack Proxy",
                 'api_key': zap_api_key,
                 'proxy_port': '8080',
-                'target_url': {True: target_addr, False: 'http://{}'.format(target_addr)}['http' in target_addr],
+                'target_url': {True: target_ip, False: target_addr}['http' in target_ip],
                 'target_desc': '{}_{}'.format(target_desc, time.strftime('%m%d%M%S', time.localtime(time.time()))),
                 'target_eweb_pass': target_pass
             }

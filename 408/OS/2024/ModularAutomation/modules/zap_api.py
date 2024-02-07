@@ -7,6 +7,7 @@ from modules.http_api import http_get
 from modules.misc import process_kill
 
 report_download_path = 'reports'
+jar_filename = 'zap-2.12.0.jar'
 
 
 def zap_kill_java(params):
@@ -19,7 +20,9 @@ def zap_start_exe(params):
     zap_params = params['zap']
     exe_dir = zap_params['exe_dir']
     disk = exe_dir[:2]
-    os.system('{} && cd "{}" && ZAP.exe'.format(disk, exe_dir))
+    # os.system('{} && cd "{}" && ZAP.exe'.format(disk, exe_dir))
+    os.popen('{} && cd "{}" && java -jar {}'.format(disk, exe_dir, jar_filename))
+    print('开始启动ZAP')
     time.sleep(45)
     return params
 

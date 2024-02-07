@@ -4,16 +4,17 @@ import pstats
 
 from core.flow_chart import FlowChart
 from modules.webhook_api import webhook_send
+from safe_common_config import scan_host, target_name, eweb_pass, ssh_pass
 
 if __name__ == '__main__':
     profiler = cProfile.Profile()
     profiler.enable()
     params = {
         'wvt': {
-            'dut_ip': '10.51.132.29',
-            'ssh_pass': '9eb8e44d7f3bfb8c',
-            'save_path': 'reports/E5-命令注入.xlsx',
-            'eweb_pass': 'LostXmas20291224',
+            'dut_ip': scan_host,
+            'ssh_pass': ssh_pass,
+            'save_path': 'reports/{}-命令注入.xlsx'.format(target_name),
+            'eweb_pass': eweb_pass,
             'tp_size': 16,
             'payload_list': [],
             'slowdown_after': 40*88,

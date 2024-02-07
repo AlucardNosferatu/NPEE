@@ -4,7 +4,7 @@ from selenium.common import NoSuchElementException
 
 from modules.web_api import web_start, web_goto, web_find, web_click, web_find_by_xpath, web_input_compact
 
-nessus_ip = '172.28.15.33'
+nessus_ip = 'nessus.ruijie.com.cn'
 nessus_port = 8834
 
 page_types = [
