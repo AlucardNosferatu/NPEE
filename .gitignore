@@ -8,6 +8,7 @@ build
 *.exe
 *.vscode
 *.mp4
-408/OS/2024/SimulateRTOS/STM32/Objects/
-408/OS/2024/SimulateRTOS/STM32/RTE/
 408/Organization/AssemblyLanguage/x64/Debug/
+408/OS/2024/SimulateRTOS/Drivers/
+408/OS/2024/SimulateRTOS/MDK-ARM/SimulateRTOS/
+408/OS/2024/SimulateRTOS/Middlewares/
