@@ -48,6 +48,7 @@
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
+osThreadId blinkTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -55,6 +56,7 @@ osThreadId defaultTaskHandle;
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
+void StartBlinkTask(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -102,8 +104,12 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityIdle, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+
+  /* definition and creation of blinkTask */
+  osThreadDef(blinkTask, StartBlinkTask, osPriorityNormal, 0, 128);
+  blinkTaskHandle = osThreadCreate(osThread(blinkTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -124,12 +130,30 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+		osDelay(1);
+  }
+  /* USER CODE END StartDefaultTask */
+}
+
+/* USER CODE BEGIN Header_StartBlinkTask */
+/**
+* @brief Function implementing the blinkTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartBlinkTask */
+void StartBlinkTask(void const * argument)
+{
+  /* USER CODE BEGIN StartBlinkTask */
+  /* Infinite loop */
+  for(;;)
+  {
 		HAL_GPIO_WritePin(LD2_GPIO_Port,LD2_Pin,GPIO_PIN_SET);
 		osDelay(100);
 		HAL_GPIO_WritePin(LD2_GPIO_Port,LD2_Pin,GPIO_PIN_RESET);
 		osDelay(100);
   }
-  /* USER CODE END StartDefaultTask */
+  /* USER CODE END StartBlinkTask */
 }
 
 /* Private application code --------------------------------------------------*/
