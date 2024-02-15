@@ -1,4 +1,5 @@
 *.vs
+*.lake
 *.idea
 408/Organization/FixPoint/Debug/
 *.log
