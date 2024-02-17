@@ -1,0 +1,12 @@
+DIGEST e1fd9433194cb5d69a0ace063638f4ac
+Fdemo
+prf 6:10 <> silly
+binder 21:21 <> a:1
+binder 23:23 <> b:2
+R29:29 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R27:27 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R26:26 demo <> a:1 var
+R28:28 demo <> b:2 var
+R31:31 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R30:30 demo <> b:2 var
+R32:32 demo <> a:1 var
