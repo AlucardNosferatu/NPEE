@@ -268,8 +268,13 @@ def console_iwpriv_stat(params):
     params = console_send(params=params)
     iwpriv_text = params['console']['echo_string']
     del params['console']['echo_string']
-    iwps_parsed = IWPStat(text=iwpriv_text).iwp
-    params['console']['iwps_parsed'] = iwps_parsed
+    try:
+        iwps_parsed = IWPStat(text=iwpriv_text).iwp
+        params['console']['iwps_parsed'] = iwps_parsed
+        params['console']['exception'] = None
+    except Exception as e:
+        params['console']['iwps_parsed'] = None
+        params['console']['exception'] = e
     return params
 
 
