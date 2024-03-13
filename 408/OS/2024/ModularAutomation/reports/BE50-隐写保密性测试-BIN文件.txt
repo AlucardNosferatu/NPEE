@@ -9,7 +9,7 @@
 ===================================
 binwalk日志:
 
-Scan Time:     2024-03-13 17:13:32
+Scan Time:     2024-03-13 17:14:59
 Target File:   D:\RjDir\admin_d95c8884-f44c-4529-8f3b-48d5788371c1\Downloads\业务文档\安全扫描\R258-BE50\升级文件\EW_3.0B11P258_EW5000_11151219_install_encypto.bin
 MD5 Checksum:  8c7b95bae1c1ea9d6477912687adb91e
 Signatures:    411
