@@ -26,8 +26,11 @@ from modules.zap_api import zap_kill_java, zap_start_exe, zap_init_adapter, zap_
     zap_scan_target, zap_get_scan_status, zap_download_report
 from modules.power_supply import ps_init, ps_reset, ps_acdc, ps_range, ps_freq, ps_toggle, ps_volt
 from modules.logger import log_logger_init, log_handler_init
+from modules.binwalk_api import binwalk_scan, binwalk_check
 
 m_dict = {
+    'BINWALK_SCAN': binwalk_scan, 'BINWALK_CHECK': binwalk_check,
+
     'LOG_LOGGER_INIT': log_logger_init, 'LOG_HANDLER_INIT': log_handler_init,
 
     'ANDROID_INIT_DEVICE': android_init_device, 'ANDROID_INTERACT_DEVICE': android_interact_device,
@@ -91,4 +94,4 @@ m_dict = {
     'MAC_WRITE_RECORD': mac_write_record
 }
 
-# 打包时修改这个来实现依赖裁剪
+# pyinstaller打包exe时修改这个来实现依赖裁剪
