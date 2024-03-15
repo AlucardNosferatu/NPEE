@@ -72,7 +72,7 @@ if __name__ == '__main__':
     fc = FlowChart(prerequisite=params)
     fc.load_map(hook_script='power_cycle.py', map_json='电源切变循环测试.pos')
     # todo: makeshift patch
-    fc.params_bus['log'] = {'logger_name': 'power_cycle'}
+    fc.params_bus['log'] = {'logger_name': 'power_cycle', 'log_backup_count': 8192}
     fc.params_bus = log_logger_init(params=fc.params_bus)
     fc.params_bus = log_handler_init(params=fc.params_bus)
     end = False

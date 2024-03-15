@@ -305,3 +305,17 @@ def h23(params):
     logger.info('关闭电源，本轮测试结束')
     params['ps']['toggle'] = 'off'
     return params
+
+
+def h24(params):
+    if params['pc_testcase']['ping_ok']:
+        if 'ping_5g_ok' in params['pc_testcase'].keys():
+            if params['pc_testcase']['ping_5g_ok']:
+                params['if_switch'] = True
+            else:
+                params['if_switch'] = False
+        else:
+            params['if_switch'] = True
+    else:
+        params['if_switch'] = False
+    return params
