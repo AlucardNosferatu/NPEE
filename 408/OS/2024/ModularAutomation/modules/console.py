@@ -146,13 +146,16 @@ def console_read(params):
     try:
         if console_type == 'serial':
             ser: serial.Serial = console_params['serial']
+            ser.write(data='\r'.encode('utf-8'))  # type: ignore
             echo_string = ser.read_all().decode('utf-8')  # type: ignore
         elif console_type == 'ssh':
             ssh_shell: paramiko.Channel = console_params['ssh']
-            echo_string = echo_string = ssh_shell.recv(65535).decode('utf-8')
+            ssh_shell.send('\r'.encode('utf-8'))
+            echo_string = ssh_shell.recv(65535).decode('utf-8')
         else:
             raise ValueError(
                 'Only telnet, ssh and serial console are supported.')
+        print('串口DEBUG:{}'.format(echo_string))
         console_params['echo_string'] = echo_string
         console_params['exception'] = None
     except Exception as e:

@@ -1,4 +1,5 @@
 import json
+import random
 import time
 
 from kill_thread import kill_thread
@@ -49,8 +50,16 @@ def h2(params):
 
 def h3(params):
     logger = params['log']['logger']
-    logger.info('保持电源打开Ton={}秒'.format(params['pc_testcase']['ton']))
-    time.sleep(params['pc_testcase']['ton'])
+    ton = params['pc_testcase']['ton']
+    if type(ton) is str:
+        ton = ton.split(':')
+        ton_lb = float(ton[1])
+        ton_ub = float(ton[2])
+        logger.info('随机Ton，范围：{}<=Ton<={}秒'.format(ton_lb, ton_ub))
+        ton_interval = ton_ub-ton_lb
+        ton = random.random()*ton_interval+ton_lb
+    logger.info('保持电源打开Ton={}秒'.format(ton))
+    time.sleep(ton)
     params['ps']['toggle'] = 'off'
     return params
 
@@ -64,6 +73,9 @@ def h4(params):
 
 
 def h5(params):
+    logger = params['log']['logger']
+    if 'console' in params.keys() and params['console']['exception'] is not None:
+        logger.error('检测到串口动作存在异常:{}'.format(repr(params['console']['exception'])))
     return params
 
 
@@ -81,12 +93,14 @@ def h6(params):
 def check_boot(params):
     logger = params['log']['logger']
     logger.info('检查启机次数')
+    if params['console']['exception'] is not None:
+        logger.error('检测到串口动作存在异常:{}'.format(repr(params['console']['exception'])))
     echo_string: str = params['console']['echo_string']
     params['pc_testcase']['boot_count'] += echo_string.count(
         'Starting kernel ...'
     )
     logger.info('检查启机完成')
-    params['pc_testcase']['boot_ok'] = '=============upinit_finished================' in echo_string
+    params['pc_testcase']['boot_ok'] = 'upinit_finished' in echo_string
     logger.info('启机完成?:{}'.format(params['pc_testcase']['boot_ok']))
     params['console']['read_loop'] = not params['pc_testcase']['boot_ok']
     return params
@@ -275,7 +289,7 @@ def h21(params):
     logger.info('5G WiFi连接耗时:{}'.format(params['pc_testcase']['tcheck_5g']))
     params['pc_testcase']['wifi_5g_ok'] = 'wifi_result' in params['misc'].keys(
     ) and params['misc']['wifi_result'][0]
-    logger.info('2.4G WiFi连接成功?:{}'.format(params['pc_testcase']['wifi_5g_ok']))
+    logger.info('5G WiFi连接成功?:{}'.format(params['pc_testcase']['wifi_5g_ok']))
     for thread in params['thread_pool']:
         kill_thread(thread=thread['thread_obj'])
     params['thread_pool'].clear()
