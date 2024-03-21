@@ -146,11 +146,11 @@ def console_read(params):
     try:
         if console_type == 'serial':
             ser: serial.Serial = console_params['serial']
-            ser.write(data='\r'.encode('utf-8'))  # type: ignore
+            # ser.write(data='\r'.encode('utf-8'))  # type: ignore
             echo_string = ser.read_all().decode('utf-8')  # type: ignore
         elif console_type == 'ssh':
             ssh_shell: paramiko.Channel = console_params['ssh']
-            ssh_shell.send('\r'.encode('utf-8'))
+            # ssh_shell.send('\r'.encode('utf-8'))
             echo_string = ssh_shell.recv(65535).decode('utf-8')
         else:
             raise ValueError(
