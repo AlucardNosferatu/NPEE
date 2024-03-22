@@ -149,7 +149,8 @@ def h8(params):
 
 
 def h9(params):
-    params['console']['send_string'] = 'cd /root\nls\nrm /root/*'
+    # params['console']['send_string'] = 'cd /root\nls\nrm /root/*'
+    params['console']['send_string'] = 'cd /root\nls'
     params['console']['format'] = 'str'
     params['console']['wait'] = 10
     return params
@@ -167,13 +168,19 @@ def h11(params):
 
 def h12(params):
     echo_string = params['console']['echo_string']
-    results = [{True: 'FAIL', False: 'PASS'}[i_fn in echo_string] for i_fn in params['wvt']['payload_list']]
+    print('ls的回显:\n{}'.format(echo_string))
+    results = []
+    for i_fn in params['wvt']['payload_list']:
+        result = {True: 'FAIL', False: 'PASS'}[i_fn in echo_string]
+        print('载荷:{} 通过?:{}'.format(i_fn, result))
+        results.append(result)
     data_src_dict = {
         'results': results,
         'api': [item['api'] for item in params['wvt']['testcases']],
         'cmd': [item['cmd'] for item in params['wvt']['testcases']],
         'method': [item['method'] for item in params['wvt']['testcases']],
         'payloads': [item['payload'] for item in params['wvt']['testcases']],
+        'injected': [i_fn for i_fn in params['wvt']['payload_list']]
     }
     params['excel']['data_src_dict'] = data_src_dict
     params['excel']['save_path'] = params['wvt']['save_path']

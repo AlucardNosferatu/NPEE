@@ -24,6 +24,7 @@ def console_close(params):
         console.close()
         console_params['exception'] = None
     except Exception as e:
+        print('串口异常:{}'.format(repr(e)))
         console_params['exception'] = e
     return params
 
@@ -82,6 +83,7 @@ def console_login(params):
                 'Only telnet, ssh and serial console are supported.')
         console_login_params['exception'] = None
     except Exception as e:
+        print('串口异常:{}'.format(repr(e)))
         console_login_params['exception'] = e
     return params
 
@@ -136,6 +138,7 @@ def console_send(params: dict):
                 'Only telnet, ssh and serial console are supported.')
         console_send_params['exception'] = None
     except Exception as e:
+        print('串口异常:{}'.format(repr(e)))
         console_send_params['exception'] = e
     return params
 
@@ -159,6 +162,7 @@ def console_read(params):
         console_params['echo_string'] = echo_string
         console_params['exception'] = None
     except Exception as e:
+        print('串口异常:{}'.format(repr(e)))
         console_params['echo_string'] = None
         console_params['exception'] = e
     return params
