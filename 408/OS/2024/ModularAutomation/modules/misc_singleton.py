@@ -30,7 +30,7 @@ def wifi_connect(params):
         time.sleep(1)
         try_scan = 5
         scan_res = []
-        while len(scan_res) <= 0 < try_scan:
+        while 0 < try_scan:
             iface.scan()
             time.sleep(10)
             scan_res = iface.scan_results()
@@ -84,6 +84,6 @@ def wifi_connect(params):
                     print("这个网卡没搜到目标，再试一次！剩余重试次数:{}".format(try_scan))
             else:
                 print("这个网卡啥也没搜到，再试一次！剩余重试次数:{}".format(try_scan))
-            print("这个网卡啥也没搜到，换张网卡")
+        print("这个网卡啥也没搜到，换张网卡")
     print("每张网卡都试过去了，还是不行！")
     return params

@@ -96,6 +96,7 @@ def check_boot(params):
     if params['console']['exception'] is not None:
         logger.error('检测到串口动作存在异常:{}'.format(repr(params['console']['exception'])))
     echo_string: str = params['console']['echo_string']
+    logger.info('串口打印:\n{}'.format(echo_string))
     params['pc_testcase']['boot_count'] += echo_string.count(
         'Starting kernel ...'
     )
@@ -256,8 +257,27 @@ def h17(params):
 
 def h18(params):
     logger = params['log']['logger']
-    params['if_switch'] = len(params['pc_testcases']) > 0
+    logger.info('启机测试结果:{}'.format(params['pc_testcase']['boot_ok']))
+    if params['pc_testcase']['boot_ok']:
+        logger.info('2.4G连通性测试结果:{}'.format(params['pc_testcase']['ping_ok']))
+        if params['pc_testcase']['ping_ok']:
+            if 'ping_5g_ok' in params['pc_testcase'].keys():
+                logger.info('5G连通性测试结果:{}'.format(params['pc_testcase']['ping_5g_ok']))
+                if params['pc_testcase']['ping_5g_ok']:
+                    params['if_switch'] = True
+                else:
+                    params['if_switch'] = False
+            else:
+                params['if_switch'] = True
+        else:
+            params['if_switch'] = False
+    else:
+        params['if_switch'] = False
+    logger.info('本轮测试通过？:{}'.format(params['if_switch']))
     logger.info('剩余测试轮数:{}'.format(len(params['pc_testcases'])))
+    if params['if_switch']:
+        params['if_switch'] = len(params['pc_testcases']) > 0
+    logger.info('继续测试？:{}'.format(params['if_switch']))
     return params
 
 
@@ -318,18 +338,4 @@ def h23(params):
     logger = params['log']['logger']
     logger.info('关闭电源，本轮测试结束')
     params['ps']['toggle'] = 'off'
-    return params
-
-
-def h24(params):
-    if params['pc_testcase']['ping_ok']:
-        if 'ping_5g_ok' in params['pc_testcase'].keys():
-            if params['pc_testcase']['ping_5g_ok']:
-                params['if_switch'] = True
-            else:
-                params['if_switch'] = False
-        else:
-            params['if_switch'] = True
-    else:
-        params['if_switch'] = False
     return params

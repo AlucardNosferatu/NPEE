@@ -41,6 +41,11 @@ def eweb_inject_cmd(params):
 
 
 def eweb_get_sid(params):
+    if 'timestamp' in params['eweb']:
+        timestamp = str(params['eweb']['timestamp'])
+        del params['eweb']['timestamp']
+    else:
+        timestamp = str(get_timestamp_now(is_millisecond=False))
     if 'http' not in params.keys():
         params['http'] = {}
     params['http'].__setitem__(
@@ -52,7 +57,7 @@ def eweb_get_sid(params):
                 'username': 'admin',
                 'encry': True,
                 'password': encrypt_pass(message=params['eweb']['pass']),
-                'time': str(get_timestamp_now(False))
+                'time': timestamp
             }, 'method': 'login'
         }
     )
@@ -65,7 +70,10 @@ def eweb_get_sid(params):
     )
     params = http_post(params=params)
     if params['http']['response'] is not int:
-        sid = params['http']['response']['data']['sid']
+        if params['http']['response']['data'] is not None:
+            sid = params['http']['response']['data']['sid']
+        else:
+            sid = None
     else:
         sid = None
     del params['http']['response']

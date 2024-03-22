@@ -1,6 +1,6 @@
-scan_host = '10.51.132.73'
+scan_host = '192.168.110.1'
 scan_host_web = 'http://{}/'.format(scan_host)
-target_name = 'EW300T'
+target_name = 'H30M'
 eweb_pass = 'LostXmas20291224'
 ssh_pass = '537f300ccabec155'
 filename_bin = 'EW_3.0(1)B11P302_EW300T_11151402_install_encypto.bin'
