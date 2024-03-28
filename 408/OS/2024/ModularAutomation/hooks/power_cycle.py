@@ -1,3 +1,4 @@
+import code
 import json
 import random
 import time
@@ -31,6 +32,7 @@ def h0(params):
         }
     ]
     params['pc_report_savepath'] = 'reports/EW300T电源切变循环测试.xlsx'
+    code.interact(local=locals())
     return params
 
 
@@ -58,6 +60,7 @@ def h3(params):
         logger.info('随机Ton，范围：{}<=Ton<={}秒'.format(ton_lb, ton_ub))
         ton_interval = ton_ub - ton_lb
         ton = random.random() * ton_interval + ton_lb
+        params['pc_testcase']['ton'] = str(ton)
     logger.info('保持电源打开Ton={}秒'.format(ton))
     time.sleep(ton)
     params['ps']['toggle'] = 'off'
@@ -96,7 +99,8 @@ def check_boot(params):
     if params['console']['exception'] is not None:
         logger.error('检测到串口动作存在异常:{}'.format(repr(params['console']['exception'])))
     echo_string: str = params['console']['echo_string']
-    logger.info('串口打印:\n{}'.format(echo_string))
+    # logger.info('串口打印:\n{}'.format(echo_string))
+    print('串口打印:\n{}'.format(echo_string))
     params['pc_testcase']['boot_count'] += echo_string.count('Starting kernel ...')
     logger.info('重启次数:{}'.format(params['pc_testcase']['boot_count']))
     logger.info('检查启机完成')

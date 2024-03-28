@@ -1,3 +1,4 @@
+import code
 import datetime
 import os
 
@@ -9,6 +10,11 @@ time_format = "%Y年%m月%d日-%H时%M分%S秒"
 
 
 def nop(params):
+    return params
+
+
+def interactive_shell(params):
+    code.interact(local=locals())
     return params
 
 
