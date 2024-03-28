@@ -1,4 +1,5 @@
 from __future__ import annotations
+import telnetlib
 
 import time
 
@@ -18,6 +19,8 @@ def console_close(params):
             console: serial.Serial = console_params['serial']  # type: ignore
         elif console_type == 'ssh':
             console: paramiko.Channel = console_params['ssh']
+        elif console_type == 'telnet':
+            console: telnetlib.Telnet = console_params['telnet']
         else:
             raise ValueError(
                 'Only telnet, ssh and serial console are supported.')
@@ -37,47 +40,60 @@ def console_login(params):
     #         'ssh_pass': '57e541f69676ce62'
     #     }
     # }
+    def loop_until_logged_in(con, csp):
+        finished = False
+        while not finished:
+            echo_string = con.read_all().decode('utf-8')  # type: ignore
+            print('控制台尝试登录中\n控制台残留回显:\n{}'.format(echo_string))
+            if 'root@' in echo_string:
+                finished = True
+            elif 'Ruijie login:' in echo_string or 'Reyee login' in echo_string:
+                con.write('root\r'.encode('utf-8'))  # type: ignore
+            elif 'Password:' in echo_string:
+                con.write('{}\r'.format(csp).encode('utf-8'))  # type: ignore
+            else:
+                print('无有效响应，按下回车看看')
+                con.write('\r'.encode('utf-8'))  # type: ignore
+            time.sleep(0.5)
+    print('开始登录控制台')
     console_login_params = params['console']
     try:
         console_type = console_login_params['console_type']
         if console_type == 'serial':
             console_serial_port = console_login_params['port']
             console_serial_baud_rate = console_login_params['baud_rate']
-            ser = serial.Serial(port=console_serial_port,
-                                baudrate=console_serial_baud_rate, timeout=0.5)
+            ser = serial.Serial(
+                port=console_serial_port, baudrate=console_serial_baud_rate, timeout=0.5
+            )
             if 'serial_type' in console_login_params and console_login_params['serial_type'] == 'RJ':
                 console_serial_pass = console_login_params['serial_pass']
-                finished = False
-                while not finished:
-                    echo_string = ser.read_all().decode('utf-8')  # type: ignore
-                    print(echo_string)
-                    if 'root@' in echo_string:
-                        finished = True
-                    elif 'Ruijie login:' in echo_string or 'Reyee login' in echo_string:
-                        ser.write(data='root\r'.encode(
-                            'utf-8'))  # type: ignore
-                    elif 'Password:' in echo_string:
-                        ser.write(data='{}\r'.format(
-                            # type: ignore
-                            console_serial_pass).encode('utf-8'))
-                    else:
-                        ser.write(data='\r'.encode('utf-8'))  # type: ignore
-                    time.sleep(0.5)
-            console_login_params.__setitem__('serial', ser)
+                loop_until_logged_in(con=ser, csp=console_serial_pass)
+            console_login_params['serial'] = ser
         elif console_type == 'ssh':
             console_ssh_ip = console_login_params['dut_ip']
-            console_ssh_port = 54133
+            if 'port' in console_login_params.keys():
+                console_ssh_port = console_login_params['port']
+            else:
+                console_ssh_port = 54133
             console_ssh_user = 'root'
             console_ssh_pass = console_login_params['ssh_pass']
             ssh_ = paramiko.SSHClient()
             ssh_.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh_.connect(console_ssh_ip, console_ssh_port,
-                         username=console_ssh_user, password=console_ssh_pass)
+            ssh_.connect(
+                console_ssh_ip, console_ssh_port, username=console_ssh_user, password=console_ssh_pass
+            )
             ssh_shell = ssh_.invoke_shell()
             console_login_params.__setitem__('ssh', ssh_shell)
         elif console_type == 'telnet':
-            raise NotImplementedError(
-                'telnet console has not been implemented yet.')
+            console_telnet_ip = console_login_params['dut_ip']
+            if 'port' in console_login_params.keys():
+                console_telnet_port = console_login_params['port']
+            else:
+                console_telnet_port = 23
+            console_telnet_pass = console_login_params['telnet_pass']
+            telnet_ = telnetlib.Telnet(host=console_telnet_ip, port=console_telnet_port)
+            loop_until_logged_in(con=telnet_, csp=console_telnet_pass)
+            console_login_params['telnet'] = telnet_
         else:
             raise ValueError(
                 'Only telnet, ssh and serial console are supported.')
@@ -95,6 +111,34 @@ def console_send(params: dict):
             del csp['wait']
             time.sleep(float(wait))
 
+    def flush_send_recv(con, ss, s_act, r_act, csp, r_param=None):
+        _ = con
+        s_act = eval('con.{}'.format(s_act))
+        r_act = eval('con.{}'.format(r_act))
+        s_act('\r'.encode('utf-8'))  # type: ignore
+        if r_param is None:
+            _ = r_act().decode('utf-8')  # type: ignore
+        else:
+            _ = r_act(r_param).decode('utf-8')  # type: ignore
+        if 'format' not in csp.keys() or csp['format'] == 'str':
+            s_act('{}\r'.format(ss).encode('utf-8'))  # type: ignore
+        elif csp['format'] == 'bytes':
+            s_act(ss)  # type: ignore
+        else:
+            raise ValueError('format should be bytes or str.')
+        wait_for_echo(csp=csp)
+        if r_param is None:
+            es = r_act()  # type: ignore
+        else:
+            es = r_act(r_param)  # type: ignore
+        if 'format' not in csp.keys() or csp['format'] == 'str':
+            es = es.decode('utf-8')
+        elif csp['format'] == 'bytes':
+            pass
+        else:
+            raise ValueError('format should be bytes or str.')
+        return es
+
     console_send_params = params['console']
     try:
         console_type = console_send_params['console_type']
@@ -102,43 +146,20 @@ def console_send(params: dict):
         del console_send_params['send_string']
         if console_type == 'serial':
             ser: serial.Serial = console_send_params['serial']
-            if 'format' not in console_send_params.keys() or console_send_params['format'] == 'str':
-                ser.write(data='\r'.encode('utf-8'))  # type: ignore
-                _ = ser.read_all().decode('utf-8')  # type: ignore
-                ser.write(data='{}\r'.format(
-                    send_string).encode('utf-8'))  # type: ignore
-                wait_for_echo(csp=console_send_params)
-                echo_string = ser.read_all().decode('utf-8')  # type: ignore
-            elif console_send_params['format'] == 'bytes':
-                _ = ser.read_all()
-                ser.write(data=send_string)  # type: ignore
-                wait_for_echo(csp=console_send_params)
-                echo_string = ser.read_all()
-            else:
-                raise ValueError('format should be bytes or str.')
-            console_send_params.__setitem__('echo_string', echo_string)
+            echo_string = flush_send_recv(con=ser, ss=send_string, s_act='write', r_act='read_all')
         elif console_type == 'ssh':
             ssh_shell: paramiko.Channel = console_send_params['ssh']
-            ssh_shell.send('\r'.encode('utf-8'))
-            _ = ssh_shell.recv(65535).decode('utf-8')
-            if 'format' not in console_send_params.keys() or console_send_params['format'] == 'str':
-                ssh_shell.send('{}\r'.format(send_string).encode('utf-8'))
-            elif console_send_params['format'] == 'bytes':
-                ssh_shell.send(send_string)  # type: ignore
-            else:
-                raise ValueError('format should be bytes or str.')
-            wait_for_echo(csp=console_send_params)
-            echo_string = ssh_shell.recv(65535).decode('utf-8')
-            console_send_params.__setitem__('echo_string', echo_string)
+            echo_string = flush_send_recv(con=ssh_shell, ss=send_string, s_act='send', r_act='recv', r_param=65535)
         elif console_type == 'telnet':
-            raise NotImplementedError(
-                'telnet console has not been implemented yet.')
+            telnet_: telnetlib.Telnet = console_send_params['telnet']
+            echo_string = flush_send_recv(con=telnet_, ss=send_string, s_act='write', r_act='read_all')
         else:
-            raise ValueError(
-                'Only telnet, ssh and serial console are supported.')
+            raise ValueError('Only telnet, ssh and serial console are supported.')
+        console_send_params['echo_string'] = echo_string
         console_send_params['exception'] = None
     except Exception as e:
         print('串口异常:{}'.format(repr(e)))
+        console_send_params['echo_string'] = None
         console_send_params['exception'] = e
     return params
 
@@ -156,9 +177,9 @@ def console_read(params):
             # ssh_shell.send('\r'.encode('utf-8'))
             echo_string = ssh_shell.recv(65535).decode('utf-8')
         else:
-            raise ValueError(
-                'Only telnet, ssh and serial console are supported.')
-        print('串口DEBUG:{}'.format(echo_string))
+            telnet_: telnetlib.Telnet = console_params['telnet']
+            echo_string = telnet_.read_all().decode('utf-8')  # type: ignore
+        # print('串口DEBUG:{}'.format(echo_string))
         console_params['echo_string'] = echo_string
         console_params['exception'] = None
     except Exception as e:
@@ -173,10 +194,13 @@ def console_read_loop(params):
     while console_params['read_loop']:
         time.sleep(console_params['read_loop_interval'])
         params = console_read(params=params)
-        print('控制台读取输出:\n{}'.format(console_params['echo_string']))
+        print('控制台持续监听中')
         if 'read_loop_callbacks' in console_params.keys():
             for read_loop_callback in console_params['read_loop_callbacks']:
-                params = read_loop_callback(params=params)
+                try:
+                    params = read_loop_callback(params=params)
+                except Exception as e:
+                    print('串口回显处理异常:{}'.format(repr(e)))
     return params
 
 

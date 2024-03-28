@@ -52,7 +52,7 @@ def log_handler_init(params):
             log_level = eval('logging.{}'.format(log_params['log_level']))
     handler.setLevel(log_level)
     # 创建日志格式器
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    formatter = logging.Formatter("%(thread)d - %(asctime)s - %(name)s - %(levelname)s - %(message)s")
     # 设置日志格式器
     handler.setFormatter(formatter)
     log_params['handler'] = handler
