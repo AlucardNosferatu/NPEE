@@ -4,15 +4,15 @@ import time
 
 
 def task_a(var1, var2, var3, ret):
+    _pause = _pause
+    # fuck
     var1 += var2
-    print('line 1 executed.')
-    var1 *= var3
-    print('line 2 executed.')
-    # var1 < 1000
-    exec_task({'var1': var1, 'var2': var2, 'var3': var3, 'ret': ret}, task_a, [], _pause)
-    # var1 >= 1000
+    # jmp fuck
+    var2 += var3
     ret.append(var1)
-    print('line 3 executed.')
+    print('var1:{}'.format(var1))
+    # cond = var1 < 1000
+    exec_task({'var1': var1, 'var2': var2, 'var3': var3, 'ret': ret}, task_a, [], _pause)
 
 
 def exec_task(params, func, flag, _pause):
@@ -24,23 +24,25 @@ def exec_task(params, func, flag, _pause):
     keys = args.args
     for key in keys:
         exec("{}=params['{}']".format(key, key))
-    while len(lines) > 0:
-        do_exec = True
+    lines_ = lines.copy()
+    while len(lines_) > 0:
+        cond = True
         line = lines.pop(0).strip()
-        if line.startswith('#'):
+        if line.startswith('# cond'):
             line = line[1:].strip()
-            print('条件:{}'.format(line))
-            do_exec = eval(line)
+            # print('条件:{}'.format(line))
+            exec(line)
             line = lines.pop(0).strip()
         wait = False
-        while not _pause[0]:
+        while _pause[0]:
             if not wait:
                 print('pause')
                 wait = True
         if wait:
             print('resume')
-        if do_exec:
+        if cond:
             exec(line)
+        time.sleep(0.01)
     flag.append(True)
 
 
@@ -51,7 +53,8 @@ if __name__ == '__main__':
     fb_thread = Thread(target=exec_task, args=({'var1': 1, 'var2': 2, 'var3': 3, 'ret': ret}, task_a, flag, pause))
     fb_thread.start()
     while len(flag) <= 0 or not flag[0]:
-        time.sleep(0.25)
+        time.sleep(0.1)
         pause[0] = True
+        time.sleep(2)
         print('返回值:{}'.format(ret))
         pause[0] = False
