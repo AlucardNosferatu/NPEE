@@ -1,4 +1,6 @@
+import code
 import json
+import random
 import time
 
 from kill_thread import kill_thread
@@ -30,6 +32,7 @@ def h0(params):
         }
     ]
     params['pc_report_savepath'] = 'reports/EW300T电源切变循环测试.xlsx'
+    code.interact(local=locals())
     return params
 
 
@@ -49,8 +52,17 @@ def h2(params):
 
 def h3(params):
     logger = params['log']['logger']
-    logger.info('保持电源打开Ton={}秒'.format(params['pc_testcase']['ton']))
-    time.sleep(params['pc_testcase']['ton'])
+    ton = params['pc_testcase']['ton']
+    if isinstance(ton, str):
+        ton = ton.split(':')
+        ton_lb = float(ton[1])
+        ton_ub = float(ton[2])
+        logger.info('随机Ton，范围：{}<=Ton<={}秒'.format(ton_lb, ton_ub))
+        ton_interval = ton_ub - ton_lb
+        ton = random.random() * ton_interval + ton_lb
+        params['pc_testcase']['ton'] = str(ton)
+    logger.info('保持电源打开Ton={}秒'.format(ton))
+    time.sleep(ton)
     params['ps']['toggle'] = 'off'
     return params
 
@@ -64,6 +76,9 @@ def h4(params):
 
 
 def h5(params):
+    logger = params['log']['logger']
+    if 'console' in params.keys() and params['console']['exception'] is not None:
+        logger.error('检测到串口动作存在异常:{}'.format(repr(params['console']['exception'])))
     return params
 
 
@@ -81,12 +96,15 @@ def h6(params):
 def check_boot(params):
     logger = params['log']['logger']
     logger.info('检查启机次数')
+    if params['console']['exception'] is not None:
+        logger.error('检测到串口动作存在异常:{}'.format(repr(params['console']['exception'])))
     echo_string: str = params['console']['echo_string']
-    params['pc_testcase']['boot_count'] += echo_string.count(
-        'Starting kernel ...'
-    )
+    # logger.info('串口打印:\n{}'.format(echo_string))
+    print('串口打印:\n{}'.format(echo_string))
+    params['pc_testcase']['boot_count'] += echo_string.count('Starting kernel ...')
+    logger.info('重启次数:{}'.format(params['pc_testcase']['boot_count']))
     logger.info('检查启机完成')
-    params['pc_testcase']['boot_ok'] = '=============upinit_finished================' in echo_string
+    params['pc_testcase']['boot_ok'] = 'upinit_finished' in echo_string
     logger.info('启机完成?:{}'.format(params['pc_testcase']['boot_ok']))
     params['console']['read_loop'] = not params['pc_testcase']['boot_ok']
     return params
@@ -242,8 +260,27 @@ def h17(params):
 
 def h18(params):
     logger = params['log']['logger']
-    params['if_switch'] = len(params['pc_testcases']) > 0
+    logger.info('启机测试结果:{}'.format(params['pc_testcase']['boot_ok']))
+    if params['pc_testcase']['boot_ok']:
+        logger.info('2.4G连通性测试结果:{}'.format(params['pc_testcase']['ping_ok']))
+        if params['pc_testcase']['ping_ok']:
+            if 'ping_5g_ok' in params['pc_testcase'].keys():
+                logger.info('5G连通性测试结果:{}'.format(params['pc_testcase']['ping_5g_ok']))
+                if params['pc_testcase']['ping_5g_ok']:
+                    params['if_switch'] = True
+                else:
+                    params['if_switch'] = False
+            else:
+                params['if_switch'] = True
+        else:
+            params['if_switch'] = False
+    else:
+        params['if_switch'] = False
+    logger.info('本轮测试通过？:{}'.format(params['if_switch']))
     logger.info('剩余测试轮数:{}'.format(len(params['pc_testcases'])))
+    if params['if_switch']:
+        params['if_switch'] = len(params['pc_testcases']) > 0
+    logger.info('继续测试？:{}'.format(params['if_switch']))
     return params
 
 
@@ -275,7 +312,7 @@ def h21(params):
     logger.info('5G WiFi连接耗时:{}'.format(params['pc_testcase']['tcheck_5g']))
     params['pc_testcase']['wifi_5g_ok'] = 'wifi_result' in params['misc'].keys(
     ) and params['misc']['wifi_result'][0]
-    logger.info('2.4G WiFi连接成功?:{}'.format(params['pc_testcase']['wifi_5g_ok']))
+    logger.info('5G WiFi连接成功?:{}'.format(params['pc_testcase']['wifi_5g_ok']))
     for thread in params['thread_pool']:
         kill_thread(thread=thread['thread_obj'])
     params['thread_pool'].clear()
@@ -304,18 +341,4 @@ def h23(params):
     logger = params['log']['logger']
     logger.info('关闭电源，本轮测试结束')
     params['ps']['toggle'] = 'off'
-    return params
-
-
-def h24(params):
-    if params['pc_testcase']['ping_ok']:
-        if 'ping_5g_ok' in params['pc_testcase'].keys():
-            if params['pc_testcase']['ping_5g_ok']:
-                params['if_switch'] = True
-            else:
-                params['if_switch'] = False
-        else:
-            params['if_switch'] = True
-    else:
-        params['if_switch'] = False
     return params

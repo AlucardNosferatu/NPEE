@@ -1,9 +1,29 @@
+import code
 import datetime
 import os
 
 from scapy.volatile import RandMAC
 
+from modules.encryption.eweb_password import encrypt_pass
+
 time_format = "%Y年%m月%d日-%H时%M分%S秒"
+
+
+def nop(params):
+    return params
+
+
+def interactive_shell(params):
+    code.interact(local=locals())
+    return params
+
+
+def eweb_pass_enc(params):
+    misc_params = params['misc']
+    ep_dec = misc_params['ep_dec']
+    ep_enc = encrypt_pass(message=ep_dec)
+    misc_params['ep_enc'] = ep_enc
+    return params
 
 
 def timer(params):

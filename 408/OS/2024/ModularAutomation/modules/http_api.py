@@ -11,33 +11,33 @@ def http_post(params):
         'verify': False
     }
     if 'params' in params['http'].keys():
-        post_dict.__setitem__('params', params['http']['params'])
+        post_dict['params'] = params['http']['params']
         del params['http']['params']
     if 'data' in params['http'].keys():
         if 'data_format' in params['http'].keys():
             if params['http']['data_format'] == 'url_encoded':
-                post_dict.__setitem__('data', params['http']['data'])
+                post_dict['data'] = params['http']['data']
             else:
                 raise NotImplementedError
             del params['http']['data_format']
         else:
-            post_dict.__setitem__('data', json.dumps(params['http']['data'], ensure_ascii=False).encode("utf-8"))
+            post_dict['data'] = json.dumps(params['http']['data'], ensure_ascii=False).encode("utf-8")
         del params['http']['data']
     if 'headers' in params['http'].keys():
-        post_dict.__setitem__('headers', params['http']['headers'])
+        post_dict['headers'] = params['http']['headers']
     if 'timeout' in params['http'].keys():
-        post_dict.__setitem__('timeout', params['http']['timeout'])
+        post_dict['timeout'] = params['http']['timeout']
     if 'allow_redirects' in params['http'].keys():
-        post_dict.__setitem__('allow_redirects', params['http']['allow_redirects'])
+        post_dict['allow_redirects'] = params['http']['allow_redirects']
     response = requests.post(**post_dict)
     if response.status_code in [200, 201, 302]:
         if 'raw' in params['http'].keys() and params['http']['raw']:
             del params['http']['raw']
-            params['http'].__setitem__('response', response)
+            params['http']['response'] = response
         else:
-            params['http'].__setitem__('response', json.loads(response.content.decode('utf-8')))
+            params['http']['response'] = json.loads(response.content.decode('utf-8'))
     else:
-        params['http'].__setitem__('response', response.status_code)
+        params['http']['response'] = response.status_code
     return params
 
 
@@ -49,22 +49,22 @@ def http_get(params):
         'verify': False
     }
     if 'params' in params['http'].keys():
-        get_dict.__setitem__('params', params['http']['params'])
+        get_dict['params'] = params['http']['params']
         del params['http']['params']
     if 'data' in params['http'].keys():
         if 'data_format' in params['http'].keys():
             if params['http']['data_format'] == 'url_encoded':
-                get_dict.__setitem__('data', params['http']['data'])
+                get_dict['data'] = params['http']['data']
             else:
                 raise NotImplementedError
             del params['http']['data_format']
         else:
-            get_dict.__setitem__('data', json.dumps(params['http']['data'], ensure_ascii=False).encode("utf-8"))
+            get_dict['data'] = json.dumps(params['http']['data'], ensure_ascii=False).encode("utf-8")
         del params['http']['data']
     if 'headers' in params['http'].keys():
-        get_dict.__setitem__('headers', params['http']['headers'])
+        get_dict['headers'] = params['http']['headers']
     if 'timeout' in params['http'].keys():
-        get_dict.__setitem__('timeout', params['http']['timeout'])
+        get_dict['timeout'] = params['http']['timeout']
     response = requests.get(**get_dict)
     if response.status_code in [200, 201, 302]:
         if 'download_as' in params['http'].keys():
@@ -74,11 +74,11 @@ def http_get(params):
         else:
             if 'raw' in params['http'].keys() and params['http']['raw']:
                 del params['http']['raw']
-                params['http'].__setitem__('response', response)
+                params['http']['response'] = response
             else:
-                params['http'].__setitem__('response', json.loads(response.content.decode('utf-8')))
+                params['http']['response'] = json.loads(response.content.decode('utf-8'))
     else:
-        params['http'].__setitem__('response', response.status_code)
+        params['http']['response'] = response.status_code
     return params
 
 
@@ -90,31 +90,31 @@ def http_delete(params):
         'verify': False
     }
     if 'params' in params['http'].keys():
-        delete_dict.__setitem__('params', params['http']['params'])
+        delete_dict['params'] = params['http']['params']
         del params['http']['params']
     if 'data' in params['http'].keys():
         if 'data_format' in params['http'].keys():
             if params['http']['data_format'] == 'url_encoded':
-                delete_dict.__setitem__('data', params['http']['data'])
+                delete_dict['data'] = params['http']['data']
             else:
                 raise NotImplementedError
             del params['http']['data_format']
         else:
-            delete_dict.__setitem__('data', json.dumps(params['http']['data']))
+            delete_dict['data'] = json.dumps(params['http']['data'])
         del params['http']['data']
     if 'headers' in params['http'].keys():
-        delete_dict.__setitem__('headers', params['http']['headers'])
+        delete_dict['headers'] = params['http']['headers']
     if 'timeout' in params['http'].keys():
-        delete_dict.__setitem__('timeout', params['http']['timeout'])
+        delete_dict['timeout'] = params['http']['timeout']
     response = requests.delete(**delete_dict)
     if response.status_code in [200, 201, 302]:
         if 'raw' in params['http'].keys() and params['http']['raw']:
             del params['http']['raw']
-            params['http'].__setitem__('response', response)
+            params['http']['response'] = response
         else:
-            params['http'].__setitem__('response', json.loads(response.content.decode('utf-8')))
+            params['http']['response'] = json.loads(response.content.decode('utf-8'))
     else:
-        params['http'].__setitem__('response', response.status_code)
+        params['http']['response'] = response.status_code
     return params
 
 
