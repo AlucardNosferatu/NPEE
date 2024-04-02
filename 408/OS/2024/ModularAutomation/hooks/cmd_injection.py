@@ -48,6 +48,7 @@ def h2(params):
     case_params = params['excel']['case_params']
     api = case_params['api']
     cmd = case_params['cmd']
+    print('注入的cmd:\n{}'.format(cmd))
     method_ = case_params['method']
     payloads = case_params['payloads']
     for i in range(len(api)):
@@ -150,7 +151,7 @@ def h8(params):
 
 def h9(params):
     # params['console']['send_string'] = 'cd /root\nls\nrm /root/*'
-    params['console']['send_string'] = 'cd /root\nls'
+    params['console']['send_string'] = 'find / -iname *injected*'
     params['console']['format'] = 'str'
     params['console']['wait'] = 10
     return params

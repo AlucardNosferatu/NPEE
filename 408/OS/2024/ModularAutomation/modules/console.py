@@ -146,13 +146,19 @@ def console_send(params: dict):
         del console_send_params['send_string']
         if console_type == 'serial':
             ser: serial.Serial = console_send_params['serial']
-            echo_string = flush_send_recv(con=ser, ss=send_string, s_act='write', r_act='read_all')
+            echo_string = flush_send_recv(con=ser, ss=send_string, s_act='write', r_act='read_all', csp=console_send_params)
         elif console_type == 'ssh':
             ssh_shell: paramiko.Channel = console_send_params['ssh']
-            echo_string = flush_send_recv(con=ssh_shell, ss=send_string, s_act='send', r_act='recv', r_param=65535)
+            echo_string = flush_send_recv(
+                con=ssh_shell,
+                ss=send_string,
+                s_act='send',
+                r_act='recv',
+                csp=console_send_params,
+                r_param=65535)
         elif console_type == 'telnet':
             telnet_: telnetlib.Telnet = console_send_params['telnet']
-            echo_string = flush_send_recv(con=telnet_, ss=send_string, s_act='write', r_act='read_all')
+            echo_string = flush_send_recv(con=telnet_, ss=send_string, s_act='write', r_act='read_all', csp=console_send_params)
         else:
             raise ValueError('Only telnet, ssh and serial console are supported.')
         console_send_params['echo_string'] = echo_string
