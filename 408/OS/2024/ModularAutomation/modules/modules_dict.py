@@ -1,5 +1,6 @@
 from modules.console import console_login, console_send, console_close, console_read_loop
 from modules.excel_handler import read_template, read_testcases, write_summary
+from modules.http_eweb_api import eweb_get_sid, eweb_inject_cmd
 from modules.misc import ip_ping, mac_generate, mac_increase, mac_read_record, mac_write_record, timer, nop, interactive_shell, process_kill
 from modules.misc_singleton import wifi_connect
 from modules.power_supply import ps_init, ps_reset, ps_acdc, ps_range, ps_freq, ps_toggle, ps_volt
@@ -34,7 +35,7 @@ m_dict = {
     # 'CONSOLE_GET_AP_CLI': console_get_ap_cli, 'CONSOLE_GET_RADIO_INFO': console_get_radio_info, 'CONSOLE_IWPRIV_SITE_SURVEY': console_iwpriv_site_survey,
     # 'CONSOLE_IWPRIV_STAT': console_iwpriv_stat, 'CONSOLE_IWPRIV_REG': console_iwpriv_reg,
 
-    # 'EWEB_GET_SID': eweb_get_sid, 'EWEB_INJECT_CMD': eweb_inject_cmd,
+    'EWEB_GET_SID': eweb_get_sid, 'EWEB_INJECT_CMD': eweb_inject_cmd,
 
     # 'WINUI_GET_DESKTOP': winui_get_desktop, 'WINUI_GET_EXPLORER': winui_get_explorer,
     # 'WINUI_LOCATE_WINDOW': winui_locate_window, 'WINUI_LOCATE_ELEMENT': winui_locate_element, 'WINUI_HINT': winui_hint,
