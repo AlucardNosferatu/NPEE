@@ -10,6 +10,9 @@ time_format = "%Y年%m月%d日-%H时%M分%S秒"
 
 
 def nop(params):
+    '''
+    什么也不做，用来分隔两个Hook
+    '''
     return params
 
 
@@ -19,6 +22,9 @@ def interactive_shell(params):
 
 
 def eweb_pass_enc(params):
+    '''
+    加密EWEB密码的明文
+    '''
     misc_params = params['misc']
     ep_dec = misc_params['ep_dec']
     ep_enc = encrypt_pass(message=ep_dec)
@@ -27,6 +33,9 @@ def eweb_pass_enc(params):
 
 
 def timer(params):
+    '''
+    一次性计时器，先开后关
+    '''
     misc_params = params['misc']
     timer_params = misc_params['timer']
     while not timer_params['start']:
@@ -39,7 +48,38 @@ def timer(params):
     return params
 
 
+def timer_transience(params):
+    '''
+    打点计时器，多点记录（时间表）
+    '''
+    misc_params = params['misc']
+    timer_params = misc_params['timer']
+    if 't_name' in timer_params:
+        t_name = timer_params['t_name']
+        del timer_params['t_name']
+        if 't_table' not in timer_params:
+            timer_params['t_table'] = {}
+        if t_name not in timer_params['t_table'].keys():
+            timer_params['t_table'][t_name] = []
+        if 't_desc' in timer_params:
+            t_desc = timer_params['t_desc']
+            del timer_params['t_desc']
+        else:
+            t_desc = ''
+        t = datetime.datetime.now()
+        timer_params['t_table'][t_name].append([t, t_desc])
+        params['misc']['exception'] = None
+    else:
+        err = '缺少t_name，无法记录时刻'
+        print(err)
+        params['misc']['exception'] = err
+    return params
+
+
 def process_kill(params):
+    '''
+    干掉进程
+    '''
     misc_params = params['misc']
     kill_processes = misc_params['kill_processes']
     for i in range(len(kill_processes)):
@@ -55,6 +95,9 @@ def process_kill(params):
 
 
 def mac_generate(params):
+    '''
+    生成单播MAC地址
+    '''
     misc_params = params['misc']
     finished = False
     new_mac = None
@@ -69,6 +112,9 @@ def mac_generate(params):
 
 
 def mac_increase(params):
+    '''
+    根据base_mac自增1获取新MAC地址
+    '''
     misc_params = params['misc']
     base_mac = misc_params['base_mac']
     # base_mac = '00:d0:f8:22:31:29'
@@ -90,6 +136,9 @@ def mac_increase(params):
 
 
 def mac_read_record(params):
+    '''
+    从txt文件或list中读取MAC地址记录
+    '''
     misc_params = params['misc']
     if 'mac_record_file' not in misc_params.keys():
         mac_record_file = 'reports/mac_record.txt'
@@ -106,6 +155,9 @@ def mac_read_record(params):
 
 
 def mac_write_record(params):
+    '''
+    把MAC地址记录写入txt文件或list
+    '''
     misc_params = params['misc']
     if 'mac_record_file' not in misc_params.keys():
         mac_record_file = 'reports/mac_record.txt'
@@ -124,6 +176,9 @@ def mac_write_record(params):
 
 
 def mac_input_record(params):
+    '''
+    手动输入MAC地址记录
+    '''
     params['misc'] = {}
     params['misc']['new_mac_list'] = []
     for i in range(4):
@@ -144,6 +199,9 @@ def mac_input_record(params):
 
 
 def mac_input_record_loop(params):
+    '''
+    手动输入MAC地址记录，循环进行
+    '''
     while True:
         params = mac_input_record(params=params)
         cmd = input('按任意键输入下一个MAC，输入exit退出')
@@ -152,6 +210,9 @@ def mac_input_record_loop(params):
 
 
 def iface_ip(params):
+    '''
+    查看接口的IP地址
+    '''
     misc_params = params['misc']
     iface_name = misc_params['iface_name']
     with os.popen('ipconfig') as fp:
@@ -185,6 +246,9 @@ def iface_ip(params):
 
 
 def ip_ping(params):
+    '''
+    去ping一个IP地址
+    '''
     misc_params = params['misc']
     ping_host = misc_params['ping_host']
     ping_times = misc_params['ping_times']
