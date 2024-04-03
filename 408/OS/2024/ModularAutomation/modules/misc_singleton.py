@@ -5,6 +5,9 @@ from pywifi import const
 
 
 def wifi_connect(params):
+    '''
+    连接WiFi
+    '''
     print("开始连接WiFi")
     misc_params = params['misc']
     # wifi_excluded_iface = misc_params['wifi_excluded_iface']

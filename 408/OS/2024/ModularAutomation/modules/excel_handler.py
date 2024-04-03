@@ -8,6 +8,9 @@ excel_label_prefix = '#'
 
 
 def read_template(params):
+    '''
+    读取Excel模板文件
+    '''
     excel_params = params['excel']
     template_path = excel_params['template_path']
     align = Alignment(horizontal='center', vertical='center')
@@ -41,6 +44,10 @@ def read_template(params):
 
 
 def read_testcases(params):
+    '''
+    根据Excel模板文件去读取用例
+    注意，必须先执行read_template获取template_dict
+    '''
     def rt_per_key(k, s, td):
         kwd = k.replace('↑', '').replace('↓', '').replace('←', '').replace('→', '')
         if kwd == k:
@@ -106,11 +113,17 @@ def read_testcases(params):
 
 
 def write_summary(params):
+    '''
+    根据Excel模板文件去写入报告
+    注意，必须先执行read_template获取template_dict
+    会从data_src_dict里面找对应表格上的参数填入
+    如果参数名末尾带有箭头则对应list，箭头方向即list展开的方向
+    '''
     def ws_per_key(dsd, k, s, td, d):
         align = Alignment(horizontal='center', vertical='center')
         key_without_direction = k.replace('↑', '').replace('↓', '').replace('←', '').replace('→', '')
         data_src = dsd[key_without_direction]
-        if type(data_src) is not list:
+        if not isinstance(data_src, list):
             s.cell(row=td[k]['row'], column=td[k]['col'], value=str(data_src))
             ws_recursive(row=td[k]['row'], col=td[k]['col'], dsd=dsd, element=data_src, s=s, td=td, d=d)
             s.cell(row=td[k]['row'], column=td[k]['col']).alignment = align
