@@ -168,9 +168,13 @@ def h7(params):
     except Exception as e:
         _ = e
         cmd_dict = eval(cmd_str)
-    params['wvt']['injected_cmd'] = cmd_dict
-    params['wvt']['injected_api'] = next_case['api']
-    params['wvt']['inject_method'] = next_case['method']
+    if 'injected_cmd' not in params['wvt'].keys():
+        params['wvt']['injected_cmd'] = []
+        params['wvt']['injected_api'] = []
+        params['wvt']['inject_method'] = []
+    params['wvt']['injected_cmd'].append(cmd_dict)
+    params['wvt']['injected_api'].append(next_case['api'])
+    params['wvt']['inject_method'].append(next_case['method'])
     if 'wait_per_injection' in params['wvt'].keys():
         time.sleep(params['wvt']['wait_per_injection'])
     return params
