@@ -14,15 +14,17 @@ def eweb_inject_cmd(params):
         params = eweb_get_sid(params=params)
     sid = params['eweb']['sid']
     p_lock.acquire()
+    while 'injected_api' not in params['wvt'].keys():
+        time.sleep(0.1)
     api = params['wvt']['injected_api']
     del params['wvt']['injected_api']
+    injected_cmd = params['wvt']['injected_cmd']
+    del params['wvt']['injected_cmd']
+    inject_method = params['wvt']['inject_method']
+    del params['wvt']['inject_method']
     params['http'].__setitem__(
         'url', 'http://{}{}'.format(params['eweb']['ip'], api))
     params['http'].__setitem__('params', {'auth': sid})
-    injected_cmd = params['wvt']['injected_cmd']
-    inject_method = params['wvt']['inject_method']
-    del params['wvt']['injected_cmd']
-    del params['wvt']['inject_method']
     p_lock.release()
     params['http'].__setitem__(
         'data', {'params': injected_cmd, 'method': inject_method})

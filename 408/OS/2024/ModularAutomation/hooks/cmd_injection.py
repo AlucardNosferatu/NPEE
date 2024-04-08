@@ -1,3 +1,4 @@
+import copy
 import datetime
 import json
 import random
@@ -47,14 +48,23 @@ def h2(params):
     # 这逼玩意就是等待执行的用例队列
     case_params = params['excel']['case_params']
     api = case_params['api']
-    cmd = case_params['cmd']
-    print('注入的cmd:\n{}'.format(cmd))
+    cmd_str = case_params['cmd']
+    # print('注入的cmd:\n{}'.format(cmd_str))
     method_ = case_params['method']
     payloads = case_params['payloads']
     for i in range(len(api)):
         for j in range(len(payloads)):
-            case = {'api': api[i], 'cmd': cmd[i], 'method': method_[i], 'payload': payloads[j]}
-            all_cases.append(case)
+            cmd_dict = json.loads(cmd_str[i])
+            i_list = walk_cmd_dict(cmd_dict=cmd_dict)
+            for k in range(len(i_list)):
+                cmd_dict_copy = copy.deepcopy(cmd_dict)
+                set_cmd_dict(cmd_dict=cmd_dict_copy, index_list=i_list[k], value='flagthn')
+                cmd_str_ = json.dumps(cmd_dict_copy)
+                case = {'api': api[i], 'cmd': cmd_str_, 'method': method_[i], 'payload': payloads[j]}
+                if 'slowdown_after' in params['wvt'].keys() and (i + 1) * (j + 1) >= params['wvt']['slowdown_after']:
+                    case['slow_inject'] = True
+                all_cases.append(case)
+        print('请求载荷预处理进度:{:.2%}'.format(i / len(api)))
     params['wvt']['testcases'] = all_cases
     params['wvt']['queue'] = all_cases.copy()
     if 'eweb' not in params.keys():
@@ -62,6 +72,34 @@ def h2(params):
     params['eweb']['ip'] = params['wvt']['dut_ip']
     params['eweb']['pass'] = params['wvt']['eweb_pass']
     return params
+
+
+def walk_cmd_dict(cmd_dict, dont_swap=['module']):
+    index_list = []
+    iter_list = []
+    if isinstance(cmd_dict, dict):
+        iter_list = list(cmd_dict.keys())
+    elif isinstance(cmd_dict, list):
+        for i in range(len(cmd_dict)):
+            iter_list.append(i)
+    elif isinstance(cmd_dict, str):
+        return [[None]]
+    for key in iter_list:
+        if type(cmd_dict[key]) in [dict, list, str] and key not in dont_swap:
+            index_prefix = [key]
+            index_postfix_list = walk_cmd_dict(cmd_dict=cmd_dict[key], dont_swap=dont_swap)
+            for index_postfix in index_postfix_list:
+                index_list.append(index_prefix + index_postfix)
+    return index_list
+
+
+def set_cmd_dict(cmd_dict, index_list, value):
+    key = index_list.pop(0)
+    key_next = index_list[0]
+    if key_next is not None:
+        set_cmd_dict(cmd_dict[key], index_list, value)
+    else:
+        cmd_dict[key] = value
 
 
 def h3(params):
@@ -75,11 +113,9 @@ def h3(params):
 
 def h4(params):
     tp_size = params['wvt']['tp_size']
-    if 'slowdown_after' in params['wvt'].keys():
-        tested_count = len(params['wvt']['testcases']) - len(params['wvt']['queue'])
-        if tested_count >= params['wvt']['slowdown_after']:
-            tp_size = 1
-            print('特殊用例，取消并发请求')
+    if 'slow_inject' in params['wvt']['queue'][0].keys() and params['wvt']['queue'][0]['slow_inject']:
+        tp_size = 1
+        print('特殊用例，取消并发请求')
     thread_pool = params['thread_pool']
     if len(thread_pool) < tp_size:
         params['if_switch'] = True

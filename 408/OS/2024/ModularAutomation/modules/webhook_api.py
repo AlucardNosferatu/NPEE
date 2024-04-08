@@ -12,7 +12,7 @@ def webhook_send(params):
     headers = {"Content-Type": "application/json; charset=utf-8"}
     body = {"msg_type": "text", "content": {"text": send_string}}
     # noinspection PyTypeChecker
-    params = {'http': {}}
+    params['http'] = {}
     params['http']['url'] = webhook_url
     params['http']['data'] = body
     params['http']['headers'] = headers
