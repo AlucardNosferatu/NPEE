@@ -213,7 +213,7 @@ def h12(params):
     results = []
     for i_fn in params['wvt']['payload_list']:
         result = {True: 'FAIL', False: 'PASS'}[i_fn in echo_string]
-        print('载荷:{} 通过?:{}'.format(i_fn, result))
+        # print('载荷:{} 通过?:{}'.format(i_fn, result))
         results.append(result)
     data_src_dict = {
         'results': results,
