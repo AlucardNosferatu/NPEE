@@ -3,27 +3,32 @@ import os
 import pstats
 
 from core.flow_chart import FlowChart
+from modules.logger import log_handler_init, log_logger_init
 from modules.webhook_api import webhook_send
 from safe_common_config import scan_host, target_name, eweb_pass, ssh_pass
 
 if __name__ == '__main__':
-    profiler = cProfile.Profile()
-    profiler.enable()
+    # profiler = cProfile.Profile()
+    # profiler.enable()
     params = {
         'wvt': {
             'dut_ip': scan_host,
             'ssh_pass': ssh_pass,
             'save_path': 'reports/{}-命令注入.xlsx'.format(target_name),
             'eweb_pass': eweb_pass,
-            'tp_size': 32,
+            'tp_size': 16,
             'payload_list': [],
-            'slowdown_after': 40 * 88,
+            'slowdown_after': 40 * 67,
             'template_path': 'reports/template_payloads.xlsx',
             'wait_per_injection': 0.25,
         }
     }
     fc = FlowChart(prerequisite=params)
     fc.load_map(hook_script='cmd_injection.py', map_json='命令注入测试.pos')
+    # todo: makeshift patch
+    fc.params_bus['log'] = {'logger_name': 'cmd_injection', 'log_backup_count': 8192}
+    fc.params_bus = log_logger_init(params=fc.params_bus)
+    fc.params_bus = log_handler_init(params=fc.params_bus)
     end = False
     fc.params_bus['webhook'] = {
         'webhook_url': 'https://open.feishu.cn/open-apis/bot/v2/hook/49487983-e106-49c8-a527-4b8a4dfeddf5',
@@ -37,8 +42,8 @@ if __name__ == '__main__':
         'send_string': '{}的命令注入测试已完成'.format(target_name)
     }
     fc.params_bus = webhook_send(params=fc.params_bus)
-    profiler.disable()
-    pstats.Stats(
-        profiler, stream=open('reports/性能分析-命令注入.txt', 'w')
-    ).sort_stats(pstats.SortKey.CUMULATIVE).print_stats(.3)
+    # profiler.disable()
+    # pstats.Stats(
+    #     profiler, stream=open('reports/性能分析-命令注入.txt', 'w')
+    # ).sort_stats(pstats.SortKey.CUMULATIVE).print_stats(.3)
     os.abort()

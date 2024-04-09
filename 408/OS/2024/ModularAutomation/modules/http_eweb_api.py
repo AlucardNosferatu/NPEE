@@ -7,14 +7,7 @@ from modules.encryption.eweb_password import encrypt_pass
 from modules.http_api import http_post
 
 p_lock = threading.Lock()
-debug = True
-
-
-def print_(str_):
-    if debug:
-        print(str_)
-    else:
-        pass
+debug = False
 
 
 def eweb_inject_cmd(params):
@@ -38,11 +31,22 @@ def eweb_inject_cmd(params):
     params['http'].__setitem__('timeout', 10.0)
     try:
         params = http_post(params=params)
-        print_('对接口{}的{}方法注入{}请求完成'.format(api, inject_method, injected_cmd))
+        if debug:
+            info_str = '对接口{}的{}方法注入{}请求完成'.format(api, inject_method, injected_cmd)
+            if 'log' in params.keys() and 'logger' in params['log'].keys():
+                logger = params['log']['logger']
+                logger.info(info_str)
+            else:
+                print(info_str)
     except Exception as e:
         params['http']['response'] = e
-        print_('对接口{}的{}方法注入{}发生错误{}'.format(
-            api, inject_method, injected_cmd, repr(e)))
+        if debug:
+            error_str = '对接口{}的{}方法注入{}发生错误{}'.format(api, inject_method, injected_cmd, repr(e))
+            if 'log' in params.keys() and 'logger' in params['log'].keys():
+                logger = params['log']['logger']
+                logger.info(error_str)
+            else:
+                print(error_str)
         params['wvt']['inject_error'] = True
     return params
 
@@ -317,4 +321,4 @@ if __name__ == '__main__':
         }
     }
     params_ = eweb_inject_cmd(params=params_)
-    print_('Done')
+    print('Done')

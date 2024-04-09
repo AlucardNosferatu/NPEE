@@ -44,12 +44,13 @@ def h1(params):
 
 
 def h2(params):
+    logger = params['log']['logger']
     all_cases = []
     # 这逼玩意就是等待执行的用例队列
     case_params = params['excel']['case_params']
     api = case_params['api']
     cmd_str = case_params['cmd']
-    # print('注入的cmd:\n{}'.format(cmd_str))
+    # logger.info('注入的cmd:\n{}'.format(cmd_str))
     method_ = case_params['method']
     payloads = case_params['payloads']
     for i in range(len(api)):
@@ -64,7 +65,7 @@ def h2(params):
                 if 'slowdown_after' in params['wvt'].keys() and (i + 1) * (j + 1) >= params['wvt']['slowdown_after']:
                     case['slow_inject'] = True
                 all_cases.append(case)
-        print('请求载荷预处理进度:{:.2%}'.format(i / len(api)))
+        logger.info('请求载荷预处理进度:{:.2%}'.format(i / len(api)))
     params['wvt']['testcases'] = all_cases
     params['wvt']['queue'] = all_cases.copy()
     if 'eweb' not in params.keys():
@@ -74,9 +75,13 @@ def h2(params):
     return params
 
 
-def walk_cmd_dict(cmd_dict, dont_swap=['module']):
+def walk_cmd_dict(cmd_dict, dont_swap=[['module']]):
     index_list = []
     iter_list = []
+    if len(dont_swap) > 0:
+        dont_swap_ = dont_swap.pop(0)
+    else:
+        dont_swap_ = []
     if isinstance(cmd_dict, dict):
         iter_list = list(cmd_dict.keys())
     elif isinstance(cmd_dict, list):
@@ -85,7 +90,7 @@ def walk_cmd_dict(cmd_dict, dont_swap=['module']):
     elif isinstance(cmd_dict, str):
         return [[None]]
     for key in iter_list:
-        if type(cmd_dict[key]) in [dict, list, str] and key not in dont_swap:
+        if type(cmd_dict[key]) in [dict, list, str] and key not in dont_swap_:
             index_prefix = [key]
             index_postfix_list = walk_cmd_dict(cmd_dict=cmd_dict[key], dont_swap=dont_swap)
             for index_postfix in index_postfix_list:
@@ -112,10 +117,11 @@ def h3(params):
 
 
 def h4(params):
+    logger = params['log']['logger']
     tp_size = params['wvt']['tp_size']
     if 'slow_inject' in params['wvt']['queue'][0].keys() and params['wvt']['queue'][0]['slow_inject']:
         tp_size = 1
-        print('特殊用例，取消并发请求')
+        logger.info('特殊用例，取消并发请求')
     thread_pool = params['thread_pool']
     if len(thread_pool) < tp_size:
         params['if_switch'] = True
@@ -147,6 +153,7 @@ def h6(params):
 
 
 def h7(params):
+    logger = params['log']['logger']
     queue = params['wvt']['queue']
     next_case = queue.pop(0)
     cmd_str = next_case['cmd']
@@ -175,6 +182,18 @@ def h7(params):
     params['wvt']['injected_cmd'].append(cmd_dict)
     params['wvt']['injected_api'].append(next_case['api'])
     params['wvt']['inject_method'].append(next_case['method'])
+    if 'module' in cmd_dict.keys():
+        injected_module = cmd_dict['module']
+    else:
+        injected_module = None
+    progress = 1 - (len(params['wvt']['queue']) / len(params['wvt']['testcases']))
+    logger.info(
+        '注入API:{} 注入方法:{} 注入模块:{} 进度:{:.2%}={}/{}'.format(
+            next_case['api'], next_case['method'], injected_module, progress,
+            len(params['wvt']['testcases']) - len(params['wvt']['queue']),
+            len(params['wvt']['testcases'])
+        )
+    )
     if 'wait_per_injection' in params['wvt'].keys():
         time.sleep(params['wvt']['wait_per_injection'])
     return params
@@ -208,12 +227,13 @@ def h11(params):
 
 
 def h12(params):
+    logger = params['log']['logger']
     echo_string = params['console']['echo_string']
-    print('ls的回显:\n{}'.format(echo_string))
+    logger.info('ls的回显:\n{}'.format(echo_string))
     results = []
     for i_fn in params['wvt']['payload_list']:
         result = {True: 'FAIL', False: 'PASS'}[i_fn in echo_string]
-        # print('载荷:{} 通过?:{}'.format(i_fn, result))
+        # logger.info('载荷:{} 通过?:{}'.format(i_fn, result))
         results.append(result)
     data_src_dict = {
         'results': results,

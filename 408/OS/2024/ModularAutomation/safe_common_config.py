@@ -1,4 +1,4 @@
-scan_host = '10.51.132.51'
+scan_host = '192.168.110.1'
 scan_host_web = 'http://{}/'.format(scan_host)
 target_name = 'X60'
 eweb_pass = 'LostXmas20291224'
