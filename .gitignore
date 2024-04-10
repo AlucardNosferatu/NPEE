@@ -3,6 +3,7 @@
 *.idea
 408/Organization/FixPoint/Debug/
 *.log
+*.log.*
 __pycache__
 build
 *.spec

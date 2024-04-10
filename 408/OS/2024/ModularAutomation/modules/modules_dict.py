@@ -1,3 +1,4 @@
+from modules.binwalk_api import binwalk_check, binwalk_scan
 from modules.console import console_login, console_send, console_close, console_read_loop
 from modules.excel_handler import read_template, read_testcases, write_summary
 from modules.http_eweb_api import eweb_get_sid, eweb_inject_cmd
@@ -8,7 +9,7 @@ from modules.logger import log_logger_init, log_handler_init
 import kill_thread
 
 m_dict = {
-    # 'BINWALK_SCAN': binwalk_scan, 'BINWALK_CHECK': binwalk_check,
+    'BINWALK_SCAN': binwalk_scan, 'BINWALK_CHECK': binwalk_check,
 
     'LOG_LOGGER_INIT': log_logger_init, 'LOG_HANDLER_INIT': log_handler_init,
 

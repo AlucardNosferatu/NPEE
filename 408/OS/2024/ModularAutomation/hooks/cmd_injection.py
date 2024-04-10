@@ -26,8 +26,8 @@ def h14(params):
 
 
 def h15(params):
-    params['wvt']['testcase_path'] = 'reports/testcases.xlsx'
-    # params['wvt']['testcase_path'] = 'reports/testcases_lite.xlsx'
+    # params['wvt']['testcase_path'] = 'reports/testcases.xlsx'
+    params['wvt']['testcase_path'] = 'reports/testcases_lite.xlsx'
     params = read_testcases_ci(params=params)
     return params
 
@@ -54,15 +54,15 @@ def h2(params):
     method_ = case_params['method']
     payloads = case_params['payloads']
     for i in range(len(api)):
-        for j in range(len(payloads)):
-            cmd_dict = json.loads(cmd_str[i])
-            i_list = walk_cmd_dict(cmd_dict=cmd_dict)
-            for k in range(len(i_list)):
-                cmd_dict_copy = copy.deepcopy(cmd_dict)
-                set_cmd_dict(cmd_dict=cmd_dict_copy, index_list=i_list[k], value='flagthn')
-                cmd_str_ = json.dumps(cmd_dict_copy)
+        cmd_dict = json.loads(cmd_str[i])
+        i_list = walk_cmd_dict(cmd_dict=cmd_dict, dont_swap=[['module']])
+        for k in range(len(i_list)):
+            cmd_dict_copy = copy.deepcopy(cmd_dict)
+            set_cmd_dict(cmd_dict=cmd_dict_copy, index_list=i_list[k], value='flagthn')
+            cmd_str_ = json.dumps(cmd_dict_copy)
+            for j in range(len(payloads)):
                 case = {'api': api[i], 'cmd': cmd_str_, 'method': method_[i], 'payload': payloads[j]}
-                if 'slowdown_after' in params['wvt'].keys() and (i + 1) * (j + 1) >= params['wvt']['slowdown_after']:
+                if 'slowdown_after' in params['wvt'].keys() and i >= params['wvt']['slowdown_after']:
                     case['slow_inject'] = True
                 all_cases.append(case)
         logger.info('请求载荷预处理进度:{:.2%}'.format(i / len(api)))
@@ -75,7 +75,7 @@ def h2(params):
     return params
 
 
-def walk_cmd_dict(cmd_dict, dont_swap=[['module']]):
+def walk_cmd_dict(cmd_dict, dont_swap=[]):
     index_list = []
     iter_list = []
     if len(dont_swap) > 0:
@@ -230,6 +230,8 @@ def h12(params):
     logger = params['log']['logger']
     echo_string = params['console']['echo_string']
     logger.info('ls的回显:\n{}'.format(echo_string))
+    echo_string = '\r\n'.join([line for line in echo_string.split('\r\n') if not path_whitelist(line, params)])
+    logger.info('过滤白名单路径后的回显:\n{}'.format(echo_string))
     results = []
     for i_fn in params['wvt']['payload_list']:
         result = {True: 'FAIL', False: 'PASS'}[i_fn in echo_string]
@@ -246,6 +248,14 @@ def h12(params):
     params['excel']['data_src_dict'] = data_src_dict
     params['excel']['save_path'] = params['wvt']['save_path']
     return params
+
+
+def path_whitelist(line, params):
+    whitelist = params['wvt']['path_whitelist']
+    for path in whitelist:
+        if path in line:
+            return True
+    return False
 
 
 def h16(params):

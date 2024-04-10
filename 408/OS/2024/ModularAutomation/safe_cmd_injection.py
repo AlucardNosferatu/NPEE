@@ -18,9 +18,12 @@ if __name__ == '__main__':
             'eweb_pass': eweb_pass,
             'tp_size': 16,
             'payload_list': [],
-            'slowdown_after': 40 * 67,
+            # 'slowdown_after': 66,
             'template_path': 'reports/template_payloads.xlsx',
             'wait_per_injection': 0.25,
+            'path_whitelist': [
+                '/tmp/enetCap/single/modules'
+            ]
         }
     }
     fc = FlowChart(prerequisite=params)

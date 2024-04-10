@@ -1,7 +1,7 @@
 from modules.webhook_api import webhook_send
 from core.flow_chart import FlowChart
 import os
-from safe_common_config import target_name, filename_bin, filename_rom, folder
+from safe_common_config import target_name, filename_bin, folder
 
 if __name__ == '__main__':
     params = {'binwalk': {}}
@@ -11,12 +11,6 @@ if __name__ == '__main__':
     params['binwalk']['save_txt'] = 'reports\\{}-隐写保密性测试-BIN文件.txt'.format(target_name)
     fc = FlowChart(prerequisite=params)
     fc.load_map(hook_script='binwalk_scan.py', map_json='隐写保密性测试.pos')
-    end = False
-    while not end:
-        end = fc.run_step()
-    fc.params_bus['binwalk']['target_file'] = filename_rom
-    fc.params_bus['binwalk']['save_txt'] = 'reports\\{}-隐写保密性测试-ROM文件.txt'.format(target_name)
-    fc.restart()
     end = False
     while not end:
         end = fc.run_step()
