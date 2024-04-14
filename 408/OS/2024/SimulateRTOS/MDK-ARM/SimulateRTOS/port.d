@@ -1,0 +1,12 @@
+simulatertos\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/port.c
+simulatertos\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+simulatertos\port.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+simulatertos\port.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+simulatertos\port.o: ../Inc/FreeRTOSConfig.h
+simulatertos\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+simulatertos\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+simulatertos\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+simulatertos\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/portmacro.h
+simulatertos\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+simulatertos\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+simulatertos\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h

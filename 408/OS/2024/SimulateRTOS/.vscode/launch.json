@@ -1,0 +1,22 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "qemu_rtos",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/MDK-ARM/SimulateRTOS/SimulateRTOS.axf",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}/Src",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/13.2 Rel1/bin/arm-none-eabi-gdb.exe",
+            "miDebuggerServerAddress": "localhost:1234",
+        }
+    ]
+}

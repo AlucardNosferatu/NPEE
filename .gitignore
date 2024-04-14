@@ -3,3 +3,6 @@
 408/Organization/FixPoint/Debug/
 *.log
 __pycache__
+408/Organization/AssemblyLanguage/x64/Debug/
+408/OS/2024/ModularAutomation/build/
+*.spec
