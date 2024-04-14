@@ -1,4 +1,4 @@
-from sympy import symbols, sin, pi, factorial, diff, exp
+from sympy import symbols, factorial, diff, exp
 
 
 def get_lr_bound(x0, x1, degree, f, x_symbol):
