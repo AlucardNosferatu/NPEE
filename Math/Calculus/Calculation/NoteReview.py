@@ -56,12 +56,13 @@ def parse2dict(all_layers_hierarchy):
                 while upper_key not in upper_layer_keys:
                     upper_key -= 1
                 upper_layer[upper_key][1][key] = current_layer[key]
-    json_str = json.dumps(all_layers_hierarchy['B'])
-    return all_layers_hierarchy['B'], json_str
+    top_layer = all_layers_hierarchy['B']
+    top_layer_json_str = json.dumps(top_layer)
+    return all_layers_hierarchy, top_layer, top_layer_json_str
 
 
 if __name__ == '__main__':
-    worksheet_ = get_worksheet()
+    worksheet_ = get_worksheet(sheet_name='20240414')
     all_layers_hierarchy_ = read_worksheet(worksheet_)
-    all_layers_hierarchy_, json_str_ = parse2dict(all_layers_hierarchy_)
+    all_layers_hierarchy_, top_layer_, top_layer_json_str_ = parse2dict(all_layers_hierarchy_)
     print('Done')
