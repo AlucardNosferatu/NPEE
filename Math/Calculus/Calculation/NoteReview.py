@@ -30,9 +30,9 @@ def read_worksheet(worksheet):
     dim[0] = 'B2'
     dim = [[remove_digits(d), remove_letters(d)] for d in dim]
     all_layers_hierarchy = {}
-    for i in range(ord(dim[0][0]), ord(dim[1][0])):
+    for i in range(ord(dim[0][0]), ord(dim[1][0]) + 1):
         col = chr(i)
-        for j in range(int(dim[0][1]), int(dim[1][1])):
+        for j in range(int(dim[0][1]), int(dim[1][1]) + 1):
             index = '{}{}'.format(col, j)
             val = worksheet[index].value
             if val is not None:
@@ -61,8 +61,67 @@ def parse2dict(all_layers_hierarchy):
     return all_layers_hierarchy, top_layer, top_layer_json_str
 
 
+def recursive_read(entry, lines=None):
+    if lines is None:
+        lines = []
+    # entry = [val, {}]
+    lines.append(entry[0])
+    sub_entry_keys = list(entry[1].keys())
+    sub_entry_keys.sort()
+    for sub_entry_key in sub_entry_keys:
+        sub_entry = entry[1][sub_entry_key]
+        lines = recursive_read(entry=sub_entry, lines=lines)
+    return lines
+
+
+def replace_keywords_with_underscore(text):
+    pattern = r'###(.*?)###'  # 匹配###之间的内容
+    replaced_text = re.sub(pattern, lambda m: '__' * len(m.group(1)), text)
+    return replaced_text
+
+
+def extract_keywords(text):
+    pattern = r'###(.*?)###'  # 匹配###之间的内容
+    keywords = re.findall(pattern, text)
+    return keywords
+
+
+def parse_blanks(lines: list):
+    lines_with_blanks = lines.copy()
+    answers = []
+    for i, line in enumerate(lines_with_blanks):
+        line_with_blanks = replace_keywords_with_underscore(text=line)
+        answers += extract_keywords(text=line)
+        lines_with_blanks[i] = line_with_blanks
+    return lines_with_blanks, lines, answers
+
+
+def verify_input(answer, weight, index):
+    my_answer = input('第{}个空:'.format(index))
+    print('我的回答:{}'.format(my_answer))
+    print('正确回答:{}'.format(answer))
+    cmd = ''
+    while cmd not in ['Y', 'N']:
+        cmd = input('是否正确？[Y/N]:')
+    score_delta = {'Y': weight, 'N': 0.0}[cmd]
+    return score_delta
+
+
 if __name__ == '__main__':
-    worksheet_ = get_worksheet(sheet_name='20240414')
-    all_layers_hierarchy_ = read_worksheet(worksheet_)
-    all_layers_hierarchy_, top_layer_, top_layer_json_str_ = parse2dict(all_layers_hierarchy_)
-    print('Done')
+    score_total = 0
+    weight_ = 0.5
+    while True:
+        # worksheet_ = get_worksheet(sheet_name='20240414')
+        worksheet_ = get_worksheet()
+        all_layers_hierarchy_ = read_worksheet(worksheet_)
+        _, top_layer_, top_layer_json_str_ = parse2dict(all_layers_hierarchy_)
+        entry_ = top_layer_[random.choice(list(top_layer_.keys()))]
+        lines_ = recursive_read(entry=entry_)
+        lines_with_blanks_, lines_, answers_ = parse_blanks(lines=lines_)
+        if len(answers_) > 0:
+            lines_with_blanks_.insert(0, '=============题目=============')
+            print('\n'.join(lines_with_blanks_))
+            for index_, answer_ in enumerate(answers_):
+                score_delta_ = verify_input(answer_, weight_, index_ + 1)
+                score_total += score_delta_
+                print('目前得分:{}'.format(score_total))

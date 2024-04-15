@@ -1,9 +1,11 @@
 *.vs
-*.idea
-408/Organization/FixPoint/Debug/
 *.log
+*.exe
+*.idea
+*.spec
 __pycache__
+Math/Calculus/Calculation/build/
+Math/Calculus/Solutions/Lean/.lake/packages/
+408/Organization/FixPoint/Debug/
 408/Organization/AssemblyLanguage/x64/Debug/
 408/OS/2024/ModularAutomation/build/
-*.spec
-Math/Calculus/Solutions/Lean/.lake/packages/
