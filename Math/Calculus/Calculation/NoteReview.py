@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import re
 
@@ -18,11 +19,33 @@ def get_worksheet(sheet_name=None):
     note_path = r'C:\Users\16413\Desktop\NPEE\统计\WWII\工作日志.xlsx'
     workbook: openpyxl.Workbook = openpyxl.load_workbook(filename=note_path)
     if sheet_name is None:
-        worksheets = workbook.worksheets
-        worksheet: openpyxl.Worksheet = random.choice(worksheets)
-    else:
-        worksheet: openpyxl.Worksheet = workbook.get_sheet_by_name(name=sheet_name)
-    return worksheet
+        sheet_names = workbook.sheetnames
+        sheet_names.sort()
+        if os.path.exists('NoteReview.txt'):
+            with open(file='NoteReview.txt', mode='r', encoding='utf-8') as f:
+                lines = f.readlines()
+                lines = [line.strip() for line in lines]
+            sheet_names = ['20240302', '20240303', '20240304', '20240305']
+            never = list(set(sheet_names).difference(set(lines)))
+            if len(never) > 0:
+                never.sort()
+                sheet_name = never[0]
+            else:
+                # LRU Algorithm
+                last_review = {}
+                lines.reverse()
+                for sn in lines:
+                    last_review[sn] = lines.index(sn)
+                lrr = 0
+                sheet_name = lines[-1]
+                for sn in last_review.keys():
+                    if last_review[sn] >= lrr:
+                        lrr = last_review[sn]
+                        sheet_name = sn
+        else:
+            sheet_name = random.choice(sheet_names)
+    worksheet: openpyxl.Worksheet = workbook[sheet_name]
+    return worksheet, sheet_name
 
 
 def read_worksheet(worksheet):
@@ -112,7 +135,7 @@ if __name__ == '__main__':
     weight_ = 0.5
     while True:
         # worksheet_ = get_worksheet(sheet_name='20240414')
-        worksheet_ = get_worksheet()
+        worksheet_, sheet_name_ = get_worksheet()
         all_layers_hierarchy_ = read_worksheet(worksheet_)
         _, top_layer_, top_layer_json_str_ = parse2dict(all_layers_hierarchy_)
         entry_ = top_layer_[random.choice(list(top_layer_.keys()))]
@@ -125,3 +148,5 @@ if __name__ == '__main__':
                 score_delta_ = verify_input(answer_, weight_, index_ + 1)
                 score_total += score_delta_
                 print('目前得分:{}'.format(score_total))
+        with open(file='NoteReview.txt', mode='a', encoding='utf-8') as f:
+            f.writelines([sheet_name_ + '\n'])
