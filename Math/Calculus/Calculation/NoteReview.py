@@ -25,7 +25,6 @@ def get_worksheet(sheet_name=None):
             with open(file='NoteReview.txt', mode='r', encoding='utf-8') as f:
                 lines = f.readlines()
                 lines = [line.strip() for line in lines]
-            sheet_names = ['20240302', '20240303', '20240304', '20240305']
             never = list(set(sheet_names).difference(set(lines)))
             if len(never) > 0:
                 never.sort()
@@ -131,9 +130,10 @@ def verify_input(answer, weight, index):
 
 
 if __name__ == '__main__':
-    score_total = 0
+
     weight_ = 0.5
     while True:
+        score_total = 0
         # worksheet_ = get_worksheet(sheet_name='20240414')
         worksheet_, sheet_name_ = get_worksheet()
         all_layers_hierarchy_ = read_worksheet(worksheet_)
