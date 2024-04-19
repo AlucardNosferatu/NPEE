@@ -15,10 +15,11 @@ def remove_letters(text):
     return re.sub(pattern, "", text)
 
 
-def get_worksheet(sheet_name=None):
+def get_worksheet(sheet_name=''):
     note_path = r'C:\Users\16413\Desktop\NPEE\统计\WWII\工作日志.xlsx'
     workbook: openpyxl.Workbook = openpyxl.load_workbook(filename=note_path)
-    if sheet_name is None:
+    if sheet_name == '':
+        print('无指定，按LRU算法指定复习笔记')
         sheet_names = workbook.sheetnames
         sheet_names.sort()
         if os.path.exists('NoteReview.txt'):
@@ -43,8 +44,13 @@ def get_worksheet(sheet_name=None):
                         sheet_name = sn
         else:
             sheet_name = random.choice(sheet_names)
-    worksheet: openpyxl.Worksheet = workbook[sheet_name]
-    return worksheet, sheet_name
+    if sheet_name in workbook.sheetnames:
+        worksheet: openpyxl.Worksheet = workbook[sheet_name]
+        print('已找到指定名称【{}】的笔记。'.format(sheet_name))
+        return worksheet, sheet_name
+    else:
+        print('未找到指定名称【{}】的笔记！'.format(sheet_name))
+        return None, sheet_name
 
 
 def read_worksheet(worksheet):
@@ -111,15 +117,29 @@ def extract_keywords(text):
 def parse_blanks(lines: list):
     lines_with_blanks = lines.copy()
     answers = []
+    contexts = []
     for i, line in enumerate(lines_with_blanks):
+        answers_ = extract_keywords(text=line)
         line_with_blanks = replace_keywords_with_underscore(text=line)
-        answers += extract_keywords(text=line)
         lines_with_blanks[i] = line_with_blanks
-    return lines_with_blanks, lines, answers
+        while '__' in line_with_blanks:
+            line_with_blanks = line_with_blanks.replace('__', '_')
+        if '_' in line_with_blanks:
+            line_with_blanks = line_with_blanks.split('_')
+            context = []
+            for context_ in range(len(line_with_blanks) - 1):
+                context.append([line_with_blanks[context_], line_with_blanks[context_ + 1]])
+        else:
+            context = []
+        assert len(context) == len(answers_)
+        contexts += context
+        answers += answers_
+    lines = [line.replace('###', '') for line in lines]
+    return lines_with_blanks, lines, answers, contexts
 
 
-def verify_input(answer, weight, index):
-    my_answer = input('第{}个空:'.format(index))
+def verify_input(answer, weight, index, contexts):
+    my_answer = input('>>>>第{}个空<<<<\n{}【】{}\n:'.format(index + 1, contexts[index][0], contexts[index][1]))
     print('我的回答:{}'.format(my_answer))
     print('正确回答:{}'.format(answer))
     cmd = ''
@@ -130,23 +150,25 @@ def verify_input(answer, weight, index):
 
 
 if __name__ == '__main__':
-
     weight_ = 0.5
     while True:
         score_total = 0
-        # worksheet_ = get_worksheet(sheet_name='20240414')
-        worksheet_, sheet_name_ = get_worksheet()
+        worksheet_ = None
+        sheet_name_ = ''
+        while worksheet_ is None:
+            sheet_name_ = input('选择哪天的笔记？')
+            worksheet_, sheet_name_ = get_worksheet(sheet_name=sheet_name_)
         all_layers_hierarchy_ = read_worksheet(worksheet_)
         _, top_layer_, top_layer_json_str_ = parse2dict(all_layers_hierarchy_)
         entry_ = top_layer_[random.choice(list(top_layer_.keys()))]
         lines_ = recursive_read(entry=entry_)
-        lines_with_blanks_, lines_, answers_ = parse_blanks(lines=lines_)
-        if len(answers_) > 0:
+        lines_with_blanks_, lines_, answers__, contexts_ = parse_blanks(lines=lines_)
+        if len(answers__) > 0:
             lines_with_blanks_.insert(0, '=============题目=============')
             print('\n'.join(lines_with_blanks_))
-            for index_, answer_ in enumerate(answers_):
-                score_delta_ = verify_input(answer_, weight_, index_ + 1)
+            for index_, answer__ in enumerate(answers__):
+                score_delta_ = verify_input(answer__, weight_, index_, contexts_)
                 score_total += score_delta_
                 print('目前得分:{}'.format(score_total))
-        with open(file='NoteReview.txt', mode='a', encoding='utf-8') as f:
-            f.writelines([sheet_name_ + '\n'])
+        with open(file='NoteReview.txt', mode='a', encoding='utf-8') as f_:
+            f_.writelines([sheet_name_ + '\n'])
