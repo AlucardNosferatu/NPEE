@@ -18,39 +18,43 @@ def remove_letters(text):
 def get_worksheet(sheet_name=''):
     note_path = r'C:\Users\16413\Desktop\NPEE\统计\WWII\工作日志.xlsx'
     workbook: openpyxl.Workbook = openpyxl.load_workbook(filename=note_path)
-    if sheet_name == '':
-        print('无指定，按LRU算法指定复习笔记')
-        sheet_names = workbook.sheetnames
-        sheet_names.sort()
-        if os.path.exists('NoteReview.txt'):
-            with open(file='NoteReview.txt', mode='r', encoding='utf-8') as f:
-                lines = f.readlines()
-                lines = [line.strip() for line in lines]
-            never = list(set(sheet_names).difference(set(lines)))
-            if len(never) > 0:
-                never.sort()
-                sheet_name = never[0]
+    sheet_names = workbook.sheetnames
+    sheet_names.sort()
+    problems = []
+    if os.path.exists('NoteReview.txt'):
+        with open(file='NoteReview.txt', mode='r', encoding='utf-8') as f:
+            lines = f.readlines()
+        lines = [line.strip() for line in lines]
+        for line in lines:
+            if '@' in line:
+                problems.append(line.split('@')[0])
             else:
-                # LRU Algorithm
-                last_review = {}
-                lines.reverse()
-                for sn in lines:
-                    last_review[sn] = lines.index(sn)
-                lrr = 0
-                sheet_name = lines[-1]
-                for sn in last_review.keys():
-                    if last_review[sn] >= lrr:
-                        lrr = last_review[sn]
-                        sheet_name = sn
-        else:
-            sheet_name = random.choice(sheet_names)
-    if sheet_name in workbook.sheetnames:
-        worksheet: openpyxl.Worksheet = workbook[sheet_name]
-        print('已找到指定名称【{}】的笔记。'.format(sheet_name))
-        return worksheet, sheet_name
+                problems.append(None)
+        lines = [line.split('@')[-1] for line in lines]
     else:
+        lines = []
+
+    if sheet_name == '':
+        if len(lines) > 0:
+            print('无指定，按LRU算法指定复习笔记')
+            sheet_name = general_lru(all_candidates=sheet_names, reviewed=lines)
+        else:
+            print('无指定，且无既存复习记录，随机挑选复习笔记')
+            sheet_name = random.choice(sheet_names)
+
+    if sheet_name in workbook.sheetnames:
+        worksheet: openpyxl.Worksheet | None = workbook[sheet_name]
+        print('已找到指定名称【{}】的笔记。'.format(sheet_name))
+    else:
+        worksheet = None
         print('未找到指定名称【{}】的笔记！'.format(sheet_name))
-        return None, sheet_name
+
+    problems_of_sheet = []
+    for index, sn in enumerate(lines):
+        if sn == sheet_name:
+            problems_of_sheet.append(int(problems[index]))
+
+    return worksheet, sheet_name, problems_of_sheet
 
 
 def read_worksheet(worksheet):
@@ -149,18 +153,51 @@ def verify_input(answer, weight, index, contexts):
     return score_delta
 
 
+def general_lru(all_candidates, reviewed):
+    reviewed = reviewed.copy()
+    never = list(set(all_candidates).difference(set(reviewed)))
+    never.sort()
+    if len(never) > 0:
+        next_candidate = never[0]
+    else:
+        # LRU Algorithm
+        last_review = {}
+        reviewed.reverse()
+        for reviewed_candidate in reviewed:
+            if reviewed_candidate is not None:
+                last_review[reviewed_candidate] = reviewed.index(reviewed_candidate)
+        lrr = 0
+        next_candidate = None
+        i_ = -1
+        while next_candidate is None:
+            next_candidate = reviewed[i_]
+            i_ -= 1
+        for reviewed_candidate in last_review.keys():
+            if reviewed_candidate is not None:
+                if last_review[reviewed_candidate] >= lrr:
+                    lrr = last_review[reviewed_candidate]
+                    next_candidate = reviewed_candidate
+    return next_candidate
+
+
 if __name__ == '__main__':
     weight_ = 0.5
     while True:
         score_total = 0
         worksheet_ = None
         sheet_name_ = ''
+        pos_ = []
         while worksheet_ is None:
             sheet_name_ = input('选择哪天的笔记？')
-            worksheet_, sheet_name_ = get_worksheet(sheet_name=sheet_name_)
+            worksheet_, sheet_name_, pos_ = get_worksheet(sheet_name=sheet_name_)
         all_layers_hierarchy_ = read_worksheet(worksheet_)
         _, top_layer_, top_layer_json_str_ = parse2dict(all_layers_hierarchy_)
-        entry_ = top_layer_[random.choice(list(top_layer_.keys()))]
+        if len(pos_) <= 0:
+            entry_key = random.choice(list(top_layer_.keys()))
+        else:
+            # 对问题也采用LRU算法
+            entry_key = general_lru(all_candidates=list(top_layer_.keys()), reviewed=pos_)
+        entry_ = top_layer_[entry_key]
         lines_ = recursive_read(entry=entry_)
         lines_with_blanks_, lines_, answers__, contexts_ = parse_blanks(lines=lines_)
         if len(answers__) > 0:
@@ -171,4 +208,4 @@ if __name__ == '__main__':
                 score_total += score_delta_
                 print('目前得分:{}'.format(score_total))
         with open(file='NoteReview.txt', mode='a', encoding='utf-8') as f_:
-            f_.writelines([sheet_name_ + '\n'])
+            f_.writelines([entry_key + '@' + sheet_name_ + '\n'])
