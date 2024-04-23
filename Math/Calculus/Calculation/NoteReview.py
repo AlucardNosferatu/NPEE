@@ -208,4 +208,4 @@ if __name__ == '__main__':
                 score_total += score_delta_
                 print('目前得分:{}'.format(score_total))
         with open(file='NoteReview.txt', mode='a', encoding='utf-8') as f_:
-            f_.writelines([entry_key + '@' + sheet_name_ + '\n'])
+            f_.writelines(['{}@{}\n'.format(entry_key, sheet_name_)])
