@@ -27,7 +27,7 @@ def get_worksheet(sheet_name=''):
         lines = [line.strip() for line in lines]
         for line in lines:
             if '@' in line:
-                problems.append(line.split('@')[0])
+                problems.append(int(line.split('@')[0]))
             else:
                 problems.append(None)
         lines = [line.split('@')[-1] for line in lines]
@@ -52,7 +52,7 @@ def get_worksheet(sheet_name=''):
     problems_of_sheet = []
     for index, sn in enumerate(lines):
         if sn == sheet_name:
-            problems_of_sheet.append(int(problems[index]))
+            problems_of_sheet.append(problems[index])
 
     return worksheet, sheet_name, problems_of_sheet
 
