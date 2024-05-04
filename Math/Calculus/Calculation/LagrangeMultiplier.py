@@ -69,8 +69,8 @@ if __name__ == '__main__':
     # 创建符号变量
     x, y, z = sp.symbols('x y z')
     # 定义目标函数
-    obj_func__ = x * y + 2 * y * z
+    obj_func__ = x + y + z
     # 定义约束条件方程列表
-    cons_ = [sp.Eq(x ** 2 + y ** 2 + z ** 2, 10)]
+    cons_ = [sp.Eq(x ** 2 + y ** 2 + z ** 2, sp.Rational(27, 4))]
     s, v, max_v, min_v = l_solve(obj_func__, cons_)
     print('Done')
