@@ -1,14 +1,23 @@
+import kill_thread
+from modules.awvs_api import awvs_add_scan, awvs_add_target, awvs_download_report, awvs_generate_report, awvs_get_report_status, awvs_get_scan_status, awvs_start
 from modules.binwalk_api import binwalk_check, binwalk_scan
 from modules.console import console_login, console_send, console_close, console_read_loop
 from modules.excel_handler import read_template, read_testcases, write_summary
 from modules.http_eweb_api import eweb_get_sid, eweb_inject_cmd
 from modules.misc import ip_ping, mac_generate, mac_increase, mac_read_record, mac_write_record, timer, nop, interactive_shell, process_kill
 from modules.misc_singleton import wifi_connect
+from modules.nessus_api import nessus_delete_stop, nessus_export, nessus_find, nessus_get_status, nessus_login, nessus_new_scan, nessus_start_pause
 from modules.power_supply import ps_init, ps_reset, ps_acdc, ps_range, ps_freq, ps_toggle, ps_volt
 from modules.logger import log_logger_init, log_handler_init
-import kill_thread
+from modules.rgscan_api import rgscan_download_report, rgscan_generate_report, rgscan_get_scan_status, rgscan_scan_target, rgscan_start
+from modules.rsas_api import rsas_download_report, rsas_generate_report, rsas_get_report_status, rsas_get_scan_status, rsas_scan_target, rsas_start
+from modules.web_api import web_click, web_find, web_find_click, web_find_input, web_goto, web_start
+from modules.zap_api import zap_crawl_target, zap_download_report, zap_get_crawl_status, zap_get_scan_status, zap_init_adapter, zap_kill_java, zap_scan_target, zap_start_exe
+from modules.mqtt_api import mqtt_init, mqtt_subscribe, mqtt_read_start, mqtt_read_stop
 
 m_dict = {
+    'MQTT_INIT': mqtt_init, 'MQTT_SUBSCRIBE': mqtt_subscribe, 'MQTT_READ_START': mqtt_read_start, 'MQTT_READ_STOP': mqtt_read_stop,
+
     'BINWALK_SCAN': binwalk_scan, 'BINWALK_CHECK': binwalk_check,
 
     'LOG_LOGGER_INIT': log_logger_init, 'LOG_HANDLER_INIT': log_handler_init,
@@ -26,8 +35,8 @@ m_dict = {
     # 'CHARIOT_INIT': chariot_init, 'CHARIOT_SET_DURATION': chariot_set_duration, 'CHARIOT_ADD_PAIRS': chariot_add_pairs,
     # 'CHARIOT_RUN': chariot_run, 'CHARIOT_GET_THR': chariot_get_thr,
 
-    # 'WEB_START': web_start, 'WEB_GOTO': web_goto, 'WEB_FIND_INPUT': web_find_input, 'WEB_FIND_CLICK': web_find_click,
-    # 'WEB_FIND': web_find, 'WEB_CLICK': web_click,
+    'WEB_START': web_start, 'WEB_GOTO': web_goto, 'WEB_FIND_INPUT': web_find_input, 'WEB_FIND_CLICK': web_find_click,
+    'WEB_FIND': web_find, 'WEB_CLICK': web_click,
 
     'READ_TEMPLATE': read_template, 'READ_TESTCASES': read_testcases, 'WRITE_SUMMARY': write_summary,
 
@@ -47,26 +56,26 @@ m_dict = {
     # 'DB_READ_REDIS': db_read_redis, 'DB_WRITE_REDIS': db_write_redis, 'DB_DELETE_REDIS': db_delete_redis,
     # 'DB_EXIST_REDIS': db_exist_redis, 'DB_WRITE_SQL': db_write_sql, 'DB_INSERT_SQL': db_insert_sql,
 
-    # 'NESSUS_LOGIN': nessus_login, 'NESSUS_NEW_SCAN': nessus_new_scan, 'NESSUS_FIND': nessus_find,
-    # 'NESSUS_START_PAUSE': nessus_start_pause, 'NESSUS_GET_STATUS': nessus_get_status, 'NESSUS_EXPORT': nessus_export,
-    # 'NESSUS_DELETE_STOP': nessus_delete_stop,
+    'NESSUS_LOGIN': nessus_login, 'NESSUS_NEW_SCAN': nessus_new_scan, 'NESSUS_FIND': nessus_find,
+    'NESSUS_START_PAUSE': nessus_start_pause, 'NESSUS_GET_STATUS': nessus_get_status, 'NESSUS_EXPORT': nessus_export,
+    'NESSUS_DELETE_STOP': nessus_delete_stop,
 
-    # 'ZAP_KILL_JAVA': zap_kill_java, 'ZAP_START_EXE': zap_start_exe, 'ZAP_INIT_ADAPTER': zap_init_adapter,
-    # 'ZAP_CRAWL_TARGET': zap_crawl_target, 'ZAP_GET_CRAWL_STATUS': zap_get_crawl_status,
-    # 'ZAP_SCAN_TARGET': zap_scan_target, 'ZAP_GET_SCAN_STATUS': zap_get_scan_status,
-    # 'ZAP_DOWNLOAD_REPORT': zap_download_report,
+    'ZAP_KILL_JAVA': zap_kill_java, 'ZAP_START_EXE': zap_start_exe, 'ZAP_INIT_ADAPTER': zap_init_adapter,
+    'ZAP_CRAWL_TARGET': zap_crawl_target, 'ZAP_GET_CRAWL_STATUS': zap_get_crawl_status,
+    'ZAP_SCAN_TARGET': zap_scan_target, 'ZAP_GET_SCAN_STATUS': zap_get_scan_status,
+    'ZAP_DOWNLOAD_REPORT': zap_download_report,
 
-    # 'RSAS_START': rsas_start, 'RSAS_SCAN_TARGET': rsas_scan_target, 'RSAS_GET_SCAN_STATUS': rsas_get_scan_status,
-    # 'RSAS_GENERATE_REPORT': rsas_generate_report, 'RSAS_GET_REPORT_STATUS': rsas_get_report_status,
-    # 'RSAS_DOWNLOAD_REPORT': rsas_download_report,
+    'RSAS_START': rsas_start, 'RSAS_SCAN_TARGET': rsas_scan_target, 'RSAS_GET_SCAN_STATUS': rsas_get_scan_status,
+    'RSAS_GENERATE_REPORT': rsas_generate_report, 'RSAS_GET_REPORT_STATUS': rsas_get_report_status,
+    'RSAS_DOWNLOAD_REPORT': rsas_download_report,
 
-    # 'AWVS_START': awvs_start, 'AWVS_ADD_TARGET': awvs_add_target, 'AWVS_ADD_SCAN': awvs_add_scan,
-    # 'AWVS_GET_SCAN_STATUS': awvs_get_scan_status, 'AWVS_GENERATE_REPORT': awvs_generate_report,
-    # 'AWVS_GET_REPORT_STATUS': awvs_get_report_status, 'AWVS_DOWNLOAD_REPORT': awvs_download_report,
+    'AWVS_START': awvs_start, 'AWVS_ADD_TARGET': awvs_add_target, 'AWVS_ADD_SCAN': awvs_add_scan,
+    'AWVS_GET_SCAN_STATUS': awvs_get_scan_status, 'AWVS_GENERATE_REPORT': awvs_generate_report,
+    'AWVS_GET_REPORT_STATUS': awvs_get_report_status, 'AWVS_DOWNLOAD_REPORT': awvs_download_report,
 
-    # 'RGSCAN_START': rgscan_start, 'RGSCAN_SCAN_TARGET': rgscan_scan_target,
-    # 'RGSCAN_GET_SCAN_STATUS': rgscan_get_scan_status, 'RGSCAN_GENERATE_REPORT': rgscan_generate_report,
-    # 'RGSCAN_DOWNLOAD_REPORT': rgscan_download_report,
+    'RGSCAN_START': rgscan_start, 'RGSCAN_SCAN_TARGET': rgscan_scan_target,
+    'RGSCAN_GET_SCAN_STATUS': rgscan_get_scan_status, 'RGSCAN_GENERATE_REPORT': rgscan_generate_report,
+    'RGSCAN_DOWNLOAD_REPORT': rgscan_download_report,
 
     # 'NMAP_INIT': nmap_init, 'NMAP_SCAN': nmap_scan,
 
