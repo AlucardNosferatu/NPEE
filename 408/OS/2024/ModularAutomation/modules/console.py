@@ -85,7 +85,7 @@ def console_login(params):
             ssh_ = paramiko.SSHClient()
             ssh_.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh_.connect(
-                console_ssh_ip, console_ssh_port, username=username, password=console_ssh_pass
+                hostname=console_ssh_ip, port=console_ssh_port, username=username, password=console_ssh_pass, timeout=10
             )
             ssh_shell = ssh_.invoke_shell()
             console_login_params.__setitem__('ssh', ssh_shell)

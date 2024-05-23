@@ -3,16 +3,6 @@ import time
 import paho.mqtt.client as mqtt
 
 
-def debug_logger(params):
-    if 'debug' in params.keys() and params['debug']:
-        if 'log' in params.keys() and 'logger' in params['log'].keys():
-            logger = params['log']['logger']
-            logger.info(params['debug_msg'])
-        else:
-            print(params['debug_msg'])
-    return params
-
-
 def mqtt_init(params):
     def on_con(client, userdata, flags, rc, p=params):
         print("rc:{}".format(rc))
@@ -29,21 +19,17 @@ def mqtt_init(params):
             m_params['exception'] = ConnectionError(err_str)
     mqtt_params = params['mqtt']
     client_ = mqtt.Client()
-    params['debug_msg'] = 'mqtt客户端对象已初始化'
-    params = debug_logger(params=params)
+    print('mqtt客户端对象已初始化')
     mqtt_params['client'] = client_
     if 'on_connect' in mqtt_params.keys():
         client_.on_connect = mqtt_params['on_connect']
-        params['debug_msg'] = '设置自定义连接后回调'
-        params = debug_logger(params=params)
+        print('设置自定义连接后回调')
     else:
         client_.on_connect = on_con
-        params['debug_msg'] = '设置默认连接后回调'
-        params = debug_logger(params=params)
+        print('设置默认连接后回调')
     if 'on_message' in mqtt_params.keys():
         client_.on_connect = mqtt_params['on_message']
-        params['debug_msg'] = '设置新消息回调'
-        params = debug_logger(params=params)
+        print('设置新消息回调')
     port = 1883
     if 'port' in mqtt_params.keys():
         port = mqtt_params['port']
