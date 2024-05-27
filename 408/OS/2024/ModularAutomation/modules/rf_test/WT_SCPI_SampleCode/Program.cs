@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 
 namespace WT_SCPI_SampleCode
 {
@@ -10,6 +11,36 @@ namespace WT_SCPI_SampleCode
     {
         static void Main(string[] args)
         {
+            HttpListener listener = new HttpListener();
+            listener.Prefixes.Add("http://localhost:20291/");
+            listener.Start();
+            while (true) {
+                HttpListenerContext context = listener.GetContext();
+                string postData;
+                using (var reader = new StreamReader(stream: context.Request.InputStream, encoding: context.Request.ContentEncoding)) { 
+                    postData = reader.ReadToEnd();
+                }
+                byte[] responseBytes = Encoding.UTF8.GetBytes("Received.");
+                context.Response.OutputStream.Write(buffer:responseBytes,offset:0,count:responseBytes.Length);
+                context.Response.Close();
+                try
+                {
+                    JObject jsonDict = JObject.Parse(postData);
+                    Console.WriteLine("Received JSON data:");
+                    foreach (var pair in jsonDict)
+                    {
+                        Console.WriteLine($"{pair.Key}: {pair.Value}");
+                    }
+                }
+                catch (Exception)
+                {
+                    // 如果解析失败，直接输出原始数据
+                    Console.WriteLine("Received TEXT data:");
+                    Console.WriteLine(postData);
+                }
+            }
+        }
+        void execute_test() {
             WT_SCPI scpi = new WT_SCPI();
             try
             {
