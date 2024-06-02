@@ -17,23 +17,27 @@ def eweb_inject_cmd(params):
     p_lock.release()
     sid = params['eweb']['sid']
     p_lock.acquire()
-    while len(params['wvt']['injected_api']) <= 0:
+    queue_len = len(params['wvt']['injected_api'])
+    while queue_len <= 0:
+        p_lock.release()
         time.sleep(0.1)
+        p_lock.acquire()
+        queue_len = len(params['wvt']['injected_api'])
     api = params['wvt']['injected_api'].pop(0)
     injected_cmd = params['wvt']['injected_cmd'].pop(0)
     inject_method = params['wvt']['inject_method'].pop(0)
-    params['http']['url'] = 'http://{}{}'.format(params['eweb']['ip'], api)
-    params['http']['params'] = {'auth': sid}
-    params['http']['data'] = {'params': injected_cmd, 'method': inject_method}
-    params['http']['headers'] = {'Content-Type': 'application/json', 'User-Agent': get_fake_ua()}
-    params['http']['timeout'] = 10.0
     p_lock.release()
+    params_http = {
+        'http': {
+            'url': 'http://{}{}'.format(params['eweb']['ip'], api),
+            'params': {'auth': sid},
+            'data': {'params': injected_cmd, 'method': inject_method},
+            'headers': {'Content-Type': 'application/json', 'User-Agent': get_fake_ua()},
+            'timeout': 10.0
+        }
+    }
     try:
-        p_lock.acquire()
-        params['http']['sync_lock'] = p_lock
-        params['http']['sync_lock_expect'] = 'lock_until_request'
-        params['http']['sync_lock_neutral'] = 'unlock'
-        params = http_post(params=params)
+        params_http = http_post(params=params_http)
         if debug:
             info_str = '对接口{}的{}方法注入{}请求完成'.format(api, inject_method, injected_cmd)
             if 'log' in params.keys() and 'logger' in params['log'].keys():
@@ -42,9 +46,7 @@ def eweb_inject_cmd(params):
             else:
                 print(info_str)
     except Exception as e:
-        if p_lock.locked():
-            p_lock.release()
-        params['http']['response'] = e
+        params_http['http']['response'] = e
         if debug:
             error_str = '对接口{}的{}方法注入{}发生错误{}'.format(api, inject_method, injected_cmd, repr(e))
             if 'log' in params.keys() and 'logger' in params['log'].keys():
