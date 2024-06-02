@@ -5,16 +5,6 @@ import requests
 
 
 def http_post(params):
-    if 'sync_lock' in params['http'].keys():
-        sync_lock: threading.Lock = params['http']['sync_lock']
-        if params['http']['sync_lock_expect'].endswith('until_request'):
-            pass
-        elif params['http']['sync_lock_expect'].endswith('to_request'):
-            if params['http']['sync_lock_expect'].startswith('lock'):
-                sync_lock.acquire()
-            elif params['http']['sync_lock_expect'].startswith('unlock'):
-                sync_lock.release()
-
     http_post_url = params['http']['url']
     del params['http']['url']
     post_dict = {
@@ -40,20 +30,6 @@ def http_post(params):
         post_dict['timeout'] = params['http']['timeout']
     if 'allow_redirects' in params['http'].keys():
         post_dict['allow_redirects'] = params['http']['allow_redirects']
-
-    if 'sync_lock' in params['http'].keys():
-        sync_lock: threading.Lock = params['http']['sync_lock']
-        if params['http']['sync_lock_expect'].startswith('lock'):
-            if params['http']['sync_lock_neutral'] == 'lock':
-                pass
-            else:
-                sync_lock.release()
-        elif params['http']['sync_lock_expect'].startswith('unlock'):
-            if params['http']['sync_lock_neutral'] == 'lock':
-                sync_lock.acquire()
-            else:
-                pass
-
     response = requests.post(**post_dict)
     if response.status_code in [200, 201, 302]:
         if 'raw' in params['http'].keys() and params['http']['raw']:
@@ -67,16 +43,6 @@ def http_post(params):
 
 
 def http_get(params):
-    if 'sync_lock' in params['http'].keys():
-        sync_lock: threading.Lock = params['http']['sync_lock']
-        if params['http']['sync_lock_expect'].endswith('until_request'):
-            pass
-        elif params['http']['sync_lock_expect'].endswith('to_request'):
-            if params['http']['sync_lock_expect'].startswith('lock'):
-                sync_lock.acquire()
-            elif params['http']['sync_lock_expect'].startswith('unlock'):
-                sync_lock.release()
-
     http_get_url = params['http']['url']
     del params['http']['url']
     get_dict = {
@@ -100,20 +66,6 @@ def http_get(params):
         get_dict['headers'] = params['http']['headers']
     if 'timeout' in params['http'].keys():
         get_dict['timeout'] = params['http']['timeout']
-
-    if 'sync_lock' in params['http'].keys():
-        sync_lock: threading.Lock = params['http']['sync_lock']
-        if params['http']['sync_lock_expect'].startswith('lock'):
-            if params['http']['sync_lock_neutral'] == 'lock':
-                pass
-            else:
-                sync_lock.release()
-        elif params['http']['sync_lock_expect'].startswith('unlock'):
-            if params['http']['sync_lock_neutral'] == 'lock':
-                sync_lock.acquire()
-            else:
-                pass
-
     response = requests.get(**get_dict)
     if response.status_code in [200, 201, 302]:
         if 'download_as' in params['http'].keys():
