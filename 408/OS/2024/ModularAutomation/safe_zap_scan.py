@@ -31,7 +31,7 @@ if __name__ == '__main__':
             'zap': {
                 'exe_dir': r"C:\Program Files\OWASP\Zed Attack Proxy",
                 'api_key': zap_api_key,
-                'proxy_port': '8080',
+                'proxy_port': zap_proxy_Port,
                 'target_url': {True: target_ip, False: target_addr}['http' in target_ip],
                 'target_desc': '{}_{}'.format(target_desc, time.strftime('%m%d%M%S', time.localtime(time.time()))),
                 'target_eweb_pass': target_pass
