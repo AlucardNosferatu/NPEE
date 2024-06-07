@@ -7,7 +7,7 @@ from modules.encryption.eweb_password import encrypt_pass
 from modules.http_api import http_post
 
 p_lock = threading.Lock()
-debug = False
+debug = True
 
 
 def eweb_inject_cmd(params):

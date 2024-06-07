@@ -16,11 +16,11 @@ if __name__ == '__main__':
             'ssh_pass': ssh_pass,
             'save_path': 'reports/{}-命令注入.xlsx'.format(target_name),
             'eweb_pass': eweb_pass,
-            'tp_size': 16,
+            'tp_size': 8,
             'payload_list': [],
             # 'slowdown_after': 66,
             'template_path': 'reports/template_payloads.xlsx',
-            'wait_per_injection': 0.25,
+            'wait_per_injection': 1,
             'path_whitelist': [
                 '/tmp/enetCap/single/modules'
             ]
