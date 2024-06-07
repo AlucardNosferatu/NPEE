@@ -186,7 +186,7 @@ namespace WT_SCPI_SampleCode
             throw new Exception("vsg state timeout");
         }
 
-        public void Vsg(int port, int freqMHz, int sampleRateMHz, int packets, string wave)
+        public void Vsg(int port, int freqMHz, int sampleRateMHz, int packets, string wave, int pow)
         {
             List<string> cmds = new List<string>
             {
@@ -195,7 +195,7 @@ namespace WT_SCPI_SampleCode
                 $"WT:SOURce:CONFigure:WAVE '{wave}'",
                 $"WT:SOURce:CONFigure:FREQuency {freqMHz}e+06",
                 $"WT:SOURce:CONFigure:SAMPle:RATE {sampleRateMHz}e+06",
-                "WT:SOURce:CONFigure:POWer -10",
+                $"WT:SOURce:CONFigure:POWer {pow}",
                 $"WT:SOURce:CONFigure:RFPOrt {port + 1}",
                 "WT:SOURce:CONFigure:TMOWaitting 8",
                 "WT:SOURce:CONFigure:FREQuency:OFFSet 0",

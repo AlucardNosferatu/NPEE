@@ -100,7 +100,8 @@ namespace WT_SCPI_SampleCode
                             freqMHz: int.Parse(jsonDict["VSG_FREQ_MHZ"].ToString()),
                             sampleRateMHz: int.Parse(jsonDict["VSG_SAMPLE_RATE_MHZ"].ToString()),
                             packets: int.Parse(jsonDict["VSG_PACKETS"].ToString()),
-                            wave: jsonDict["VSG_WAVE"].ToString()
+                            wave: jsonDict["VSG_WAVE"].ToString(),
+                            pow: int.Parse(jsonDict["VSG_POW"].ToString())
                             );
                         break;
                     case "VSA":
@@ -133,7 +134,7 @@ namespace WT_SCPI_SampleCode
                 scpi.UploadWaveForm("./54 Mbps(OFDM)328.bwv");
 
                 scpi.SetDevmParam(20, 200e-6, 500e-6);
-                scpi.Vsg(5, 2412, 240, 0, "54 Mbps(OFDM)328.bwv");
+                scpi.Vsg(5, 2412, 240, 0, "54 Mbps(OFDM)328.bwv",-10);
                 Thread.Sleep(100);
                 scpi.Vsa(6, 2412, 240, SignalDemod.Demod11ag);
                 Console.WriteLine(scpi.GetResult());
