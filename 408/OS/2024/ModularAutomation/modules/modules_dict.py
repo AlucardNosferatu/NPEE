@@ -7,6 +7,7 @@ from modules.http_eweb_api import eweb_get_sid, eweb_inject_cmd
 from modules.misc import ip_ping, mac_generate, mac_increase, mac_read_record, mac_write_record, timer, nop, interactive_shell, process_kill
 from modules.misc_singleton import wifi_connect
 from modules.nessus_api import nessus_delete_stop, nessus_export, nessus_find, nessus_get_status, nessus_login, nessus_new_scan, nessus_start_pause
+from modules.nmap_api import nmap_init, nmap_scan
 from modules.power_supply import ps_init, ps_reset, ps_acdc, ps_range, ps_freq, ps_toggle, ps_volt
 from modules.logger import log_logger_init, log_handler_init
 from modules.rgscan_api import rgscan_download_report, rgscan_generate_report, rgscan_get_scan_status, rgscan_scan_target, rgscan_start
@@ -77,7 +78,7 @@ m_dict = {
     'RGSCAN_GET_SCAN_STATUS': rgscan_get_scan_status, 'RGSCAN_GENERATE_REPORT': rgscan_generate_report,
     'RGSCAN_DOWNLOAD_REPORT': rgscan_download_report,
 
-    # 'NMAP_INIT': nmap_init, 'NMAP_SCAN': nmap_scan,
+    'NMAP_INIT': nmap_init, 'NMAP_SCAN': nmap_scan,
 
     'MAC_GENERATE': mac_generate, 'MAC_INCREASE': mac_increase, 'MAC_READ_RECORD': mac_read_record,
     'MAC_WRITE_RECORD': mac_write_record

@@ -5,6 +5,22 @@ import time
 import nmap
 
 
+# add a p_container as an arg for scan method
+# def scan(  # NOQA: CFQ001, C901
+#         self, hosts="127.0.0.1", ports=None, arguments="-sV", sudo=False, timeout=0, p_container=None
+# ):
+# and append p object after its construction
+# p = subprocess.Popen(
+#     args,
+#     bufsize=100000,
+#     stdin=subprocess.PIPE,
+#     stdout=subprocess.PIPE,
+#     stderr=subprocess.PIPE,
+# )
+# if p_container is not None:
+#     p_container.clear()
+#     p_container.append(p)
+
 def nmap_init(params: dict):
     port_scanner = nmap.PortScanner()
     params['nmap']['port_scanner'] = port_scanner
