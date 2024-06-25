@@ -12,12 +12,12 @@ namespace WT_SCPI_SampleCode
     {
         static WT_SCPI scpi;
         static Dictionary<String, SignalDemod> demod_dict;
-
-
+        static readonly string all_freq = "2412,2417,2422,2427,2432,2437,2442,2447,2452,2457,2462,2467,2472,2484,5180,5190,5200,5210,5220,5230,5240,5250,5260,5270,5280,5290,5300,5310,5320,5500,5510,5520,5530,5540,5550,5560,5570,5580,5590,5600,5610,5620,5630,5640,5660,5670,5680,5690,5700,5710,5720,5745,5755,5765,5775,5785,5795,5805,5825,5835,5845,5855,5865,5875,5885,5935,5945,5955,5965,5975,5985,5995,6005,6015,6025,6035,6045,6055,6065,6075,6095,6105,6115,6125,6135,6145,6155,6165,6175,6185,6195,6205,6215,6235,6255,6265,6275,6285,6295,6305,6315,6325,6335,6345,6355,6365,6375,6385,6395,6415,6425,6435,6445,6455,6465,6475,6485,6495,6505,6515,6525,6535,6545,6555,6575,6585,6595,6605,6615,6625,6635,6645,6655,6665,6675,6685,6695,6705,6715,6735,6745,6755,6765,6775,6785,6795,6815,6835,6855,6875,6895,6915,6925,6935,6945,6955,6965,6975,6985,6995,7005,7015,7025,7035,7055,7065,7075,7095,7115,7125";
 
         static void Main(string[] args)
         {
             scpi = new WT_SCPI();
+            Example_PAC();
             demod_dict = new Dictionary<string, SignalDemod>();
             demod_dict.Add(key: "Demod11ag", value: SignalDemod.Demod11ag);
             demod_dict.Add(key: "Demod11b", value: SignalDemod.Demod11b);
@@ -44,14 +44,16 @@ namespace WT_SCPI_SampleCode
             HttpListener listener = new HttpListener();
             listener.Prefixes.Add("http://localhost:20291/");
             listener.Start();
-            while (true) {
+            while (true)
+            {
                 HttpListenerContext context = listener.GetContext();
                 string postData;
-                using (var reader = new StreamReader(stream: context.Request.InputStream, encoding: context.Request.ContentEncoding)) { 
+                using (var reader = new StreamReader(stream: context.Request.InputStream, encoding: context.Request.ContentEncoding))
+                {
                     postData = reader.ReadToEnd();
                 }
                 byte[] responseBytes = Encoding.UTF8.GetBytes("Received.");
-                context.Response.OutputStream.Write(buffer:responseBytes,offset:0,count:responseBytes.Length);
+                context.Response.OutputStream.Write(buffer: responseBytes, offset: 0, count: responseBytes.Length);
                 context.Response.Close();
                 try
                 {
@@ -63,7 +65,7 @@ namespace WT_SCPI_SampleCode
                     }
                     if (jsonDict.ContainsKey("TASK"))
                     {
-                        execute_task(jsonDict: jsonDict);
+                        Execute_task(jsonDict: jsonDict);
                     }
                 }
                 catch (Exception)
@@ -74,7 +76,7 @@ namespace WT_SCPI_SampleCode
                 }
             }
         }
-        static void execute_task(JObject jsonDict)
+        static void Execute_task(JObject jsonDict)
         {
             try
             {
@@ -90,7 +92,7 @@ namespace WT_SCPI_SampleCode
                     case "SET_DEVM":
                         scpi.SetDevmParam(
                             dutyRadio: int.Parse(jsonDict["DEVM_DUTY_RADIO"].ToString()),
-                            leadTime: double.Parse(jsonDict["DEVM_LEAD_TIME"].ToString()), 
+                            leadTime: double.Parse(jsonDict["DEVM_LEAD_TIME"].ToString()),
                             delayTime: double.Parse(jsonDict["DEVM_DELAY_TIME"].ToString())
                             );
                         break;
@@ -116,6 +118,21 @@ namespace WT_SCPI_SampleCode
                         string res = scpi.GetResult();
                         File.WriteAllText(jsonDict["RESULT_TXT"].ToString(), res);
                         break;
+                    case "PAC":
+                        scpi.SetPACParam(
+                            sense_port: int.Parse(jsonDict["VSA_PORT"].ToString()),
+                            source_port: int.Parse(jsonDict["VSG_PORT"].ToString()),
+                            sense_power_max: double.Parse(jsonDict["VSA_POWER_MAX"].ToString()),
+                            source_power: double.Parse(jsonDict["VSG_POWER"].ToString()),
+                            sense_sample: double.Parse(jsonDict["VSA_SAMPLE_TIME"].ToString()),
+                            pac_mode: int.Parse(jsonDict["PAC_MODE"].ToString()),
+                            pac_avg: int.Parse(jsonDict["PAC_AVG_COUNT"].ToString()),
+                            pac_freq_list: jsonDict["PAC_FREQ_LIST"].ToString()
+                            );
+                        scpi.StartPAC();
+                        Thread.Sleep(30000);
+                        scpi.GetResultPAC();
+                        break;
                 }
             }
             catch (Exception ex)
@@ -127,26 +144,43 @@ namespace WT_SCPI_SampleCode
                 scpi.Disconnect();
             }
         }
-        static void example_test() {
-            try
-            {
-                scpi.Connect("192.168.10.254");
-                scpi.UploadWaveForm("./54 Mbps(OFDM)328.bwv");
-
-                scpi.SetDevmParam(20, 200e-6, 500e-6);
-                scpi.Vsg(5, 2412, 240, 0, "54 Mbps(OFDM)328.bwv",-10);
-                Thread.Sleep(100);
-                scpi.Vsa(6, 2412, 240, SignalDemod.Demod11ag);
-                Console.WriteLine(scpi.GetResult());
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-            finally
-            {
-                scpi.Disconnect();
-            }
+        //static void Example_test()
+        //{
+        //    try
+        //    {
+        //        scpi.Connect("192.168.10.254");
+        //        scpi.UploadWaveForm("./54 Mbps(OFDM)328.bwv");
+        //        scpi.SetDevmParam(20, 200e-6, 500e-6);
+        //        scpi.Vsg(5, 2412, 240, 0, "54 Mbps(OFDM)328.bwv", -10);
+        //        Thread.Sleep(100);
+        //        scpi.Vsa(6, 2412, 240, SignalDemod.Demod11ag);
+        //        Console.WriteLine(scpi.GetResult());
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine(ex);
+        //    }
+        //    finally
+        //    {
+        //        scpi.Disconnect();
+        //    }
+        //}
+        static void Example_PAC()
+        {
+            scpi.Connect("192.168.10.254");
+            scpi.SetPACParam(
+            sense_port: 1,
+            source_port: 2,
+            sense_power_max: -10.0,
+            source_power: -10.0,
+            sense_sample: 0.002,
+            pac_mode: 0,
+            pac_avg: 10,
+            pac_freq_list: all_freq
+            );
+            scpi.StartPAC();
+            Thread.Sleep(30000);
+            scpi.GetResultPAC();
         }
     }
 }

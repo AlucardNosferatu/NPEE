@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Xml;
 
 namespace WT_SCPI_SampleCode
 {
@@ -58,7 +59,7 @@ namespace WT_SCPI_SampleCode
             byte[] byteData = Encoding.ASCII.GetBytes(cmd);
             netStream.Write(byteData, 0, byteData.Length);
         }
-        
+
         public void Write(byte[] cmd)
         {
             var netStream = tcpClient.GetStream();
@@ -142,7 +143,7 @@ namespace WT_SCPI_SampleCode
             CheckError("UploadWaveForm");
         }
 
-        private void WaitForVsgComplete(int timeout=5000)
+        private void WaitForVsgComplete(int timeout = 5000)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -288,6 +289,67 @@ namespace WT_SCPI_SampleCode
             string cmd = string.Join("\n", cmds) + "\n";
             Write(cmd);
             CheckError("SetDevmParam");
+        }
+        public void SetPACParam(int sense_port, int source_port, double sense_power_max, double source_power, double sense_sample, int pac_mode, int pac_avg, string pac_freq_list)
+        {
+            List<string> cmds = new List<string>
+            {
+                $"WT:PAC:CONFigure:SENSe:RFPOrt {sense_port + 1}",
+                $"WT:PAC:CONFigure:SENSe:MAXPower {sense_power_max}",
+                $"WT:PAC:CONFigure:SENSe:SMPTime {sense_sample}",
+                $"WT:PAC:CONFigure:SOURce:RFPOrt {source_port + 1}",
+                $"WT:PAC:CONFigure:SOURce:POWer {source_power}",
+                $"WT:PAC:CONFigure:MODE {pac_mode}",
+                $"WT:PAC:CONFigure:AVG {pac_avg}",
+                $"WT:PAC:CONFigure:FREQuency {pac_freq_list}",
+            };
+            string cmd = string.Join("\n", cmds) + "\n";
+            Write(cmd);
+            CheckError("SetPACParam");
+        }
+        public void StartPAC()
+        {
+            List<string> cmds = new List<string>
+            {
+                "WT:PAC:CONFigure:INIT",
+            };
+            string cmd = string.Join("\n", cmds) + "\n";
+            Write(cmd);
+            CheckError("StartPAC");
+        }
+        public string GetResultPAC()
+        {
+            var baseResult = Query("WT:PAC:GET:PATH:LOSS:DATA?\n");
+            if (!baseResult.Contains("\r\n"))
+            {
+                throw new Exception($"base result error no \\r\\n: {baseResult}");
+            }
+            string bResult = baseResult.Trim();
+            string xmlFilePath = "PAC_template.xml";
+            XmlDocument xmlDoc = new XmlDocument();
+            try
+            {
+                // 加载XML文件
+                xmlDoc.Load(xmlFilePath);
+                // 获取根节点
+                XmlNode root = xmlDoc.DocumentElement;
+                root = root.SelectSingleNode("CableSet");
+                XmlNode results = root.SelectSingleNode("FreqCalList");
+                // 遍历所有book节点
+                foreach (XmlNode result in results.SelectNodes("CableResult"))
+                {
+                    // 读取title和author子节点的值
+                    string freq = result.SelectSingleNode("freq").InnerText;
+                    string correction = result.SelectSingleNode("Correction").InnerText;
+                    // 打印书名和作者
+                    Console.WriteLine($"freq: {freq}, correction: {correction}");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"An error occurred: {e.Message}");
+            }
+            return "";
         }
     }
 }

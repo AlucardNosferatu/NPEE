@@ -1,0 +1,860 @@
+<?xml version="1.0"?>
+<TableSets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <CableSet>
+    <AttSetMode>0</AttSetMode>
+    <FreqCalList>
+      <CableResult>
+        <freq>2412</freq>
+        <Correction>0.78</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>2417</freq>
+        <Correction>0.75</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>2422</freq>
+        <Correction>0.72</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>2427</freq>
+        <Correction>0.69</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>2432</freq>
+        <Correction>0.67</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>2437</freq>
+        <Correction>0.67</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>2442</freq>
+        <Correction>0.69</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>2447</freq>
+        <Correction>0.73</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>2452</freq>
+        <Correction>0.76</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>2457</freq>
+        <Correction>0.79</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>2462</freq>
+        <Correction>0.8</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>2467</freq>
+        <Correction>0.81</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>2472</freq>
+        <Correction>0.8</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>2484</freq>
+        <Correction>0.75</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5180</freq>
+        <Correction>1.25</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5190</freq>
+        <Correction>1.27</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5200</freq>
+        <Correction>1.33</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5210</freq>
+        <Correction>1.4</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5220</freq>
+        <Correction>1.44</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5230</freq>
+        <Correction>1.45</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5240</freq>
+        <Correction>1.41</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5250</freq>
+        <Correction>1.36</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5260</freq>
+        <Correction>1.33</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5270</freq>
+        <Correction>1.32</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5280</freq>
+        <Correction>1.35</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5290</freq>
+        <Correction>1.4</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5300</freq>
+        <Correction>1.46</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5310</freq>
+        <Correction>1.5</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5320</freq>
+        <Correction>1.5</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5500</freq>
+        <Correction>1.73</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5510</freq>
+        <Correction>1.8</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5520</freq>
+        <Correction>1.85</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5530</freq>
+        <Correction>1.88</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5540</freq>
+        <Correction>1.89</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5550</freq>
+        <Correction>1.92</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5560</freq>
+        <Correction>1.93</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5570</freq>
+        <Correction>1.92</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5580</freq>
+        <Correction>1.86</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5590</freq>
+        <Correction>1.8</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5600</freq>
+        <Correction>1.73</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5610</freq>
+        <Correction>1.66</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5620</freq>
+        <Correction>1.62</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5630</freq>
+        <Correction>1.59</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5640</freq>
+        <Correction>1.56</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5660</freq>
+        <Correction>1.47</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5670</freq>
+        <Correction>1.45</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5680</freq>
+        <Correction>1.42</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5690</freq>
+        <Correction>1.42</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5700</freq>
+        <Correction>1.44</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5710</freq>
+        <Correction>1.47</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5720</freq>
+        <Correction>1.51</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5745</freq>
+        <Correction>1.44</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5755</freq>
+        <Correction>1.44</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5765</freq>
+        <Correction>1.49</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5775</freq>
+        <Correction>1.55</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5785</freq>
+        <Correction>1.62</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5795</freq>
+        <Correction>1.69</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5805</freq>
+        <Correction>1.75</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5825</freq>
+        <Correction>1.84</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5835</freq>
+        <Correction>1.88</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5845</freq>
+        <Correction>1.95</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5855</freq>
+        <Correction>2.04</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5865</freq>
+        <Correction>2.15</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5875</freq>
+        <Correction>2.25</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5885</freq>
+        <Correction>2.36</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5935</freq>
+        <Correction>2.85</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5945</freq>
+        <Correction>2.97</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5955</freq>
+        <Correction>1.42</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5965</freq>
+        <Correction>1.46</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5975</freq>
+        <Correction>1.43</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5985</freq>
+        <Correction>1.41</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>5995</freq>
+        <Correction>1.38</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6005</freq>
+        <Correction>1.36</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6015</freq>
+        <Correction>1.36</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6025</freq>
+        <Correction>1.32</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6035</freq>
+        <Correction>1.31</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6045</freq>
+        <Correction>1.31</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6055</freq>
+        <Correction>1.34</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6065</freq>
+        <Correction>1.38</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6075</freq>
+        <Correction>1.43</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6095</freq>
+        <Correction>1.48</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6105</freq>
+        <Correction>1.5</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6115</freq>
+        <Correction>1.52</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6125</freq>
+        <Correction>1.56</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6135</freq>
+        <Correction>1.61</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6145</freq>
+        <Correction>1.67</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6155</freq>
+        <Correction>1.62</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6165</freq>
+        <Correction>1.6</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6175</freq>
+        <Correction>1.58</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6185</freq>
+        <Correction>1.6</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6195</freq>
+        <Correction>1.63</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6205</freq>
+        <Correction>1.67</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6215</freq>
+        <Correction>1.67</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6235</freq>
+        <Correction>1.49</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6255</freq>
+        <Correction>1.35</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6265</freq>
+        <Correction>1.41</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6275</freq>
+        <Correction>1.52</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6285</freq>
+        <Correction>1.63</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6295</freq>
+        <Correction>1.69</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6305</freq>
+        <Correction>1.65</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6315</freq>
+        <Correction>1.56</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6325</freq>
+        <Correction>1.5</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6335</freq>
+        <Correction>1.5</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6345</freq>
+        <Correction>1.56</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6355</freq>
+        <Correction>1.66</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6365</freq>
+        <Correction>1.74</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6375</freq>
+        <Correction>1.75</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6385</freq>
+        <Correction>1.72</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6395</freq>
+        <Correction>1.68</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6415</freq>
+        <Correction>1.63</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6425</freq>
+        <Correction>1.64</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6435</freq>
+        <Correction>1.68</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6445</freq>
+        <Correction>1.69</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6455</freq>
+        <Correction>1.71</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6465</freq>
+        <Correction>1.74</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6475</freq>
+        <Correction>1.75</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6485</freq>
+        <Correction>1.76</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6495</freq>
+        <Correction>1.75</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6505</freq>
+        <Correction>1.7</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6515</freq>
+        <Correction>1.65</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6525</freq>
+        <Correction>1.68</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6535</freq>
+        <Correction>1.72</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6545</freq>
+        <Correction>1.78</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6555</freq>
+        <Correction>1.58</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6575</freq>
+        <Correction>1.58</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6585</freq>
+        <Correction>1.56</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6595</freq>
+        <Correction>1.59</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6605</freq>
+        <Correction>1.5</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6615</freq>
+        <Correction>1.6</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6625</freq>
+        <Correction>1.67</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6635</freq>
+        <Correction>1.66</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6645</freq>
+        <Correction>1.56</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6655</freq>
+        <Correction>1.45</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6665</freq>
+        <Correction>1.4</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6675</freq>
+        <Correction>1.7</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6685</freq>
+        <Correction>1.62</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6695</freq>
+        <Correction>1.76</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6705</freq>
+        <Correction>1.8</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6715</freq>
+        <Correction>1.71</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6735</freq>
+        <Correction>1.47</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6745</freq>
+        <Correction>1.39</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6755</freq>
+        <Correction>1.41</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6765</freq>
+        <Correction>1.48</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6775</freq>
+        <Correction>1.55</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6785</freq>
+        <Correction>1.6</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6795</freq>
+        <Correction>1.6</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6815</freq>
+        <Correction>1.52</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6835</freq>
+        <Correction>1.49</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6855</freq>
+        <Correction>1.5</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6875</freq>
+        <Correction>1.55</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6895</freq>
+        <Correction>1.59</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6915</freq>
+        <Correction>1.56</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6925</freq>
+        <Correction>1.51</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6935</freq>
+        <Correction>1.43</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6945</freq>
+        <Correction>1.36</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6955</freq>
+        <Correction>1.32</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6965</freq>
+        <Correction>1.27</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6975</freq>
+        <Correction>1.25</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6985</freq>
+        <Correction>1.22</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>6995</freq>
+        <Correction>1.2</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>7005</freq>
+        <Correction>1.18</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>7015</freq>
+        <Correction>1.17</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>7025</freq>
+        <Correction>1.18</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>7035</freq>
+        <Correction>1.23</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>7055</freq>
+        <Correction>1.34</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>7065</freq>
+        <Correction>1.39</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>7075</freq>
+        <Correction>1.44</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>7095</freq>
+        <Correction>1.43</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>7115</freq>
+        <Correction>1.44</Correction>
+        <TableList />
+      </CableResult>
+      <CableResult>
+        <freq>7125</freq>
+        <Correction>1.45</Correction>
+        <TableList />
+      </CableResult>
+    </FreqCalList>
+  </CableSet>
+  <TableName>自动化</TableName>
+  <TableID>2</TableID>
+</TableSets>
