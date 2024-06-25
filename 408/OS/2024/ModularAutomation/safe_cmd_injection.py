@@ -1,6 +1,6 @@
-import cProfile
+# import cProfile
 import os
-import pstats
+# import pstats
 
 from core.flow_chart import FlowChart
 from modules.logger import log_handler_init, log_logger_init
@@ -22,7 +22,8 @@ if __name__ == '__main__':
             'template_path': 'reports/template_payloads.xlsx',
             'wait_per_injection': 0.5,
             'path_whitelist': [
-                '/tmp/enetCap/single/modules'
+                '/tmp/enetCap/single/modules',
+                '/etc/rg_config/global'
             ]
         }
     }

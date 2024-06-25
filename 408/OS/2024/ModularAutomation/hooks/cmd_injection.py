@@ -29,6 +29,7 @@ def h14(params):
 def h15(params):
     # params['wvt']['testcase_path'] = 'reports/testcases.xlsx'
     params['wvt']['testcase_path'] = 'reports/testcases_lite.xlsx'
+    # params['wvt']['testcase_path'] = 'reports/testcases_test.xlsx'
     params = read_testcases_ci(params=params)
     return params
 

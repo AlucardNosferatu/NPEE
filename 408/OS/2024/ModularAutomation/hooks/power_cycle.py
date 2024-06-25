@@ -193,10 +193,13 @@ def h12(params):
 
 
 def h13(params):
+    logger = params['log']['logger']
     if len(params['pc_testcase']['ssid_5g']) > 0:
-        logger = params['log']['logger']
         params['pc_testcase']['ping_5g_ok'] = params['misc']['ping_result'][0]
         logger.info('5G 网关可PING通?:{}'.format(params['pc_testcase']['ping_5g_ok']))
+    else:
+        del params['pc_testcase']['ping_5g_ok']
+        logger.info('5G 网关可PING通?:不进行5G测试')
     params['if_switch'] = len(params['pc_testcase']['sim_test']) > 0
     return params
 
@@ -278,6 +281,7 @@ def h18(params):
         params['if_switch'] = False
     logger.info('本轮测试通过？:{}'.format(params['if_switch']))
     logger.info('剩余测试轮数:{}'.format(len(params['pc_testcases'])))
+    # 失败即停机制
     if params['if_switch']:
         params['if_switch'] = len(params['pc_testcases']) > 0
     logger.info('继续测试？:{}'.format(params['if_switch']))
