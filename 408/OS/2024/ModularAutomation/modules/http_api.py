@@ -36,7 +36,8 @@ def http_post(params):
             del params['http']['raw']
             params['http']['response'] = response
         else:
-            params['http']['response'] = json.loads(response.content.decode('utf-8'))
+            resp_str = response.content.decode('utf-8')
+            params['http']['response'] = json.loads(resp_str.replace('\n', '\\n'))
     else:
         params['http']['response'] = response.status_code
     return params
