@@ -105,14 +105,7 @@ def h5(params):
 
 
 def h6(params):
-    oldest_thread = params['thread_pool'][0]
-    if 'thread_timeout' in params.keys():
-        thread_timeout = params['thread_timeout']
-    else:
-        thread_timeout = None
-    oldest_thread['thread_obj'].join(timeout=thread_timeout)
-    kill_thread(thread=oldest_thread['thread_obj'])
-    params['thread_pool'].pop(0)
+    params = pop_old_thread(params)
     params = h4(params=params)
     return params
 
@@ -173,10 +166,7 @@ def h7(params):
 
 
 def h8(params):
-    # todo: add a timeout killer or force stopper
-    thread_pool = params['thread_pool']
-    oldest_thread = thread_pool.pop(0)
-    oldest_thread['thread_obj'].join()
+    params = pop_old_thread(params)
     params = h5(params=params)
     return params
 
@@ -251,6 +241,18 @@ def h16(params):
         params['if_switch'] = True
     else:
         params['if_switch'] = False
+    return params
+
+
+def pop_old_thread(params):
+    oldest_thread = params['thread_pool'][0]
+    if 'thread_timeout' in params.keys():
+        thread_timeout = params['thread_timeout']
+    else:
+        thread_timeout = None
+    oldest_thread['thread_obj'].join(timeout=thread_timeout)
+    kill_thread(thread=oldest_thread['thread_obj'])
+    params['thread_pool'].pop(0)
     return params
 
 
