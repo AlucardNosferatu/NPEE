@@ -16,3 +16,22 @@ def h0(params):
 
 def h1(params):
     return params
+
+
+def h2(params):
+    params['if_switch'] = params['eweb']['exception'] is not None
+    return params
+
+
+def h3(params):
+    params['eweb']['repost_again'] = True
+    return params
+
+
+def h4(params):
+    params['if_switch'] = params['console']['exception'] is not None
+    return params
+
+
+def h5(params):
+    return params
