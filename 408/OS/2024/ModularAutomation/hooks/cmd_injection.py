@@ -3,34 +3,16 @@ import datetime
 import json
 import random
 import string
+import threading
 import time
 
 from kill_thread import kill_thread
 
+from core.flow_chart import FlowChart
+
 
 def h0(params):
     params = read_template_ci(params=params)
-    return params
-
-
-def h13(params):
-    params['wvt']['testcase_path'] = 'reports/payloads.xlsx'
-    # params['wvt']['testcase_path'] = 'reports/payloads_test.xlsx'
-    params = read_testcases_ci(params=params)
-    return params
-
-
-def h14(params):
-    params['wvt']['template_path'] = 'reports/template_testcases.xlsx'
-    params = read_template_ci(params=params)
-    return params
-
-
-def h15(params):
-    # params['wvt']['testcase_path'] = 'reports/testcases.xlsx'
-    params['wvt']['testcase_path'] = 'reports/testcases_lite.xlsx'
-    # params['wvt']['testcase_path'] = 'reports/testcases_test.xlsx'
-    params = read_testcases_ci(params=params)
     return params
 
 
@@ -42,6 +24,9 @@ def h1(params):
         'dut_ip': params['wvt']['dut_ip'],
         'ssh_pass': params['wvt']['ssh_pass']
     }
+    worker_fc: FlowChart = params['flowchart']['fc_pools'][params['flowchart']['old_fc_name']]
+    worker_fc.params_bus['console'] = params['console']
+    worker_fc.params_bus['wvt'] = params['wvt']
     return params
 
 
@@ -70,43 +55,17 @@ def h2(params):
         logger.info('请求载荷预处理进度:{:.2%}'.format(i / len(api)))
     params['wvt']['testcases'] = all_cases
     params['wvt']['queue'] = all_cases.copy()
-    if 'eweb' not in params.keys():
-        params['eweb'] = {}
-    params['eweb']['ip'] = params['wvt']['dut_ip']
-    params['eweb']['pass'] = params['wvt']['eweb_pass']
+    params['flowchart'] = {
+        "old_fc_name": "命令注入执行",
+        "new_fc_name": "命令注入执行",
+        "new_fc_pre": {},
+        "new_fc_hook": "cmd_injection_worker.py",
+        "new_fc_map": "命令注入执行.pos",
+        "locks": {
+            "命令注入执行": threading.Lock()
+        }
+    }
     return params
-
-
-def walk_cmd_dict(cmd_dict, dont_swap=[]):
-    index_list = []
-    iter_list = []
-    if len(dont_swap) > 0:
-        dont_swap_ = dont_swap.pop(0)
-    else:
-        dont_swap_ = []
-    if isinstance(cmd_dict, dict):
-        iter_list = list(cmd_dict.keys())
-    elif isinstance(cmd_dict, list):
-        for i in range(len(cmd_dict)):
-            iter_list.append(i)
-    elif isinstance(cmd_dict, str):
-        return [[None]]
-    for key in iter_list:
-        if type(cmd_dict[key]) in [dict, list, str] and key not in dont_swap_:
-            index_prefix = [key]
-            index_postfix_list = walk_cmd_dict(cmd_dict=cmd_dict[key], dont_swap=dont_swap)
-            for index_postfix in index_postfix_list:
-                index_list.append(index_prefix + index_postfix)
-    return index_list
-
-
-def set_cmd_dict(cmd_dict, index_list, value):
-    key = index_list.pop(0)
-    key_next = index_list[0]
-    if key_next is not None:
-        set_cmd_dict(cmd_dict[key], index_list, value)
-    else:
-        cmd_dict[key] = value
 
 
 def h3(params):
@@ -158,6 +117,7 @@ def h7(params):
     logger = params['log']['logger']
     queue = params['wvt']['queue']
     next_case = queue.pop(0)
+
     cmd_str = next_case['cmd']
     payload = next_case['payload']
     if 'payload_list' not in params['wvt'].keys():
@@ -211,14 +171,15 @@ def h8(params):
 
 
 def h9(params):
-    # params['console']['send_string'] = 'cd /root\nls\nrm /root/*'
-    params['console']['send_string'] = 'find / -iname *injected*'
+    params['console']['send_string'] = 'find / -iname "*injected*"'
     params['console']['format'] = 'str'
     params['console']['wait'] = 10
     return params
 
 
 def h10(params):
+    params['flowchart']['exec_steps'] = 99
+    params['flowchart']['use_lock'] = True
     return params
 
 
@@ -252,12 +213,25 @@ def h12(params):
     return params
 
 
-def path_whitelist(line, params):
-    whitelist = params['wvt']['path_whitelist']
-    for path in whitelist:
-        if path in line:
-            return True
-    return False
+def h13(params):
+    params['wvt']['testcase_path'] = 'reports/payloads.xlsx'
+    # params['wvt']['testcase_path'] = 'reports/payloads_test.xlsx'
+    params = read_testcases_ci(params=params)
+    return params
+
+
+def h14(params):
+    params['wvt']['template_path'] = 'reports/template_testcases.xlsx'
+    params = read_template_ci(params=params)
+    return params
+
+
+def h15(params):
+    # params['wvt']['testcase_path'] = 'reports/testcases.xlsx'
+    params['wvt']['testcase_path'] = 'reports/testcases_lite.xlsx'
+    # params['wvt']['testcase_path'] = 'reports/testcases_test.xlsx'
+    params = read_testcases_ci(params=params)
+    return params
 
 
 def h16(params):
@@ -271,6 +245,48 @@ def h16(params):
 
 def h17(params):
     return params
+
+
+def walk_cmd_dict(cmd_dict, dont_swap=None):
+    if dont_swap is None:
+        dont_swap = []
+    index_list = []
+    iter_list = []
+    if len(dont_swap) > 0:
+        dont_swap_ = dont_swap.pop(0)
+    else:
+        dont_swap_ = []
+    if isinstance(cmd_dict, dict):
+        iter_list = list(cmd_dict.keys())
+    elif isinstance(cmd_dict, list):
+        for i in range(len(cmd_dict)):
+            iter_list.append(i)
+    elif isinstance(cmd_dict, str):
+        return [[None]]
+    for key in iter_list:
+        if type(cmd_dict[key]) in [dict, list, str] and key not in dont_swap_:
+            index_prefix = [key]
+            index_postfix_list = walk_cmd_dict(cmd_dict=cmd_dict[key], dont_swap=dont_swap)
+            for index_postfix in index_postfix_list:
+                index_list.append(index_prefix + index_postfix)
+    return index_list
+
+
+def set_cmd_dict(cmd_dict, index_list, value):
+    key = index_list.pop(0)
+    key_next = index_list[0]
+    if key_next is not None:
+        set_cmd_dict(cmd_dict[key], index_list, value)
+    else:
+        cmd_dict[key] = value
+
+
+def path_whitelist(line, params):
+    whitelist = params['wvt']['path_whitelist']
+    for path in whitelist:
+        if path in line:
+            return True
+    return False
 
 
 def read_template_ci(params):
