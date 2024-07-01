@@ -7,7 +7,7 @@ from modules.encryption.eweb_password import encrypt_pass
 from modules.http_api import http_post
 
 p_lock = threading.Lock()
-debug = True
+debug = False
 
 
 def eweb_inject_cmd(params):
@@ -46,6 +46,7 @@ def eweb_inject_cmd(params):
             else:
                 print(info_str)
     except Exception as e:
+        # noinspection PyTypeChecker
         params_http['http']['response'] = e
         if debug:
             error_str = '对接口{}的{}方法注入{}发生错误{}'.format(api, inject_method, injected_cmd, repr(e))

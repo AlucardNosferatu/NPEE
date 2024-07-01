@@ -50,14 +50,25 @@ def flowchart_step(params):
     if 'locks' not in fc_params.keys():
         fc_params['locks'] = {}
     locks: dict[str, threading.Lock] = fc_params['locks']
+    print_('子流程准备执行')
     if 'use_lock' in fc_params.keys() and fc_params['use_lock']:
+        print_('子流程等待取锁')
         locks[params['flowchart']['old_fc_name']].acquire()
+        print_('子流程已获取锁')
+    print_('子流程开始执行')
+    steps_count = 0
     while fc_params['exec_steps'] > 0 and not fc_params['end_status'][old_fc_name]:
         end_status = fc.run_step()
         fc_params['end_status'][old_fc_name] = end_status
         fc_params['exec_steps'] -= 1
+        steps_count += 1
+        print_('子流程正在执行,已执行{}步'.format(steps_count))
+    print_('子流程执行完毕')
     if 'use_lock' in fc_params.keys() and fc_params['use_lock']:
+        print_('子流程等待解锁')
         locks[params['flowchart']['old_fc_name']].release()
+        print_('子流程已解除锁')
+    print_('子流程结束执行')
     return params
 
 
@@ -67,6 +78,8 @@ def flowchart_restart(params):
     old_fc_name = fc_params['old_fc_name']
     fc: FlowChart = fc_pools[old_fc_name]
     fc.restart()
+    if 'end_status' in fc_params.keys():
+        fc_params['end_status'][old_fc_name] = False
     return params
 
 
