@@ -10,7 +10,10 @@ def h0(params):
     params['eweb']['pass'] = params['wvt']['eweb_pass']
     pass_dict = {"type": "noenc", "password": params['eweb']['pass']}
     pass_str = json.dumps(obj=pass_dict)
+    nid_dict = {"networkId": "0"}
+    nid_str = json.dumps(obj=nid_dict)
     cmd_list = [
+        "dev_sta set -m deviceMove '{}'".format(nid_str),
         "ac_config set -m eweb_password '{}'".format(pass_str),
         'uci set luci.main.loginNum="0"',
         "uci commit"
