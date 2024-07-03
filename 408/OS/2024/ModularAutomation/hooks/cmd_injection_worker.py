@@ -20,13 +20,13 @@ def h0(params):
     ]
     params['console']['send_string'] = '\r\n'.join(cmd_list)
     params['console']['format'] = 'str'
-    params['console']['wait'] = 1
-    time.sleep(1)
+    params['console']['wait'] = 0.5
+    time.sleep(0.5)
     return params
 
 
 def h1(params):
-    time.sleep(1)
+    time.sleep(0.5)
     return params
 
 
@@ -67,7 +67,7 @@ def h7(params):
         memory_used = int(memory_usage.group(1))
         memory_free = int(memory_usage.group(2))
         # 检查资源是否不足20%
-        if cpu_idle < 15 or (memory_free / (memory_used + memory_free)) * 100 < 5:
+        if cpu_idle < 10 or (memory_free / (memory_used + memory_free)) * 100 < 5:
             print("Warning: Resource usage is high!")
             params['if_switch'] = True
         else:
@@ -82,15 +82,15 @@ def h7(params):
 def h8(params):
     params['console']['send_string'] = 'reboot'
     params['console']['format'] = 'str'
-    params['console']['wait'] = 0.5
+    params['console']['wait'] = 0
     return params
 
 
 def h9(params):
-    time.sleep(90)
+    time.sleep(60)
     params['misc'] = {
         'ping_host': params['wvt']['dut_ip'],
-        'ping_times': 10
+        'ping_times': 1
     }
     return params
 
@@ -103,9 +103,9 @@ def h10(params):
 
 
 def h11(params):
-    time.sleep(2)
+    time.sleep(0.5)
     params['misc'] = {
         'ping_host': params['wvt']['dut_ip'],
-        'ping_times': 10
+        'ping_times': 1
     }
     return params
