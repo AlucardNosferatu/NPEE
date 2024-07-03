@@ -1,4 +1,5 @@
 import json
+import re
 import time
 
 
@@ -42,4 +43,66 @@ def h4(params):
 
 
 def h5(params):
+    return params
+
+
+def h6(params):
+    params['console']['send_string'] = 'top -bn1'
+    params['console']['format'] = 'str'
+    params['console']['wait'] = 2
+    return params
+
+
+def h7(params):
+    echo_string = params['console']['echo_string']
+    try:
+        cpu_pattern = r'\b(\d+)%\s+idle'
+        cpu_idle = re.search(cpu_pattern, echo_string)
+        cpu_idle = float(cpu_idle.group(1))
+        memory_pattern = r"Mem:\s+([\d]+)K\s+used,\s+([\d]+)K\s+free"
+        memory_usage = re.search(memory_pattern, echo_string)
+        memory_used = int(memory_usage.group(1))
+        memory_free = int(memory_usage.group(2))
+        # 检查资源是否不足20%
+        if cpu_idle < 15 or (memory_free / (memory_used + memory_free)) * 100 < 5:
+            print("Warning: Resource usage is high!")
+            params['if_switch'] = True
+        else:
+            print("Resource usage is within acceptable limits.")
+            params['if_switch'] = False
+    except Exception as e:
+        print("Error occurred while parsing echo of top -bn1:{}".format(repr(e)))
+        params['if_switch'] = True
+    return params
+
+
+def h8(params):
+    params['console']['send_string'] = 'reboot'
+    params['console']['format'] = 'str'
+    params['console']['wait'] = 0.5
+    return params
+
+
+def h9(params):
+    time.sleep(90)
+    params['misc'] = {
+        'ping_host': params['wvt']['dut_ip'],
+        'ping_times': 10
+    }
+    return params
+
+
+def h10(params):
+    misc_params = params['misc']
+    ping_result = misc_params['ping_result']
+    params['if_switch'] = ping_result[0]
+    return params
+
+
+def h11(params):
+    time.sleep(2)
+    params['misc'] = {
+        'ping_host': params['wvt']['dut_ip'],
+        'ping_times': 10
+    }
     return params

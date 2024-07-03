@@ -64,6 +64,10 @@ def flowchart_step(params):
         steps_count += 1
         print_('子流程正在执行,已执行{}步'.format(steps_count))
     print_('子流程执行完毕')
+    if 'reset_after_exe' in fc_params.keys() and fc_params['reset_after_exe']:
+        print_('子流程进行复位')
+        params = flowchart_restart(params=params)
+        print_('子流程完成复位')
     if 'use_lock' in fc_params.keys() and fc_params['use_lock']:
         print_('子流程等待解锁')
         locks[params['flowchart']['old_fc_name']].release()

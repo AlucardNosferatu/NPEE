@@ -181,6 +181,7 @@ def h9(params):
 def h10(params):
     params['flowchart']['exec_steps'] = 99
     params['flowchart']['use_lock'] = True
+    params['flowchart']['reset_after_exe'] = True
     return params
 
 
@@ -241,6 +242,10 @@ def h16(params):
         params['if_switch'] = True
     else:
         params['if_switch'] = False
+    return params
+
+
+def h17(params):
     return params
 
 
