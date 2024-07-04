@@ -299,7 +299,7 @@ def path_whitelist(line, params):
     whitelist = params['wvt']['path_whitelist']
     for path in whitelist:
         if path in line:
-            print('{}的路径在白名单中，属于正常功能产生'.format(line))
+            print('{}的路径在白名单中，属于正常功能产生，但有可能被利用撑爆设备'.format(line))
             return True
     return False
 

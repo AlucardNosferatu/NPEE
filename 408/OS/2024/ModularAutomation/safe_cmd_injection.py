@@ -23,7 +23,8 @@ if __name__ == '__main__':
             'wait_per_injection': 1,
             'path_whitelist': [
                 '/tmp/enetCap/single/modules',
-                '/etc/rg_config/global'
+                '/etc/rg_config/global',
+                '/etc/rg_config/single'
             ]
         }
     }
