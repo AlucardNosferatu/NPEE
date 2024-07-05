@@ -5,13 +5,12 @@ import os
 from safe_common_config import target_name, eweb_pass, scan_host
 
 if __name__ == '__main__':
-    params = {}
-    params['正确密码_明文'] = eweb_pass
-    params['设备IP地址'] = scan_host
-    params['eweb'] = {}
-    params['eweb']['ip'] = params['设备IP地址']
-    params['failed_times'] = 20
-    params['eweb']['pass'] = params['正确密码_明文']
+    params = {
+        '正确密码_明文': eweb_pass, '设备IP地址': scan_host, 'eweb': {
+            'ip': scan_host,
+            'pass': eweb_pass
+        }, 'failed_times': 20
+    }
     fc = FlowChart(prerequisite=params)
     fc.load_map(hook_script='enum_auth.py', map_json='认证穷举测试.pos')
     # todo: makeshift patch

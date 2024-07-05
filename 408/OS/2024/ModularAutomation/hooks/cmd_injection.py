@@ -17,13 +17,7 @@ def h0(params):
 
 
 def h1(params):
-    if 'console' not in params.keys():
-        params['console'] = {}
-    params['console'] = {
-        'console_type': 'ssh',
-        'dut_ip': params['wvt']['dut_ip'],
-        'ssh_pass': params['wvt']['ssh_pass']
-    }
+    params = h18(params=params)
     worker_fc: FlowChart = params['flowchart']['fc_pools'][params['flowchart']['old_fc_name']]
     worker_fc.params_bus['console'] = params['console']
     worker_fc.params_bus['wvt'] = params['wvt']
@@ -35,6 +29,7 @@ def h1(params):
 
 def h2(params):
     logger = params['log']['logger']
+    check_list = params['wvt']['confirmed_removed']
     all_cases = []
     # 这逼玩意就是等待执行的用例队列
     case_params = params['excel']['case_params']
@@ -45,6 +40,9 @@ def h2(params):
     payloads = case_params['payloads']
     for i in range(len(api)):
         cmd_dict = json.loads(cmd_str[i])
+        if 'module' in cmd_dict.keys() and cmd_dict['module'] in check_list:
+            logger.info('接口{}已经被移除了，文件系统里找不到'.format(cmd_dict['module']))
+            continue
         i_list = walk_cmd_dict(cmd_dict=cmd_dict, dont_swap=[['module']])
         for k in range(len(i_list)):
             cmd_dict_copy = copy.deepcopy(cmd_dict)
@@ -179,7 +177,7 @@ def h9(params):
 
 
 def h10(params):
-    params['flowchart']['exec_steps'] = 99
+    params['flowchart']['exec_steps'] = 64
     params['flowchart']['use_lock'] = True
     params['flowchart']['reset_after_exe'] = True
     return params
@@ -246,6 +244,72 @@ def h16(params):
 
 
 def h17(params):
+    return params
+
+
+def h18(params):
+    if 'console' not in params.keys():
+        params['console'] = {}
+    params['console'] = {
+        'console_type': 'ssh',
+        'dut_ip': params['wvt']['dut_ip'],
+        'ssh_pass': params['wvt']['ssh_pass']
+    }
+    return params
+
+
+def h19(params):
+    params['wvt']['checking_removed'] = params['wvt']['potential_removed'].pop(0)
+    params['console']['send_string'] = 'find / -iname "{}*"'.format(params['wvt']['checking_removed'])
+    params['console']['format'] = 'str'
+    params['console']['wait'] = 10
+    return params
+
+
+def h20(params):
+    # logger = params['log']['logger']
+    check_list = []
+    # 可能不存在（被裁剪）的接口
+    case_params = params['excel']['case_params']
+    api = case_params['api']
+    cmd_str = case_params['cmd']
+    method_ = case_params['method']
+    for i in range(len(api)):
+        cmd_dict = json.loads(cmd_str[i])
+        if '.' in method_[i] and method_[i].split('.')[0] in ['devSta', 'devConfig', 'acConfig']:
+            if 'module' in cmd_dict.keys():
+                check_list.append(cmd_dict['module'])
+    params['wvt']['potential_removed'] = check_list
+    params['wvt']['confirmed_removed'] = []
+    params['if_switch'] = len(params['wvt']['potential_removed']) <= 0
+    return params
+
+
+def h21(params):
+    logger = params['log']['logger']
+    echo_string = params['console']['echo_string']
+    logger.info('查找接口{}的回显:\n{}'.format(params['wvt']['checking_removed'], echo_string))
+    echo_string = [
+        line.split('/')[-1] for line in echo_string.split('\r\n') if 'find / -iname' not in line and '/' in line
+    ]
+    confirmed = False
+    for line in echo_string:
+        if line.startswith(params['wvt']['checking_removed']):
+            # 有扩展名，扩展名以外部分和接口一模一样
+            if '.' in line and line.split('.')[0] == params['wvt']['checking_removed']:
+                confirmed = True
+                break
+
+            # 无拓展名，文件名直接就是接口名
+            elif line == params['wvt']['checking_removed']:
+                confirmed = True
+                break
+    if confirmed:
+        logger.info(
+            '接口{}在文件系统里找不到同名文件，判断为被裁剪，不需要测试'.format(params['wvt']['checking_removed'])
+        )
+        params['wvt']['confirmed_removed'].append(params['wvt']['checking_removed'])
+    params['if_switch'] = len(params['wvt']['potential_removed']) <= 0
     return params
 
 

@@ -83,7 +83,7 @@ def eweb_get_sid(params):
                 }, 'method': 'login'
             },
             'headers': {'Content-Type': 'application/json', 'User-Agent': get_fake_ua()},
-            'timeout': 10.0
+            'timeout': 5.0
         }
     }
     try:

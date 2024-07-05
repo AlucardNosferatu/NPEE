@@ -88,10 +88,7 @@ def h8(params):
 
 def h9(params):
     time.sleep(60)
-    params['misc'] = {
-        'ping_host': params['wvt']['dut_ip'],
-        'ping_times': 1
-    }
+    params = h11(params=params)
     return params
 
 
@@ -103,9 +100,34 @@ def h10(params):
 
 
 def h11(params):
+    params = h15(params=params)
+    params['wvt']['ping_device_retry'] = 5
+    return params
+
+
+def h12(params):
+    params['wvt']['reboot_check_retry'] -= 1
+    params['if_switch'] = params['wvt']['reboot_check_retry'] < 0
     time.sleep(0.5)
+    return params
+
+
+def h13(params):
+    params['wvt']['reboot_check_retry'] = 5
+    return params
+
+
+def h14(params):
+    params['wvt']['ping_device_retry'] -= 1
+    params['if_switch'] = params['wvt']['ping_device_retry'] < 0
+    return params
+
+
+def h15(params):
+    time.sleep(4)
     params['misc'] = {
         'ping_host': params['wvt']['dut_ip'],
-        'ping_times': 1
+        'ping_times': 5
     }
     return params
+
