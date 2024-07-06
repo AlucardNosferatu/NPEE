@@ -5,6 +5,7 @@ import random
 import string
 import threading
 import time
+from math import floor
 
 from kill_thread import kill_thread
 
@@ -114,7 +115,8 @@ def h7(params):
         params['wvt']['injected_cmd'] = []
         params['wvt']['injected_api'] = []
         params['wvt']['inject_method'] = []
-    if len(params['wvt']['injected_cmd']) >= params['wvt']['tp_size']:
+    params['if_switch'] = False
+    if len(params['wvt']['injected_cmd']) >= params['wvt']['rq_size']:
         logger.info('发送缓冲区（最多{}个请求）已满，不添加新请求，直接开始执行'.format(params['wvt']['tp_size']))
     else:
         queue = params['wvt']['queue']
@@ -145,10 +147,23 @@ def h7(params):
             injected_module = cmd_dict['module']
         else:
             injected_module = None
-        progress = 1 - (len(params['wvt']['queue']) / len(params['wvt']['testcases']))
+        params['wvt']['progress'] = 1 - (len(params['wvt']['queue']) / len(params['wvt']['testcases']))
+
+        floor_progress_per = floor(params['wvt']['progress'] * 100)
+        notify = False
+        if floor_progress_per % 10 == 0:
+            if 'send_progress_per' not in params['wvt'].keys():
+                notify = True
+            elif floor_progress_per < params['wvt']['send_progress_per']:
+                notify = True
+        params['if_switch'] = notify
+        if notify:
+            params['wvt']['send_progress_per'] = floor_progress_per
+            params['webhook']['send_string'] = '已注入进度:{}%'.format(floor_progress_per)
+
         logger.info(
             '注入API:{} 注入方法:{} 注入模块:{} 进度:{:.2%}={}/{}'.format(
-                next_case['api'], next_case['method'], injected_module, progress,
+                next_case['api'], next_case['method'], injected_module, params['wvt']['progress'],
                 len(params['wvt']['testcases']) - len(params['wvt']['queue']),
                 len(params['wvt']['testcases'])
             )
@@ -299,17 +314,20 @@ def h21(params):
             if '.' in line and line.split('.')[0] == params['wvt']['checking_removed']:
                 confirmed = True
                 break
-
             # 无拓展名，文件名直接就是接口名
             elif line == params['wvt']['checking_removed']:
                 confirmed = True
                 break
-    if confirmed:
+    if not confirmed:
         logger.info(
             '接口{}在文件系统里找不到同名文件，判断为被裁剪，不需要测试'.format(params['wvt']['checking_removed'])
         )
         params['wvt']['confirmed_removed'].append(params['wvt']['checking_removed'])
     params['if_switch'] = len(params['wvt']['potential_removed']) <= 0
+    return params
+
+
+def h22(params):
     return params
 
 

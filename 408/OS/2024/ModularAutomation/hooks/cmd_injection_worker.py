@@ -130,4 +130,3 @@ def h15(params):
         'ping_times': 5
     }
     return params
-

@@ -13,10 +13,13 @@ from modules.logger import log_logger_init, log_handler_init
 from modules.rgscan_api import rgscan_download_report, rgscan_generate_report, rgscan_get_scan_status, rgscan_scan_target, rgscan_start
 from modules.rsas_api import rsas_download_report, rsas_generate_report, rsas_get_report_status, rsas_get_scan_status, rsas_scan_target, rsas_start
 from modules.web_api import web_click, web_find, web_find_click, web_find_input, web_goto, web_start
+from modules.webhook_api import webhook_send
 from modules.zap_api import zap_crawl_target, zap_download_report, zap_get_crawl_status, zap_get_scan_status, zap_init_adapter, zap_kill_java, zap_scan_target, zap_start_exe
 from modules.mqtt_api import mqtt_init, mqtt_subscribe, mqtt_read_start, mqtt_read_stop
 
 m_dict = {
+    'WEBHOOK_SEND': webhook_send,
+
     'MQTT_INIT': mqtt_init, 'MQTT_SUBSCRIBE': mqtt_subscribe, 'MQTT_READ_START': mqtt_read_start, 'MQTT_READ_STOP': mqtt_read_stop,
 
     'BINWALK_SCAN': binwalk_scan, 'BINWALK_CHECK': binwalk_check,

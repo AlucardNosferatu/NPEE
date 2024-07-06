@@ -16,7 +16,8 @@ if __name__ == '__main__':
             'ssh_pass': ssh_pass,
             'save_path': 'reports/{}-命令注入.xlsx'.format(target_name),
             'eweb_pass': eweb_pass,
-            'tp_size': 4,
+            'tp_size': 8,
+            'rq_size': 2,
             'payload_list': [],
             # 'slowdown_after': 66,
             'template_path': 'reports/template_payloads.xlsx',
@@ -39,14 +40,11 @@ if __name__ == '__main__':
         'webhook_url': 'https://open.feishu.cn/open-apis/bot/v2/hook/49487983-e106-49c8-a527-4b8a4dfeddf5',
         'send_string': '{}的命令注入测试开始'.format(target_name)
     }
-    # fc.params_bus = webhook_send(params=fc.params_bus)
+    fc.params_bus = webhook_send(params=fc.params_bus)
     while not end:
         end = fc.run_step()
-    fc.params_bus['webhook'] = {
-        'webhook_url': 'https://open.feishu.cn/open-apis/bot/v2/hook/49487983-e106-49c8-a527-4b8a4dfeddf5',
-        'send_string': '{}的命令注入测试已完成'.format(target_name)
-    }
-    # fc.params_bus = webhook_send(params=fc.params_bus)
+    fc.params_bus['webhook']['send_string'] = '{}的命令注入测试已完成'.format(target_name)
+    fc.params_bus = webhook_send(params=fc.params_bus)
     # profiler.disable()
     # pstats.Stats(
     #     profiler, stream=open('reports/性能分析-命令注入.txt', 'w')

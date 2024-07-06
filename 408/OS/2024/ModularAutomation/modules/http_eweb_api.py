@@ -8,7 +8,8 @@ from modules.encryption.eweb_password import encrypt_pass
 from modules.http_api import http_post
 
 p_lock = threading.Lock()
-debug = True
+debug_print = True
+debug_post = True
 
 
 def eweb_inject_cmd(params):
@@ -43,8 +44,17 @@ def eweb_inject_cmd(params):
         }
     try:
         params['eweb']['repost_cache'] = copy.deepcopy(x=params_http)
-        http_post(params=params_http)
-        if debug:
+        if debug_post:
+            if debug_print:
+                info_str = '测试模式，跳过注入请求'
+                if 'log' in params.keys() and 'logger' in params['log'].keys():
+                    logger = params['log']['logger']
+                    logger.info(info_str)
+                else:
+                    print(info_str)
+        else:
+            http_post(params=params_http)
+        if debug_print:
             info_str = '对载荷{}的注入请求完成'.format(params['eweb']['repost_cache']['http']['data'])
             if 'log' in params.keys() and 'logger' in params['log'].keys():
                 logger = params['log']['logger']
@@ -54,7 +64,7 @@ def eweb_inject_cmd(params):
         params['eweb']['exception'] = None
     except Exception as e:
         params['eweb']['exception'] = e
-        if debug:
+        if debug_print:
             error_str = '对载荷{}的注入发生错误{}'.format(params['eweb']['repost_cache']['http']['data'], repr(e))
             if 'log' in params.keys() and 'logger' in params['log'].keys():
                 logger = params['log']['logger']
@@ -87,17 +97,27 @@ def eweb_get_sid(params):
         }
     }
     try:
-        params_http = http_post(params=params_http)
-        if params_http['http']['response'] is not int:
-            if params_http['http']['response']['data'] is not None:
-                sid = params_http['http']['response']['data']['sid']
+        if debug_post:
+            sid = '123456'
+            if debug_print:
+                info_str = '测试模式，跳过SID请求,SID固定为:{}'.format(sid)
+                if 'log' in params.keys() and 'logger' in params['log'].keys():
+                    logger = params['log']['logger']
+                    logger.info(info_str)
+                else:
+                    print(info_str)
+        else:
+            params_http = http_post(params=params_http)
+            if params_http['http']['response'] is not int:
+                if params_http['http']['response']['data'] is not None:
+                    sid = params_http['http']['response']['data']['sid']
+                else:
+                    sid = None
             else:
                 sid = None
-        else:
-            sid = None
         assert sid is not None
         params['eweb']['sid'] = sid
-        if debug:
+        if debug_print:
             info_str = '对地址{}的设备使用密码{}请求SID完成，SID是{}'.format(
                 params['eweb']['ip'], params['eweb']['pass'], params['eweb']['sid']
             )
@@ -109,7 +129,7 @@ def eweb_get_sid(params):
         params['eweb']['exception'] = None
     except Exception as e:
         params['eweb']['exception'] = e
-        if debug:
+        if debug_print:
             error_str = '对地址{}的设备使用密码{}请求SID出错'.format(params['eweb']['ip'], params['eweb']['pass'])
             if 'log' in params.keys() and 'logger' in params['log'].keys():
                 logger = params['log']['logger']
