@@ -224,6 +224,7 @@ if __name__ == '__main__':
             create_waiting_task(task=task_)
             time.sleep(1)
 
+
     kgt_thread = threading.Thread(target=keep_generate_task)
     kgt_thread.start()
     while True:

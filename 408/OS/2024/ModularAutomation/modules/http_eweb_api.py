@@ -9,7 +9,7 @@ from modules.http_api import http_post
 
 p_lock = threading.Lock()
 debug_print = True
-debug_post = True
+debug_post = False
 
 
 def eweb_inject_cmd(params):

@@ -44,7 +44,7 @@ def timer(params):
     while not timer_params['stop']:
         timer_params['time_end'] = datetime.datetime.now()
         timer_params['time_delta'] = timer_params['time_end'] - \
-            timer_params['time_start']
+                                     timer_params['time_start']
     return params
 
 

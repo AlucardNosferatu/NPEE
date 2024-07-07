@@ -1,6 +1,8 @@
 import copy
 import datetime
 import json
+import os.path
+import pickle
 import random
 import string
 import threading
@@ -10,6 +12,8 @@ from math import floor
 from kill_thread import kill_thread
 
 from core.flow_chart import FlowChart
+
+debug = False
 
 
 def h0(params):
@@ -22,6 +26,7 @@ def h1(params):
     worker_fc: FlowChart = params['flowchart']['fc_pools'][params['flowchart']['old_fc_name']]
     worker_fc.params_bus['console'] = params['console']
     worker_fc.params_bus['wvt'] = params['wvt']
+    worker_fc.params_bus['log'] = params['log']
     worker_fc.params_bus['flowchart'] = {
         'given_fc': worker_fc
     }
@@ -57,16 +62,7 @@ def h2(params):
         logger.info('请求载荷预处理进度:{:.2%}'.format(i / len(api)))
     params['wvt']['testcases'] = all_cases
     params['wvt']['queue'] = all_cases.copy()
-    params['flowchart'] = {
-        "old_fc_name": "命令注入执行",
-        "new_fc_name": "命令注入执行",
-        "new_fc_pre": {},
-        "new_fc_hook": "cmd_injection_worker.py",
-        "new_fc_map": "命令注入执行.pos",
-        "locks": {
-            "命令注入执行": threading.Lock()
-        }
-    }
+    params = init_sub_flowchart(params=params)
     return params
 
 
@@ -117,7 +113,7 @@ def h7(params):
         params['wvt']['inject_method'] = []
     params['if_switch'] = False
     if len(params['wvt']['injected_cmd']) >= params['wvt']['rq_size']:
-        logger.info('发送缓冲区（最多{}个请求）已满，不添加新请求，直接开始执行'.format(params['wvt']['tp_size']))
+        logger.info('发送缓冲区（最多{}个请求）已满，不添加新请求，直接开始执行'.format(params['wvt']['rq_size']))
     else:
         queue = params['wvt']['queue']
         next_case = queue.pop(0)
@@ -150,11 +146,14 @@ def h7(params):
         params['wvt']['progress'] = 1 - (len(params['wvt']['queue']) / len(params['wvt']['testcases']))
 
         floor_progress_per = floor(params['wvt']['progress'] * 100)
+        if debug:
+            logger.debug('进度:{}'.format(floor_progress_per))
         notify = False
-        if floor_progress_per % 10 == 0:
+        # if floor_progress_per % 10 == 0:
+        if floor_progress_per % 1 == 0:
             if 'send_progress_per' not in params['wvt'].keys():
                 notify = True
-            elif floor_progress_per < params['wvt']['send_progress_per']:
+            elif floor_progress_per > params['wvt']['send_progress_per']:
                 notify = True
         params['if_switch'] = notify
         if notify:
@@ -275,9 +274,13 @@ def h18(params):
 
 def h19(params):
     params['wvt']['checking_removed'] = params['wvt']['potential_removed'].pop(0)
-    params['console']['send_string'] = 'find / -iname "{}*"'.format(params['wvt']['checking_removed'])
+    if debug:
+        params['console']['send_string'] = 'cd'
+        params['console']['wait'] = 0.125
+    else:
+        params['console']['send_string'] = 'find / -iname "{}*"'.format(params['wvt']['checking_removed'])
+        params['console']['wait'] = 5
     params['console']['format'] = 'str'
-    params['console']['wait'] = 10
     return params
 
 
@@ -308,16 +311,19 @@ def h21(params):
         line.split('/')[-1] for line in echo_string.split('\r\n') if 'find / -iname' not in line and '/' in line
     ]
     confirmed = False
-    for line in echo_string:
-        if line.startswith(params['wvt']['checking_removed']):
-            # 有扩展名，扩展名以外部分和接口一模一样
-            if '.' in line and line.split('.')[0] == params['wvt']['checking_removed']:
-                confirmed = True
-                break
-            # 无拓展名，文件名直接就是接口名
-            elif line == params['wvt']['checking_removed']:
-                confirmed = True
-                break
+    if debug:
+        confirmed = True
+    else:
+        for line in echo_string:
+            if line.startswith(params['wvt']['checking_removed']):
+                # 有扩展名，扩展名以外部分和接口一模一样
+                if '.' in line and line.split('.')[0] == params['wvt']['checking_removed']:
+                    confirmed = True
+                    break
+                # 无拓展名，文件名直接就是接口名
+                elif line == params['wvt']['checking_removed']:
+                    confirmed = True
+                    break
     if not confirmed:
         logger.info(
             '接口{}在文件系统里找不到同名文件，判断为被裁剪，不需要测试'.format(params['wvt']['checking_removed'])
@@ -328,6 +334,37 @@ def h21(params):
 
 
 def h22(params):
+    return params
+
+
+def h23(params):
+    logger = params['log']['logger']
+    params['if_switch'] = os.path.exists(path='reports/checkpoint.pkl')
+    if params['if_switch']:
+        logger.info('检测到断点续测存档，将加载')
+    return params
+
+
+def h24(params):
+    logger = params['log']['logger']
+    with open(file=params['wvt']['checkpoint_path'], mode='rb') as f:
+        params['wvt'] = pickle.load(file=f)
+    logger.info('已加载断点续测存档')
+    params = init_sub_flowchart(params=params)
+    return params
+
+
+def init_sub_flowchart(params):
+    params['flowchart'] = {
+        "old_fc_name": "命令注入执行",
+        "new_fc_name": "命令注入执行",
+        "new_fc_pre": {},
+        "new_fc_hook": "cmd_injection_worker.py",
+        "new_fc_map": "命令注入执行.pos",
+        "locks": {
+            "命令注入执行": threading.Lock()
+        }
+    }
     return params
 
 
@@ -355,11 +392,14 @@ def walk_cmd_dict(cmd_dict, dont_swap=None):
     if isinstance(cmd_dict, dict):
         iter_list = list(cmd_dict.keys())
     elif isinstance(cmd_dict, list):
-        for i in range(len(cmd_dict)):
-            iter_list.append(i)
+        # for i in range(len(cmd_dict)):
+        #     iter_list.append(i)
+        iter_list.append(0)
     elif isinstance(cmd_dict, str):
         return [[None]]
     for key in iter_list:
+        if type(cmd_dict) is list:
+            cmd_dict.append('')
         if type(cmd_dict[key]) in [dict, list, str] and key not in dont_swap_:
             index_prefix = [key]
             index_postfix_list = walk_cmd_dict(cmd_dict=cmd_dict[key], dont_swap=dont_swap)
@@ -378,10 +418,11 @@ def set_cmd_dict(cmd_dict, index_list, value):
 
 
 def path_whitelist(line, params):
+    logger = params['log']['logger']
     whitelist = params['wvt']['path_whitelist']
     for path in whitelist:
         if path in line:
-            print('{}的路径在白名单中，属于正常功能产生，但有可能被利用撑爆设备'.format(line))
+            logger.warn('{}的路径在白名单中，属于正常功能产生，但有可能被利用撑爆设备'.format(line))
             return True
     return False
 

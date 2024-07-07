@@ -50,7 +50,7 @@ class Acunetix:
 
     def get_scan_id(self, target_id):
         url = self.serve + \
-            '/api/v1/scans?l=20&q=target_id:{}'.format(target_id)
+              '/api/v1/scans?l=20&q=target_id:{}'.format(target_id)
         params = {'http': {}}
         params['http']['url'] = url
         params['http']['headers'] = self.headers
@@ -61,7 +61,7 @@ class Acunetix:
 
     def get_scan_status(self, target_id):
         url = self.serve + \
-            '/api/v1/scans?l=20&q=target_id:{}'.format(target_id)
+              '/api/v1/scans?l=20&q=target_id:{}'.format(target_id)
         params = {'http': {}}
         params['http']['url'] = url
         params['http']['headers'] = self.headers

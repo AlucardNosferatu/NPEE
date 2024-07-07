@@ -13,7 +13,8 @@ if __name__ == '__main__':
     }
     print('OCR精度有限，持续改进中！')
 
-    enhance = input('输入图像强化处理流程参数的JSON文件路径\n默认为"reports/enhance4ocr.json"\n输入"NO_ENHANCE"则不进行图像强化:')
+    enhance = input(
+        '输入图像强化处理流程参数的JSON文件路径\n默认为"reports/enhance4ocr.json"\n输入"NO_ENHANCE"则不进行图像强化:')
     if enhance != 'NO_ENHANCE':
         if enhance == '':
             enhance = 'reports/enhance4ocr.json'
@@ -26,14 +27,16 @@ if __name__ == '__main__':
             )
         )
         params['flowchart'] = params_from_json
-    filename = input('输入本地视频文件路径，例："reports/20240125-155202.mp4"\n不输入则采用在线监测识别（最短采样周期约等于6s）：')
+    filename = input(
+        '输入本地视频文件路径，例："reports/20240125-155202.mp4"\n不输入则采用在线监测识别（最短采样周期约等于6s）：')
     if filename != '':
         params['cv']['filename'] = filename
         skip = input('输入跳帧个数，不输入默认12帧，输入0为取消跳帧（逐帧处理，贼慢）')
         if skip == '':
             skip = '12'
         params['skip'] = int(skip)
-        webhook_url = input('输入飞书机器人Webhook地址，处理完会通知你，如果不填默认通知给林昊波，不需要通知填写DISABLE_NOTIFICATION')
+        webhook_url = input(
+            '输入飞书机器人Webhook地址，处理完会通知你，如果不填默认通知给林昊波，不需要通知填写DISABLE_NOTIFICATION')
         if webhook_url == '':
             webhook_url = 'https://open.feishu.cn/open-apis/bot/v2/hook/49487983-e106-49c8-a527-4b8a4dfeddf5'
     else:

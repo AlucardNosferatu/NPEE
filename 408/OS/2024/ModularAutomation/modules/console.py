@@ -57,6 +57,7 @@ def console_login(params):
                 print('无有效响应，按下回车看看')
                 con.write('\r'.encode('utf-8'))  # type: ignore
             time.sleep(0.5)
+
     print('开始登录控制台')
     console_login_params = params['console']
     try:
@@ -154,7 +155,8 @@ def console_send(params: dict):
         del console_send_params['send_string']
         if console_type == 'serial':
             ser: serial.Serial = console_send_params['serial']
-            echo_string = flush_send_recv(con=ser, ss=send_string, s_act='write', r_act='read_all', csp=console_send_params)
+            echo_string = flush_send_recv(con=ser, ss=send_string, s_act='write', r_act='read_all',
+                                          csp=console_send_params)
         elif console_type == 'ssh':
             ssh_shell: paramiko.Channel = console_send_params['ssh']
             echo_string = flush_send_recv(
@@ -167,7 +169,8 @@ def console_send(params: dict):
             )
         elif console_type == 'telnet':
             telnet_: telnetlib.Telnet = console_send_params['telnet']
-            echo_string = flush_send_recv(con=telnet_, ss=send_string, s_act='write', r_act='read_all', csp=console_send_params)
+            echo_string = flush_send_recv(con=telnet_, ss=send_string, s_act='write', r_act='read_all',
+                                          csp=console_send_params)
         else:
             raise ValueError('Only telnet, ssh and serial console are supported.')
         console_send_params['echo_string'] = echo_string

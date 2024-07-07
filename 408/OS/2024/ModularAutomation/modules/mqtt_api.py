@@ -17,6 +17,7 @@ def mqtt_init(params):
             err_str = "Failed to connect to MQTT broker"
             print(err_str)
             m_params['exception'] = ConnectionError(err_str)
+
     mqtt_params = params['mqtt']
     client_ = mqtt.Client()
     print('mqtt客户端对象已初始化')
@@ -53,6 +54,7 @@ def mqtt_read_start(params):
         print(formatted_json)
         if 'queue_length' in m_params.keys() and len(m_params['msg_queue']) > m_params['queue_length']:
             m_params['msg_queue'].pop(0)
+
     mqtt_params = params['mqtt']
     msg_queue = []
     mqtt_params['msg_queue'] = msg_queue

@@ -10,7 +10,8 @@ if __name__ == '__main__':
     login_token = input('请输入login token:')
     params['rgscan']['login_token'] = login_token
     params['rgscan']['target_ip'] = scan_host
-    params['rgscan']['target_desc'] = '{}_{}'.format(target_name, time.strftime('%m%d%M%S', time.localtime(time.time())))
+    params['rgscan']['target_desc'] = '{}_{}'.format(target_name,
+                                                     time.strftime('%m%d%M%S', time.localtime(time.time())))
     fc = FlowChart(prerequisite=params)
     fc.load_map(hook_script='rgscan_scan.py', map_json='RGSCAN扫描测试.pos')
     end = False

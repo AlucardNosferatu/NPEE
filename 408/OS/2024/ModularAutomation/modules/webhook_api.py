@@ -16,5 +16,13 @@ def webhook_send(params):
     params['http']['url'] = webhook_url
     params['http']['data'] = body
     params['http']['headers'] = headers
-    params = http_post(params=params)
+    try:
+        params = http_post(params=params)
+    except Exception as e:
+        info_str = '请求Webhook时发生错误:{}'.format(repr(e))
+        if 'log' in params.keys() and 'logger' in params['log'].keys():
+            logger = params['log']['logger']
+            logger.info(info_str)
+        else:
+            print(info_str)
     return params

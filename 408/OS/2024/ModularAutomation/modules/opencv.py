@@ -26,7 +26,8 @@ def cv_cut_img(params):
     shape = {'x': img_array.shape[1], 'y': img_array.shape[0]}
     point_ul = cv_params['point_ul']
     point_dr = cv_params['point_dr']
-    if 0 <= point_ul['x'] < shape['x'] and 0 <= point_ul['y'] < shape['y'] and 0 <= point_dr['x'] < shape['x'] and 0 <= point_dr['y'] < shape['y']:
+    if 0 <= point_ul['x'] < shape['x'] and 0 <= point_ul['y'] < shape['y'] and 0 <= point_dr['x'] < shape['x'] and 0 <= \
+            point_dr['y'] < shape['y']:
         if point_ul['x'] < point_dr['x'] and point_ul['y'] < point_dr['y']:
             cv_params['img_array'] = np.copy(img_array[point_ul['y']:point_dr['y'], point_ul['x']:point_dr['x'], :])
             cv_params['exception'] = None

@@ -3,7 +3,6 @@ import time
 
 from FlowChartEngine.core.adapter import Adapter
 
-
 if __name__ == '__main__':
     adapter = Adapter(logger_name='FactoryTest')
     # 初始化接口，入参为日志存放在logs下的文件夹名称，可填可不填

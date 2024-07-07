@@ -1,6 +1,9 @@
 import json
+import pickle
 import re
 import time
+
+debug = False
 
 
 def h0(params):
@@ -18,15 +21,21 @@ def h0(params):
         'uci set luci.main.loginNum="0"',
         "uci commit"
     ]
-    params['console']['send_string'] = '\r\n'.join(cmd_list)
+    if debug:
+        params['console']['send_string'] = 'cd'
+    else:
+        params['console']['send_string'] = '\r'.join(cmd_list)
     params['console']['format'] = 'str'
-    params['console']['wait'] = 0.5
-    time.sleep(0.5)
+    if debug:
+        params['console']['wait'] = 0.5
+    else:
+        params['console']['wait'] = 1
     return params
 
 
 def h1(params):
-    time.sleep(0.5)
+    if not debug:
+        time.sleep(0.5)
     return params
 
 
@@ -50,32 +59,40 @@ def h5(params):
 
 
 def h6(params):
-    params['console']['send_string'] = 'top -bn1'
+    if debug:
+        params['console']['send_string'] = 'cd'
+        params['console']['wait'] = 0.125
+    else:
+        params['console']['send_string'] = 'top -bn1'
+        params['console']['wait'] = 1
     params['console']['format'] = 'str'
-    params['console']['wait'] = 2
     return params
 
 
 def h7(params):
+    logger = params['log']['logger']
     echo_string = params['console']['echo_string']
-    try:
-        cpu_pattern = r'\b(\d+)%\s+idle'
-        cpu_idle = re.search(cpu_pattern, echo_string)
-        cpu_idle = float(cpu_idle.group(1))
-        memory_pattern = r"Mem:\s+([\d]+)K\s+used,\s+([\d]+)K\s+free"
-        memory_usage = re.search(memory_pattern, echo_string)
-        memory_used = int(memory_usage.group(1))
-        memory_free = int(memory_usage.group(2))
-        # 检查资源是否不足20%
-        if cpu_idle < 10 or (memory_free / (memory_used + memory_free)) * 100 < 5:
-            print("Warning: Resource usage is high!")
+    if debug:
+        params['if_switch'] = False
+    else:
+        try:
+            cpu_pattern = r'\b(\d+)%\s+idle'
+            cpu_idle = re.search(cpu_pattern, echo_string)
+            cpu_idle = float(cpu_idle.group(1))
+            memory_pattern = r"Mem:\s+([\d]+)K\s+used,\s+([\d]+)K\s+free"
+            memory_usage = re.search(memory_pattern, echo_string)
+            memory_used = int(memory_usage.group(1))
+            memory_free = int(memory_usage.group(2))
+            # 检查资源是否不足20%
+            if cpu_idle < 10 or (memory_free / (memory_used + memory_free)) * 100 < 5:
+                logger.warn("Warning: Resource usage is high!")
+                params['if_switch'] = True
+            else:
+                logger.info("Resource usage is within acceptable limits.")
+                params['if_switch'] = False
+        except Exception as e:
+            logger.error("Error occurred while parsing echo of top -bn1:{}".format(repr(e)))
             params['if_switch'] = True
-        else:
-            print("Resource usage is within acceptable limits.")
-            params['if_switch'] = False
-    except Exception as e:
-        print("Error occurred while parsing echo of top -bn1:{}".format(repr(e)))
-        params['if_switch'] = True
     return params
 
 
@@ -113,6 +130,10 @@ def h12(params):
 
 
 def h13(params):
+    logger = params['log']['logger']
+    with open(file=params['wvt']['checkpoint_path'], mode='wb') as f:
+        pickle.dump(obj=params['wvt'], file=f)
+    logger.info('已保存断点续测存档')
     params['wvt']['reboot_check_retry'] = 5
     return params
 

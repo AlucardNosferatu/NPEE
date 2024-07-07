@@ -48,6 +48,7 @@ def read_testcases(params):
     根据Excel模板文件去读取用例
     注意，必须先执行read_template获取template_dict
     '''
+
     def rt_per_key(k, s, td):
         kwd = k.replace('↑', '').replace('↓', '').replace('←', '').replace('→', '')
         if kwd == k:
@@ -119,6 +120,7 @@ def write_summary(params):
     会从data_src_dict里面找对应表格上的参数填入
     如果参数名末尾带有箭头则对应list，箭头方向即list展开的方向
     '''
+
     def ws_per_key(dsd, k, s, td, d):
         align = Alignment(horizontal='center', vertical='center')
         key_without_direction = k.replace('↑', '').replace('↓', '').replace('←', '').replace('→', '')

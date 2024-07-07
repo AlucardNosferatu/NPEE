@@ -1,26 +1,33 @@
 import kill_thread
-from modules.awvs_api import awvs_add_scan, awvs_add_target, awvs_download_report, awvs_generate_report, awvs_get_report_status, awvs_get_scan_status, awvs_start
+from modules.awvs_api import awvs_add_scan, awvs_add_target, awvs_download_report, awvs_generate_report, \
+    awvs_get_report_status, awvs_get_scan_status, awvs_start
 from modules.binwalk_api import binwalk_check, binwalk_scan
 from modules.console import console_login, console_send, console_close, console_read_loop
 from modules.excel_handler import read_template, read_testcases, write_summary
 from modules.http_eweb_api import eweb_get_sid, eweb_inject_cmd
-from modules.misc import ip_ping, mac_generate, mac_increase, mac_read_record, mac_write_record, timer, nop, interactive_shell, process_kill
+from modules.misc import ip_ping, mac_generate, mac_increase, mac_read_record, mac_write_record, timer, nop, \
+    interactive_shell, process_kill
 from modules.misc_singleton import wifi_connect
-from modules.nessus_api import nessus_delete_stop, nessus_export, nessus_find, nessus_get_status, nessus_login, nessus_new_scan, nessus_start_pause
+from modules.nessus_api import nessus_delete_stop, nessus_export, nessus_find, nessus_get_status, nessus_login, \
+    nessus_new_scan, nessus_start_pause
 from modules.nmap_api import nmap_init, nmap_scan
 from modules.power_supply import ps_init, ps_reset, ps_acdc, ps_range, ps_freq, ps_toggle, ps_volt
 from modules.logger import log_logger_init, log_handler_init
-from modules.rgscan_api import rgscan_download_report, rgscan_generate_report, rgscan_get_scan_status, rgscan_scan_target, rgscan_start
-from modules.rsas_api import rsas_download_report, rsas_generate_report, rsas_get_report_status, rsas_get_scan_status, rsas_scan_target, rsas_start
+from modules.rgscan_api import rgscan_download_report, rgscan_generate_report, rgscan_get_scan_status, \
+    rgscan_scan_target, rgscan_start
+from modules.rsas_api import rsas_download_report, rsas_generate_report, rsas_get_report_status, rsas_get_scan_status, \
+    rsas_scan_target, rsas_start
 from modules.web_api import web_click, web_find, web_find_click, web_find_input, web_goto, web_start
 from modules.webhook_api import webhook_send
-from modules.zap_api import zap_crawl_target, zap_download_report, zap_get_crawl_status, zap_get_scan_status, zap_init_adapter, zap_kill_java, zap_scan_target, zap_start_exe
+from modules.zap_api import zap_crawl_target, zap_download_report, zap_get_crawl_status, zap_get_scan_status, \
+    zap_init_adapter, zap_kill_java, zap_scan_target, zap_start_exe
 from modules.mqtt_api import mqtt_init, mqtt_subscribe, mqtt_read_start, mqtt_read_stop
 
 m_dict = {
     'WEBHOOK_SEND': webhook_send,
 
-    'MQTT_INIT': mqtt_init, 'MQTT_SUBSCRIBE': mqtt_subscribe, 'MQTT_READ_START': mqtt_read_start, 'MQTT_READ_STOP': mqtt_read_stop,
+    'MQTT_INIT': mqtt_init, 'MQTT_SUBSCRIBE': mqtt_subscribe, 'MQTT_READ_START': mqtt_read_start,
+    'MQTT_READ_STOP': mqtt_read_stop,
 
     'BINWALK_SCAN': binwalk_scan, 'BINWALK_CHECK': binwalk_check,
 
@@ -32,9 +39,11 @@ m_dict = {
     # 'CV_IS_CAP_OPENED': cv_is_cap_opened, 'CV_READ_CAP': cv_read_cap, 'CV_CLOSE_CAP': cv_close_cap, 'CV_GRAB_CAP': cv_grab_cap,
     # 'CV_KEY_IMG': cv_key_img, 'CV_READ_IMG': cv_read_img,
 
-    'PS_INIT': ps_init, 'PS_RESET': ps_reset, 'PS_ACDC': ps_acdc, 'PS_RANGE': ps_range, 'PS_FREQ': ps_freq, 'PS_TOGGLE': ps_toggle, 'PS_VOLT': ps_volt,
+    'PS_INIT': ps_init, 'PS_RESET': ps_reset, 'PS_ACDC': ps_acdc, 'PS_RANGE': ps_range, 'PS_FREQ': ps_freq,
+    'PS_TOGGLE': ps_toggle, 'PS_VOLT': ps_volt,
 
-    'IP_PING': ip_ping, 'WIFI_CONNECT': wifi_connect, 'TIMER': timer, 'NOP': nop, 'INTERACTIVE_SHELL': interactive_shell, 'PROCESS_KILL': process_kill,
+    'IP_PING': ip_ping, 'WIFI_CONNECT': wifi_connect, 'TIMER': timer, 'NOP': nop,
+    'INTERACTIVE_SHELL': interactive_shell, 'PROCESS_KILL': process_kill,
 
     # 'CHARIOT_INIT': chariot_init, 'CHARIOT_SET_DURATION': chariot_set_duration, 'CHARIOT_ADD_PAIRS': chariot_add_pairs,
     # 'CHARIOT_RUN': chariot_run, 'CHARIOT_GET_THR': chariot_get_thr,
@@ -44,7 +53,8 @@ m_dict = {
 
     'READ_TEMPLATE': read_template, 'READ_TESTCASES': read_testcases, 'WRITE_SUMMARY': write_summary,
 
-    'CONSOLE_LOGIN': console_login, 'CONSOLE_SEND': console_send, 'CONSOLE_CLOSE': console_close, 'CONSOLE_READ_LOOP': console_read_loop,
+    'CONSOLE_LOGIN': console_login, 'CONSOLE_SEND': console_send, 'CONSOLE_CLOSE': console_close,
+    'CONSOLE_READ_LOOP': console_read_loop,
 
     # 'CONSOLE_GET_AP_CLI': console_get_ap_cli, 'CONSOLE_GET_RADIO_INFO': console_get_radio_info, 'CONSOLE_IWPRIV_SITE_SURVEY': console_iwpriv_site_survey,
     # 'CONSOLE_IWPRIV_STAT': console_iwpriv_stat, 'CONSOLE_IWPRIV_REG': console_iwpriv_reg,

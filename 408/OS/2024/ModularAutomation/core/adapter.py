@@ -1,4 +1,3 @@
-
 import datetime
 from FlowChartEngine.core.flow_chart import FlowChart
 from FlowChartEngine.modules.console import console_close, console_login, console_read_until, console_send
@@ -70,7 +69,8 @@ class Adapter(FlowChart):
             elif self.params_bus['console']['console_type'] == 'telnet':
                 self.params_bus['console']['telnet_pass'] = password
             else:
-                logger.error('不支持的控制台类型:{}\n目前仅支持ssh、串口、telnet'.format(self.params_bus['console']['console_type']))
+                logger.error('不支持的控制台类型:{}\n目前仅支持ssh、串口、telnet'.format(
+                    self.params_bus['console']['console_type']))
                 ret = False
         else:
             logger.error('还未设置控制台类型\n目前仅支持ssh、串口、telnet')
