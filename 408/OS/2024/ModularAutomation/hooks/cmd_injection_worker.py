@@ -36,16 +36,24 @@ def h0(params):
 def h1(params):
     if not debug:
         time.sleep(0.5)
+    if 'eweb' not in params.keys():
+        params['eweb'] = {}
+    params['eweb']['repost_retry'] = 5
     return params
 
 
 def h2(params):
+    logger = params['log']['logger']
     params['if_switch'] = params['eweb']['exception'] is not None
+    if params['if_switch'] and 'repost_retry' in params['eweb'].keys() and params['eweb']['repost_retry'] <= 0:
+        logger.warn('重试次数已耗尽，接口:\n{}\n可能不存在!'.format(params['eweb']['repost_cache']))
+        params['if_switch'] = False
     return params
 
 
 def h3(params):
     params['eweb']['repost_again'] = True
+    params['eweb']['repost_retry'] -= 1
     return params
 
 
