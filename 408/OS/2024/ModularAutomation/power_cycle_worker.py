@@ -58,7 +58,7 @@ def send_params_to_server():
 if __name__ == '__main__':
     get_params_from_server()
     fc = FlowChart(prerequisite=params)
-    fc.load_map(hook_script='power_cycle.py', map_json='电源切变循环测试.pos')
+    fc.load_map(hook_script='power_cycle.py', map_json='电源切变循环测试2.pos')
     # todo: makeshift patch
     fc.params_bus['log'] = {'logger_name': 'power_cycle', 'log_backup_count': 8192}
     fc.params_bus = log_logger_init(params=fc.params_bus)

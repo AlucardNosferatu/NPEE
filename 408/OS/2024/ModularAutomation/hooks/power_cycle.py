@@ -100,8 +100,9 @@ def check_boot(params):
     if params['console']['exception'] is not None:
         logger.error('检测到串口动作存在异常:{}'.format(repr(params['console']['exception'])))
     echo_string: str = params['console']['echo_string']
-    # logger.info('串口打印:\n{}'.format(echo_string))
-    print('串口打印:\n{}'.format(echo_string))
+    logger.info('串口打印完整文本:\n{}'.format(echo_string))
+    previous_echo: str = params['console']['previous_echo']
+    echo_string = previous_echo + echo_string
     params['pc_testcase']['boot_count'] += echo_string.count('Starting kernel ...')
     logger.info('重启次数:{}'.format(params['pc_testcase']['boot_count']))
     logger.info('检查启机完成')
@@ -368,6 +369,7 @@ def h25(params):
 
 def h26(params):
     sw_port = params['switch_port_queue'].pop(0)
+    params['switch_port_enabled'] = sw_port
     sw_ports: list = params['switch_port_all'].copy()
     sw_ports.remove(sw_port)
     cmd_list = [
@@ -389,4 +391,36 @@ def h26(params):
 
 
 def h27(params):
+    params['console']['send_string'] = 'ping {}'.format(params['misc']['ping_host'])
+    params['console']['format'] = 'str'
+    params['console']['wait'] = 15
+    return params
+
+
+def h28(params):
+    echo_string = params['console']['echo_string']
+    percent = float(echo_string.split('Success rate is ')[1].split(' percent')[0])
+    if 'switch_ping' not in params['pc_testcase'].keys():
+        params['pc_testcase']['switch_ping'] = {}
+    params['pc_testcase']['switch_ping'][params['switch_port_enabled']] = percent
+    return params
+
+
+def h29(params):
+    params['pc_testcase']['switch_ping'] = json.dumps(obj=params['pc_testcase']['switch_ping'])
+    return params
+
+
+def h30(params):
+    error_texts = params['error_texts']
+    error_texts = "' -e '".join(error_texts)
+    params['console']['send_string'] = "dmesg | grep -i -e '{}'".format(error_texts)
+    params['console']['format'] = 'str'
+    params['console']['wait'] = 5
+    return params
+
+
+def h31(params):
+    echo_string = params['console']['echo_string']
+    params['pc_testcase']['dmesg_log'] = echo_string
     return params

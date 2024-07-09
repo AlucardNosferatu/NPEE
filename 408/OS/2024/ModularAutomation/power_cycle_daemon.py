@@ -122,6 +122,7 @@ if __name__ == '__main__':
     period = params_from_json['daemon']['period']
     worker_exe = params_from_json['daemon']['worker_exe']
     params = {
+        'error_texts': params_from_json['error_texts'],
         'ps': {
             'res_name': params_from_json['pcr']['res_name'],
             'baud_rate': params_from_json['pcr']['baud_rate'],
@@ -145,6 +146,7 @@ if __name__ == '__main__':
         'wait_after_boot': params_from_json['test']['wait_after_boot'],
         'sim_test': params_from_json['dut']['sim_test'],
         'console_port': params_from_json['dut']['port'], 'console_baud_rate': params_from_json['dut']['baud_rate'],
+        'switch_port': params_from_json['switch']['port'], 'switch_baud_rate': params_from_json['switch']['baud_rate'],
         'console_password': params_from_json['dut']['console_password'],
         'boot_count': 0, 'boot_ok': False, 'tboot': -1.0, 'tcheck': -1.0, 'tcheck_5g': '',
         'wifi_ok': False, 'wifi_5g_ok': '', 'ping_ok': False, 'ping_5g_ok': '', 'sim_ok': ''

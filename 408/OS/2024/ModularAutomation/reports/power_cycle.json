@@ -1,4 +1,10 @@
 {
+  "error_texts": [
+    "err",
+    "link down",
+    "reset",
+    "fail"
+  ],
   "daemon": {
     "period": 60,
     "worker_exe": "power_cycle_worker.exe"
@@ -9,6 +15,10 @@
     "freq": 50,
     "range": 300,
     "debug": false
+  },
+  "switch": {
+    "port": "COM4",
+    "baud_rate": 9600
   },
   "dut": {
     "lan_ip": "192.168.110.1",

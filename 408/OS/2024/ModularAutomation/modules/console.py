@@ -210,6 +210,8 @@ def console_read(params):
 def console_read_loop(params):
     console_params = params['console']
     while console_params['read_loop']:
+        if 'echo_string' in params['console'].keys():
+            params['console']['previous_echo'] = params['console']['echo_string']
         time.sleep(console_params['read_loop_interval'])
         params = console_read(params=params)
         print('控制台持续监听中')
@@ -223,9 +225,9 @@ def console_read_loop(params):
 
 
 def console_read_until(params):
+    console_params = params['console']
     try:
         if 'console_type' == 'telnet':
-            console_params = params['console']
             wait_string = console_params['wait_string']
             wait_timeout = console_params['wait_timeout']
             del console_params['wait_string']
