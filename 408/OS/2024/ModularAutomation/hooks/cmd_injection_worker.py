@@ -38,7 +38,7 @@ def h1(params):
         time.sleep(0.5)
     if 'eweb' not in params.keys():
         params['eweb'] = {}
-    params['eweb']['repost_retry'] = 5
+    params['eweb']['repost_retry'] = params['wvt']['repost_retry']
     return params
 
 
