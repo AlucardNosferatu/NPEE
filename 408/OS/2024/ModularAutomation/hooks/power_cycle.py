@@ -28,7 +28,8 @@ def h0(params):
             'volt': 220, 'ton': 10, 'toff': 1, 'tgap': 10, 'max_tboot': 50,
             'max_tcheck': 50, 'max_tcheck_5g': 50, 'ssid': 'EW300T', 'ssid_5g': 'EW300T_5G',
             'sim_test': True,
-            'console_port': 'COM5', 'console_baud_rate': 57600, 'console_password': '57e541f69676ce62'
+            'console_port': 'COM5', 'console_baud_rate': 57600, 'console_password': '57e541f69676ce62',
+            'switch_port': 'COM4', 'switch_baud_rate': 9600
         }
     ]
     params['pc_report_savepath'] = 'reports/EW300T电源切变循环测试.xlsx'
@@ -345,4 +346,47 @@ def h23(params):
     logger = params['log']['logger']
     logger.info('关闭电源，本轮测试结束')
     params['ps']['toggle'] = 'off'
+    return params
+
+
+def h24(params):
+    params['console'] = {
+        'console_type': 'serial',
+        'port': params['pc_testcase']['switch_port'],
+        'baud_rate': params['pc_testcase']['switch_baud_rate'],
+        'serial_type': 'switch'
+    }
+    params['switch_port_queue'] = ['g0/1', 'g0/2', 'g0/3', 'g0/4']
+    params['switch_port_all'] = params['switch_port_queue'].copy()
+    return params
+
+
+def h25(params):
+    params['if_switch'] = len(params['switch_port_queue']) > 0
+    return params
+
+
+def h26(params):
+    sw_port = params['switch_port_queue'].pop(0)
+    sw_ports: list = params['switch_port_all'].copy()
+    sw_ports.remove(sw_port)
+    cmd_list = [
+        'enable',
+        'config',
+        'int {}'.format(sw_port),
+        'no shutdown',
+    ]
+    for sw_p in sw_ports:
+        cmd_list.append('int {}'.format(sw_p))
+        cmd_list.append('shutdown')
+    cmd_list.append('end')
+    cmd_list.append('disable')
+    cmd_list.append('')
+    params['console']['send_string'] = '\r'.join(cmd_list)
+    params['console']['format'] = 'str'
+    params['console']['wait'] = 2
+    return params
+
+
+def h27(params):
     return params
