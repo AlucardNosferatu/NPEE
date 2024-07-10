@@ -339,7 +339,7 @@ def h22(params):
 
 def h23(params):
     logger = params['log']['logger']
-    params['if_switch'] = os.path.exists(path='reports/checkpoint.pkl')
+    params['if_switch'] = os.path.exists(path=params['wvt']['checkpoint_path'])
     if params['if_switch']:
         logger.info('检测到断点续测存档，将加载')
     return params

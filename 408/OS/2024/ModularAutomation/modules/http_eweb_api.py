@@ -93,7 +93,7 @@ def eweb_get_sid(params):
                 }, 'method': 'login'
             },
             'headers': {'Content-Type': 'application/json', 'User-Agent': get_fake_ua()},
-            'timeout': 5.0
+            'timeout': 10
         }
     }
     try:
@@ -130,7 +130,9 @@ def eweb_get_sid(params):
     except Exception as e:
         params['eweb']['exception'] = e
         if debug_print:
-            error_str = '对地址{}的设备使用密码{}请求SID出错'.format(params['eweb']['ip'], params['eweb']['pass'])
+            error_str = '对地址{}的设备使用密码{}请求SID发生错误{}'.format(
+                params['eweb']['ip'], params['eweb']['pass'], repr(e)
+            )
             if 'log' in params.keys() and 'logger' in params['log'].keys():
                 logger = params['log']['logger']
                 logger.info(error_str)

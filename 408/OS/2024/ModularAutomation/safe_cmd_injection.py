@@ -12,7 +12,7 @@ if __name__ == '__main__':
     # profiler.enable()
     params = {
         'wvt': {
-            'checkpoint_path': 'reports/checkpoint.pkl',
+            'checkpoint_path': 'reports/checkpoint-{}.pkl'.format(target_name),
             'dut_ip': scan_host,
             'ssh_pass': ssh_pass,
             'save_path': 'reports/{}-命令注入.xlsx'.format(target_name),
