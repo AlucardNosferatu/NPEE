@@ -220,7 +220,10 @@ def h12(params):
         'cmd': [item['cmd'] for item in params['wvt']['testcases']],
         'method': [item['method'] for item in params['wvt']['testcases']],
         'payloads': [item['payload'] for item in params['wvt']['testcases']],
-        'injected': [i_fn for i_fn in params['wvt']['payload_list']]
+        'injected': params['wvt']['payload_list'],
+        'reboot': params['wvt']['reboot_count'],
+        'repost': params['wvt']['repost_count'],
+        'time': params['wvt']['time_used']
     }
     params['excel']['data_src_dict'] = data_src_dict
     params['excel']['save_path'] = params['wvt']['save_path']
@@ -398,7 +401,7 @@ def walk_cmd_dict(cmd_dict, dont_swap=None):
     elif isinstance(cmd_dict, str):
         return [[None]]
     for key in iter_list:
-        if type(cmd_dict) is list:
+        if type(cmd_dict) is list and len(cmd_dict) <= 0:
             cmd_dict.append('')
         if type(cmd_dict[key]) in [dict, list, str] and key not in dont_swap_:
             index_prefix = [key]

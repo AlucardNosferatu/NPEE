@@ -43,8 +43,7 @@ def timer(params):
     timer_params['time_start'] = datetime.datetime.now()
     while not timer_params['stop']:
         timer_params['time_end'] = datetime.datetime.now()
-        timer_params['time_delta'] = timer_params['time_end'] - \
-                                     timer_params['time_start']
+        timer_params['time_delta'] = timer_params['time_end'] - timer_params['time_start']
     return params
 
 
@@ -56,7 +55,7 @@ def timer_transience(params):
     timer_params = misc_params['timer']
     if 't_name' in timer_params:
         t_name = timer_params['t_name']
-        del timer_params['t_name']
+        # del timer_params['t_name']
         if 't_table' not in timer_params:
             timer_params['t_table'] = {}
         if t_name not in timer_params['t_table'].keys():
