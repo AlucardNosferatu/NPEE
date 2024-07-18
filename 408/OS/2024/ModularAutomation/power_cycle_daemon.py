@@ -23,7 +23,7 @@ def custom_serializer(obj):
     try:
         obj_str = json.dumps(obj=obj)
         return obj_str
-    except Exception as e:
+    except BaseException as e:
         print(repr(e))
         return 'CANNOT_SERIALIZE'
 
@@ -91,7 +91,7 @@ def start_worker():
         print(f"已启动独立进程运行 {worker_exe}")
     except FileNotFoundError:
         print(f"找不到指定的脚本文件: {worker_exe}")
-    except Exception as e:
+    except BaseException as e:
         print(f"启动进程时出现错误: {e}")
 
 
@@ -104,7 +104,7 @@ def kill_worker():
         print(f"进程 {pid} 不存在")
     except PermissionError:
         print(f"没有权限终止进程 {pid}")
-    except Exception as e:
+    except BaseException as e:
         print(f"其它类型的错误: {repr(e)}")
         print(f"pid: {pid}")
     pid = ''

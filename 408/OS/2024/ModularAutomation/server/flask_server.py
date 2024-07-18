@@ -85,7 +85,7 @@ def get_flow_chart_():
                 for index in indices:
                     try:
                         index = int(index)
-                    except Exception as e:
+                    except BaseException as e:
                         _ = e
                     params = params[index]
                 msg['value'] = params  # type: ignore

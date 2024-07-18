@@ -20,7 +20,7 @@ class WCList:
         self.wlanconfig = []
         try:
             iface_array = self.text.split("\n")[2:-1]
-        except Exception as e:
+        except BaseException as e:
             print(repr(e))
             return
 
@@ -61,7 +61,7 @@ class WCRadio:
         self.wlanconfig = {}
         try:
             iface_array = self.text.split("\r\n")[1:-1]
-        except Exception as e:
+        except BaseException as e:
             print(repr(e))
             return
 
@@ -70,10 +70,10 @@ class WCRadio:
             key, value = pair[0], pair[1]
             try:
                 value = int(value)
-            except Exception as e:
+            except BaseException as e:
                 _ = e
                 try:
                     value = float(value)
-                except Exception as e:
+                except BaseException as e:
                     _ = e
             self.wlanconfig[key] = value

@@ -31,9 +31,6 @@ def h0(params):
         params['console']['wait'] = 0.5
     else:
         params['console']['wait'] = 1
-    if 'reboot_count' not in params['wvt']:
-        params['wvt']['reboot_count'] = []
-    params['wvt']['reboot_count'].append(params['wvt']['reboot_count_tmp'])
     return params
 
 
@@ -102,7 +99,7 @@ def h7(params):
             else:
                 logger.info("Resource usage is within acceptable limits.")
                 params['if_switch'] = False
-        except Exception as e:
+        except BaseException as e:
             logger.error("Error occurred while parsing echo of top -bn1:{}".format(repr(e)))
             params['if_switch'] = True
     return params
@@ -160,33 +157,39 @@ def h14(params):
 
 def h15(params):
     time.sleep(4)
-    params['misc'] = {
-        'ping_host': params['wvt']['dut_ip'],
-        'ping_times': 5
-    }
+    if 'misc' not in params.keys():
+        params['misc'] = {}
+    params['misc']['ping_host'] = params['wvt']['dut_ip']
+    if 'ping_times' in params['wvt'].keys():
+        params['misc']['ping_times'] = params['wvt']['ping_times']
+    else:
+        params['misc']['ping_times'] = 5
     return params
 
 
 def h16(params):
+    if 'reboot_count' not in params['wvt']:
+        params['wvt']['reboot_count'] = []
     if 'repost_count' not in params['wvt'].keys():
         params['wvt']['repost_count'] = []
     if 'time_used' not in params['wvt'].keys():
         params['wvt']['time_used'] = []
+    params['wvt']['reboot_count'].append(params['wvt']['reboot_count_tmp'])
     params['wvt']['repost_count'].append(params['wvt']['repost_retry'] - params['eweb']['repost_retry'])
     timer_params = params['misc']['timer']
     time_table = timer_params['t_table'][timer_params['t_name']]
-    end: datetime.datetime = time_table.pop(0)
-    start: datetime.datetime = time_table.pop(0)
+    start: datetime.datetime = time_table.pop(0)[0]
+    end: datetime.datetime = time_table.pop(0)[0]
     params['wvt']['time_used'].append(str(end - start))
     time_table.clear()
     return params
 
 
 def h17(params):
-    params['misc'] = {
-        'timer': {
-            't_name': 'wvt_cmd_injection',
-            't_desc': '每个用例的测试用时'
-        }
+    if 'misc' not in params.keys():
+        params['misc'] = {}
+    params['misc']['timer'] = {
+        't_name': 'wvt_cmd_injection',
+        't_desc': '每个用例的测试用时'
     }
     return params

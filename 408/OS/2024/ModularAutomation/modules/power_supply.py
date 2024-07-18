@@ -29,7 +29,7 @@ def ps_reset(params):
             code = ps_instr.write('*RST')
         ps_params['code'] = code
         ps_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         print('发生异常:{}'.format(repr(e)))
         ps_params['code'] = None
         ps_params['exception'] = e
@@ -53,7 +53,7 @@ def ps_acdc(params):
             )
         ps_params['code'] = code
         ps_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         print('发生异常:{}'.format(repr(e)))
         ps_params['code'] = None
         ps_params['exception'] = e
@@ -72,7 +72,7 @@ def ps_freq(params):
             code = ps_instr.write('SOUR:FREQ {}'.format(freq))
         ps_params['code'] = code
         ps_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         print('发生异常:{}'.format(repr(e)))
         ps_params['code'] = None
         ps_params['exception'] = e
@@ -91,7 +91,7 @@ def ps_range(params):
             code = ps_instr.write('SOUR:VOLT:RANG {}'.format(range_))
         ps_params['code'] = code
         ps_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         print('发生异常:{}'.format(repr(e)))
         ps_params['code'] = None
         ps_params['exception'] = e
@@ -115,7 +115,7 @@ def ps_toggle(params):
             )
         ps_params['code'] = code
         ps_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         print('发生异常:{}'.format(repr(e)))
         ps_params['code'] = None
         ps_params['exception'] = e
@@ -134,7 +134,7 @@ def ps_volt(params):
             code = ps_instr.write('SOUR:VOLT {}'.format(volt))
         ps_params['code'] = code
         ps_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         print('发生异常:{}'.format(repr(e)))
         ps_params['code'] = None
         ps_params['exception'] = e

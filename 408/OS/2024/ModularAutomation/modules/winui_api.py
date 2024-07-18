@@ -91,7 +91,7 @@ def winui_locate_window(params):
             raise ValueError('Only explorer and desktop are allowed parent for the window!')
         win_ui_params['window'] = window
         win_ui_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         win_ui_params['exception'] = e
     return params
 
@@ -105,7 +105,7 @@ def winui_capture_window(params):
         window.set_focus()
         window.capture_as_image().save(pic_path)
         win_ui_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         win_ui_params['exception'] = e
     return params
 
@@ -116,7 +116,7 @@ def winui_close_window(params):
     try:
         window.close()
         win_ui_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         win_ui_params['exception'] = e
     return params
 
@@ -145,7 +145,7 @@ def winui_locate_element(params):
         element = children[0]
         win_ui_params['element'] = element
         win_ui_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         win_ui_params['exception'] = e
     return params
 
@@ -170,7 +170,7 @@ def winui_click_element(params):
             raise NotImplementedError
         release_mouse()
         win_ui_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         win_ui_params['exception'] = e
     return params
 

@@ -10,7 +10,7 @@ class IWPSiteSurvey:
         self.iwp = []
         try:
             info_lines = self.text.split("\r\n")[3:-2]
-        except Exception as e:
+        except BaseException as e:
             print(repr(e))
             return
 
@@ -40,7 +40,7 @@ class IWPStat:
         self.iwp = {}
         try:
             info_lines = self.text.split("\r\n")[2:-2]
-        except Exception as e:
+        except BaseException as e:
             print(repr(e))
             return
 
@@ -80,7 +80,7 @@ class IWPReg:
         self.iwp = {}
         try:
             info_line = self.text.split("\r\n")[1]
-        except Exception as e:
+        except BaseException as e:
             print(repr(e))
             return
         info_line = info_line.split(':')

@@ -22,6 +22,6 @@ if __name__ == '__main__':
         while not end:
             end = fc.run_step()
         os.abort()
-    except Exception as e:
+    except BaseException as e:
         with open('error.txt', 'w') as f:
             f.write(repr(e))

@@ -184,7 +184,7 @@ def android_interact_device(params):
                         params['cv'] = {}
                     params['cv']['img_array'] = img_array
                     finished = True
-                except Exception as e:
+                except BaseException as e:
                     _ = e
     elif device_action == 'double_click':
         coordinate = interact_device_params['coordinate']

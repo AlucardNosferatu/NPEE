@@ -32,7 +32,7 @@ def process_live_page(func_after_found, params, xpath):
                 found = True
             else:
                 dt_index += 1
-        except Exception as e:
+        except BaseException as e:
             _ = e
     return params
 

@@ -44,7 +44,7 @@ def web_goto(params):
     try:
         web_driver.get(goto_url)
         web_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         web_params['exception'] = e
     return params
 
@@ -65,7 +65,7 @@ def web_find(params):
     try:
         web_find_result = web_driver.find_element(
             by=by_dict[web_find_by], value=web_find_value)
-    except Exception as e:
+    except BaseException as e:
         web_find_result = e
     web_find_params.__setitem__('find_result', web_find_result)
     return params
@@ -139,7 +139,7 @@ def web_find_input(params):
         else:
             raise found
         web_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         web_params['exception'] = e
     return params
 
@@ -155,7 +155,7 @@ def web_find_click(params):
         else:
             raise found
         web_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         web_params['exception'] = e
     return params
 

@@ -47,7 +47,7 @@ def wifi_connect(params):
                         print(
                             "| {} | {} | {} | {} \n".format(index, wifi_info.ssid, wifi_info.bssid, wifi_info.signal)
                         )
-                    except Exception as e:
+                    except BaseException as e:
                         print('列出SSID时发生错误:{}'.format(repr(e)))
                     if wifi_info.ssid == wifi_target_ssid:
                         if exist_target is None:

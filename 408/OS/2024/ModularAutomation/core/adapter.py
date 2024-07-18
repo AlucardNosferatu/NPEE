@@ -100,7 +100,7 @@ class Adapter(FlowChart):
         try:
             wait = float(wait)
             wait = str(wait)
-        except Exception as e:
+        except BaseException as e:
             logger.error('设置回显等待时长为:{}时发生错误:{}'.format(wait, repr(e)))
             logger.error('使用默认配置:{}'.format(Adapter.default_wait))
             wait = Adapter.default_wait
@@ -115,7 +115,7 @@ class Adapter(FlowChart):
         logger.info('控制台即将发送的命令为:{}'.format(send_string))
         try:
             send_string = str(send_string)
-        except Exception as e:
+        except BaseException as e:
             logger.error('设置发送的命令为:{}时发生错误:{}'.format(send_string, repr(e)))
             send_string = ''
         self.params_bus['console']['send_string'] = send_string
@@ -155,7 +155,7 @@ class Adapter(FlowChart):
                 else:
                     logger.error('串口连接时发生错误:{}'.format(repr(self.params_bus['console']['exception'])))
                     return False
-            except Exception as e:
+            except BaseException as e:
                 logger.error('串口连接时发生非预期错误:{}'.format(repr(e)))
                 return False
 
@@ -221,7 +221,7 @@ class Adapter(FlowChart):
                 logger.error('获取回显字符串时发生错误')
                 return False
             success = True
-        except Exception as e:
+        except BaseException as e:
             logger.error('发生非预期错误:{}'.format(repr(e)))
             success = False
         return success
@@ -333,7 +333,7 @@ class Adapter(FlowChart):
                 return True
             else:
                 return False
-        except Exception as e:
+        except BaseException as e:
             logger.error('打点计时器记录新时刻时发生错误:{}'.format(repr(e)))
             return False
 
@@ -410,7 +410,7 @@ class Adapter(FlowChart):
                 dt = et.strftime(format=format_str)
             dt_ptr.append(dt)
             return True
-        except Exception as e:
+        except BaseException as e:
             logger.error('计算{}和{}的时间差时发生错误:{}'.format(t1, t2, repr(e)))
             return False
 

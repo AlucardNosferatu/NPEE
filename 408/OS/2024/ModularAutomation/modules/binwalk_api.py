@@ -18,7 +18,7 @@ def binwalk_scan(params):
             scan_output = scan_output.decode('gbk')
         binwalk_params['scan_output'] = scan_output
         binwalk_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         print('binwalk解析文件内容时发生错误:{}'.format(repr(e)))
         binwalk_params['scan_output'] = None
         binwalk_params['exception'] = e
@@ -43,7 +43,7 @@ def binwalk_check(params):
         binwalk_params['result'] = {True: 'FAIL', False: 'PASS'}[fail]
         if binwalk_params['exception'] is None:
             binwalk_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         print('binwalk检查解压文件时发生错误:{}'.format(repr(e)))
         binwalk_params['result'] = None
         if binwalk_params['exception'] is None:

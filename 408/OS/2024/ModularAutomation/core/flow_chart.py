@@ -55,24 +55,34 @@ def flowchart_step(params):
         print_('子流程等待取锁')
         locks[params['flowchart']['old_fc_name']].acquire()
         print_('子流程已获取锁')
-    print_('子流程开始执行')
-    steps_count = 0
-    while fc_params['exec_steps'] > 0 and not fc_params['end_status'][old_fc_name]:
-        end_status = fc.run_step()
-        fc_params['end_status'][old_fc_name] = end_status
-        fc_params['exec_steps'] -= 1
-        steps_count += 1
-        print_('子流程正在执行,已执行{}步'.format(steps_count))
-    print_('子流程执行完毕')
-    if 'reset_after_exe' in fc_params.keys() and fc_params['reset_after_exe']:
-        print_('子流程进行复位')
-        params = flowchart_restart(params=params)
-        print_('子流程完成复位')
-    if 'use_lock' in fc_params.keys() and fc_params['use_lock']:
-        print_('子流程等待解锁')
+    try:
+        print_('子流程开始执行')
+        steps_count = 0
+        exec_steps = fc_params['exec_steps']
+        while not fc_params['end_status'][old_fc_name]:
+            if not exec_steps > 0:
+                print_('子流程执行步数已耗尽，中止执行')
+                break
+            else:
+                end_status = fc.run_step()
+                fc_params['end_status'][old_fc_name] = end_status
+                exec_steps -= 1
+                steps_count += 1
+                print_('子流程正在执行,已执行{}步'.format(steps_count))
+        print_('子流程执行完毕')
+        if 'reset_after_exe' in fc_params.keys() and fc_params['reset_after_exe']:
+            print_('子流程进行复位')
+            params = flowchart_restart(params=params)
+            print_('子流程完成复位')
+        if 'use_lock' in fc_params.keys() and fc_params['use_lock']:
+            print_('子流程等待解锁')
+            locks[params['flowchart']['old_fc_name']].release()
+            print_('子流程已解除锁')
+        print_('子流程结束执行')
+    except BaseException as e:
+        print_('子流程执行中发生未处理的异常:{}'.format(repr(e)))
         locks[params['flowchart']['old_fc_name']].release()
-        print_('子流程已解除锁')
-    print_('子流程结束执行')
+        print_('为防止死锁，子流程已解除锁')
     return params
 
 

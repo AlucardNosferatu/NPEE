@@ -26,7 +26,7 @@ def console_close(params):
                 'Only telnet, ssh and serial console are supported.')
         console.close()
         console_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         print('串口异常:{}'.format(repr(e)))
         console_params['exception'] = e
     return params
@@ -104,7 +104,7 @@ def console_login(params):
             raise ValueError(
                 'Only telnet, ssh and serial console are supported.')
         console_login_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         print('串口异常:{}'.format(repr(e)))
         console_login_params['exception'] = e
     return params
@@ -175,7 +175,7 @@ def console_send(params: dict):
             raise ValueError('Only telnet, ssh and serial console are supported.')
         console_send_params['echo_string'] = echo_string
         console_send_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         print('串口异常:{}'.format(repr(e)))
         console_send_params['echo_string'] = None
         console_send_params['exception'] = e
@@ -200,7 +200,7 @@ def console_read(params):
         # print('串口DEBUG:{}'.format(echo_string))
         console_params['echo_string'] = echo_string
         console_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         print('控制台异常:{}'.format(repr(e)))
         console_params['echo_string'] = None
         console_params['exception'] = e
@@ -219,7 +219,7 @@ def console_read_loop(params):
             for read_loop_callback in console_params['read_loop_callbacks']:
                 try:
                     params = read_loop_callback(params=params)
-                except Exception as e:
+                except BaseException as e:
                     print('串口回显处理异常:{}'.format(repr(e)))
     return params
 
@@ -238,7 +238,7 @@ def console_read_until(params):
             raise NotImplementedError('还没实现telnet以外的read_until功能')
         console_params['echo_string'] = echo_string
         console_params['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         print('控制台异常:{}'.format(repr(e)))
         console_params['echo_string'] = None
         console_params['exception'] = e
@@ -344,7 +344,7 @@ def console_iwpriv_stat(params):
         iwps_parsed = IWPStat(text=iwpriv_text).iwp
         params['console']['iwps_parsed'] = iwps_parsed
         params['console']['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         params['console']['iwps_parsed'] = None
         params['console']['exception'] = e
     return params

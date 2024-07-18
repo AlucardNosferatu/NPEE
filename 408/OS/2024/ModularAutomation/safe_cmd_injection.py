@@ -5,13 +5,36 @@ import os
 from core.flow_chart import FlowChart
 from modules.logger import log_handler_init, log_logger_init
 from modules.webhook_api import webhook_send
+
 from safe_common_config import scan_host, target_name, eweb_pass, ssh_pass
 
 if __name__ == '__main__':
     # profiler = cProfile.Profile()
     # profiler.enable()
+    ready = False
+    while not ready:
+        try:
+            params_input = input('格式:IP地址-型号-EWEB密码-SSH密码\n')
+            if params_input == 'USE_HARDCODED':
+                ready = True
+            else:
+                params_input = params_input.split('-')
+                scan_host = params_input[0]
+                target_name = params_input[1]
+                eweb_pass = params_input[2]
+                ssh_pass = params_input[3]
+                print('IP地址:{}'.format(scan_host))
+                print('型号:{}'.format(target_name))
+                print('EWEB密码:{}'.format(eweb_pass))
+                print('SSH密码:{}'.format(ssh_pass))
+                confirm = input('确认无误?(Y)')
+                if confirm == 'Y':
+                    ready = True
+        except BaseException as e:
+            print('解析输入参数时发生错误:{}'.format(repr(e)))
     params = {
         'wvt': {
+            'ping_times': 5,
             'checkpoint_path': 'reports/checkpoint-{}.pkl'.format(target_name),
             'dut_ip': scan_host,
             'ssh_pass': ssh_pass,

@@ -10,7 +10,7 @@ class ATERXStat:
         self.ars = {}
         try:
             info_lines = self.text.split("\r\n")[2:-1]
-        except Exception as e:
+        except BaseException as e:
             print(repr(e))
             return
         for stat in info_lines:
@@ -22,6 +22,6 @@ class ATERXStat:
             value = ': '.join(stat)
             try:
                 self.ars[key] = int(value)
-            except Exception as e:
+            except BaseException as e:
                 print(repr(e))
                 self.ars[key] = value

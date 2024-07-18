@@ -6,7 +6,7 @@ from modules.console import console_login, console_send, console_close, console_
 from modules.excel_handler import read_template, read_testcases, write_summary
 from modules.http_eweb_api import eweb_get_sid, eweb_inject_cmd
 from modules.misc import ip_ping, mac_generate, mac_increase, mac_read_record, mac_write_record, timer, nop, \
-    interactive_shell, process_kill
+    interactive_shell, process_kill, timer_transience
 from modules.misc_singleton import wifi_connect
 from modules.nessus_api import nessus_delete_stop, nessus_export, nessus_find, nessus_get_status, nessus_login, \
     nessus_new_scan, nessus_start_pause
@@ -25,6 +25,7 @@ from modules.mqtt_api import mqtt_init, mqtt_subscribe, mqtt_read_start, mqtt_re
 
 m_dict = {
     'WEBHOOK_SEND': webhook_send,
+    'TIMER_TRANSIENCE': timer_transience,
 
     'MQTT_INIT': mqtt_init, 'MQTT_SUBSCRIBE': mqtt_subscribe, 'MQTT_READ_START': mqtt_read_start,
     'MQTT_READ_STOP': mqtt_read_stop,

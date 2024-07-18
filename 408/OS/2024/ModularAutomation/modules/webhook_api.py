@@ -18,7 +18,7 @@ def webhook_send(params):
     params['http']['headers'] = headers
     try:
         params = http_post(params=params)
-    except Exception as e:
+    except BaseException as e:
         info_str = '请求Webhook时发生错误:{}'.format(repr(e))
         if 'log' in params.keys() and 'logger' in params['log'].keys():
             logger = params['log']['logger']

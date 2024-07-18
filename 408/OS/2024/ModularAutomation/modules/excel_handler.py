@@ -195,6 +195,6 @@ def write_summary(params):
             try:
                 workbook.save(filename=save_path)
                 finished = True
-            except Exception as e:
+            except BaseException as e:
                 _ = e
     return params

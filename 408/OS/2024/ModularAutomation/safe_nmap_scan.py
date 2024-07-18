@@ -20,7 +20,7 @@ def is_valid_pr(pr_str, pr_list):
         pr_list.append(max(1, start))
         pr_list.append(min(65535, end_))
         valid = True
-    except Exception as e:
+    except BaseException as e:
         _ = e
         valid = False
     return valid
@@ -32,7 +32,7 @@ def is_valid_bs(bs_str, bs_ptr):
         assert int(bs_str) >= 1
         bs_ptr.append(int(bs_str))
         valid = True
-    except Exception as e:
+    except BaseException as e:
         _ = e
         valid = False
     return valid

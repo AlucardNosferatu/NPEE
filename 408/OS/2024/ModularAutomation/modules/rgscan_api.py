@@ -976,7 +976,7 @@ def rgscan_scan_target(params):
         try:
             rgscan_obj.add_target(address=target_ip, name=target_desc)
             finished = True
-        except Exception as e:
+        except BaseException as e:
             _ = e
     return params
 
@@ -990,7 +990,7 @@ def rgscan_get_scan_status(params):
             scan_status = rgscan_obj.get_scan_status(name=target_desc)
             params['rgscan']['scan_status'] = scan_status
             finished = True
-        except Exception as e:
+        except BaseException as e:
             _ = e
     return params
 
@@ -1004,7 +1004,7 @@ def rgscan_generate_report(params):
             report_id = rgscan_obj.generate_report(name=target_desc)
             params['rgscan']['report_id'] = report_id
             finished = True
-        except Exception as e:
+        except BaseException as e:
             _ = e
     return params
 
@@ -1022,7 +1022,7 @@ def rgscan_download_report(params):
                 name=target_desc, report_id=report_id, file_path=file_path, folder_abs=folder_abs
             )
             finished = True
-        except Exception as e:
+        except BaseException as e:
             _ = e
     return params
 

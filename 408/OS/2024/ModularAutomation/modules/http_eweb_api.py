@@ -62,7 +62,7 @@ def eweb_inject_cmd(params):
             else:
                 print(info_str)
         params['eweb']['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         params['eweb']['exception'] = e
         if debug_print:
             error_str = '对载荷{}的注入发生错误{}'.format(params['eweb']['repost_cache']['http']['data'], repr(e))
@@ -127,7 +127,7 @@ def eweb_get_sid(params):
             else:
                 print(info_str)
         params['eweb']['exception'] = None
-    except Exception as e:
+    except BaseException as e:
         params['eweb']['exception'] = e
         if debug_print:
             error_str = '对地址{}的设备使用密码{}请求SID发生错误{}'.format(

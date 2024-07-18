@@ -251,7 +251,7 @@ class IxChariotAPI(object):
             self.tcl.eval('chrTest abandon $test')
             self.logger.info('Abandon打流...success')
             return 1
-        except Exception as e:
+        except BaseException as e:
             self.logger.info('无法abandon... {}'.format(e))
             return 0
 
@@ -264,7 +264,7 @@ class IxChariotAPI(object):
             self.tcl.eval('chrTest stop $test')
             self.logger.info('停止打流...success')
             return 1
-        except Exception as e:
+        except BaseException as e:
             self.logger.info('无法停止打流... {}'.format(e))
             return 0
 
@@ -385,7 +385,7 @@ class IxChariotAPI(object):
                 try:
                     pairs_rssi.append(
                         float(self.tcl.eval('chrPairResults get $pair' + str(i + 1) + ' RSSI_E1').split()[0]))
-                except Exception as e:
+                except BaseException as e:
                     _ = e
                     # traceback.self.logger.info_exc()
                     pairs_rssi.append(None)
@@ -465,7 +465,7 @@ class IxChariotAPI(object):
                     'mp': self.mp[0]
                 }
                 ret = True
-            except Exception as e:
+            except BaseException as e:
                 msg = '获取测速参数出错:{}'.format(repr(e))
                 ret = False
             return ret, msg
@@ -476,7 +476,7 @@ class IxChariotAPI(object):
                 self.mp[0] = new_config['mp']
                 msg = '设置测速参数成功'
                 ret = True
-            except Exception as e:
+            except BaseException as e:
                 msg = '设置测速参数出错:{}'.format(repr(e))
                 ret = False
             return ret, msg
@@ -505,7 +505,7 @@ class IxChariotAPI(object):
                             p_obj_ = psutil.Process(pid_)
                         io_counters = p_obj_.io_counters()
                         return io_counters.other_bytes, pid_, p_obj_
-                    except Exception as e__:
+                    except BaseException as e__:
                         msg_ = '流量统计异常:{}'.format(repr(e__))
                         print(msg_)
                         return 0, -1, None
@@ -517,7 +517,7 @@ class IxChariotAPI(object):
                     db = t_bytes_new - t_bytes_old
                     thr_ = db / dt
                     return thr_, db, dt, p_obj
-                except Exception as e_:
+                except BaseException as e_:
                     msg__ = '单次测速异常:{}'.format(repr(e_))
                     print(msg__)
                     return 0, 0, delta_t, None
@@ -546,7 +546,7 @@ class IxChariotAPI(object):
                 cm_thread.start()
                 msg = '连续测速现在启动'
                 ret = True
-        except Exception as e:
+        except BaseException as e:
             msg = '启动连续测速出错:{}'.format(repr(e))
             ret = False
         return ret, msg
@@ -559,7 +559,7 @@ class IxChariotAPI(object):
                     break
                 msg.append(self.mcs.pop(0))
             ret = True
-        except Exception as e:
+        except BaseException as e:
             msg = '读取测速结果出错:{}'.format(repr(e))
             ret = False
         return ret, msg
@@ -570,7 +570,7 @@ class IxChariotAPI(object):
             kill_thread(cm_thread)
             msg = '连续测速已停止'
             ret = True
-        except Exception as e:
+        except BaseException as e:
             msg = '停止连续测速出错:{}'.format(repr(e))
             ret = False
         return ret, msg
@@ -625,7 +625,7 @@ def chariot_run(params):
             if sta not in text_list:
                 run_params['exception'] = sta
                 break
-    except Exception as e:
+    except BaseException as e:
         run_params['exception'] = e
     return params
 

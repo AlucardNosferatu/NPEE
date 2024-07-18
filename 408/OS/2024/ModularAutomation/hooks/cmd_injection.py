@@ -82,7 +82,7 @@ def h4(params):
         tp_size = 1
         logger.info('特殊用例，取消并发请求')
     thread_pool = params['thread_pool']
-    logger.info('当前线程池大小:{}'.format(len(thread_pool)))
+    logger.info('H4报告当前线程池大小:{}'.format(len(thread_pool)))
     if len(thread_pool) < tp_size:
         params['if_switch'] = True
     else:
@@ -91,7 +91,9 @@ def h4(params):
 
 
 def h5(params):
+    logger = params['log']['logger']
     thread_pool = params['thread_pool']
+    logger.info('H5报告当前线程池大小:{}'.format(len(thread_pool)))
     if len(thread_pool) > 0:
         params['if_switch'] = True
     else:
@@ -133,7 +135,7 @@ def h7(params):
         cmd_str = cmd_str.replace('flagthn', payload)
         try:
             cmd_dict = json.loads(cmd_str)
-        except Exception as e:
+        except BaseException as e:
             _ = e
             cmd_dict = eval(cmd_str)
         params['wvt']['injected_cmd'].append(cmd_dict)
@@ -231,8 +233,8 @@ def h12(params):
 
 
 def h13(params):
-    params['wvt']['testcase_path'] = 'reports/payloads.xlsx'
-    # params['wvt']['testcase_path'] = 'reports/payloads_test.xlsx'
+    # params['wvt']['testcase_path'] = 'reports/payloads.xlsx'
+    params['wvt']['testcase_path'] = 'reports/payloads_test.xlsx'
     params = read_testcases_ci(params=params)
     return params
 
@@ -245,8 +247,8 @@ def h14(params):
 
 def h15(params):
     # params['wvt']['testcase_path'] = 'reports/testcases.xlsx'
-    params['wvt']['testcase_path'] = 'reports/testcases_lite.xlsx'
-    # params['wvt']['testcase_path'] = 'reports/testcases_test.xlsx'
+    # params['wvt']['testcase_path'] = 'reports/testcases_lite.xlsx'
+    params['wvt']['testcase_path'] = 'reports/testcases_test.xlsx'
     params = read_testcases_ci(params=params)
     return params
 

@@ -87,7 +87,7 @@ def process_kill(params):
             os.system('taskkill /f /pid {}'.format(pid))
             print('结束pids   {}'.format(str(pid)))
             kill_processes[i] = [pid, True, None]
-        except Exception as e:
+        except BaseException as e:
             print('异常:{}'.format(repr(e)))
             kill_processes[i] = [pid, False, e]
     return params

@@ -312,7 +312,7 @@ def rsas_scan_target(params):
         try:
             rsas_obj.add_target(address=target_ip, name=target_desc)
             finished = True
-        except Exception as e:
+        except BaseException as e:
             _ = e
     return params
 
@@ -326,7 +326,7 @@ def rsas_get_scan_status(params):
             scan_status = rsas_obj.get_scan_status(name=target_desc)
             params['rsas']['scan_status'] = scan_status
             finished = True
-        except Exception as e:
+        except BaseException as e:
             _ = e
     return params
 
@@ -340,7 +340,7 @@ def rsas_generate_report(params):
             report_id = rsas_obj.generate_report(name=target_desc)
             params['rsas']['report_id'] = report_id
             finished = True
-        except Exception as e:
+        except BaseException as e:
             _ = e
     return params
 
@@ -354,7 +354,7 @@ def rsas_get_report_status(params):
             report_status = rsas_obj.get_report_status(name=target_desc)
             params['rsas']['report_status'] = report_status
             finished = True
-        except Exception as e:
+        except BaseException as e:
             _ = e
     return params
 
@@ -370,6 +370,6 @@ def rsas_download_report(params):
         try:
             rsas_obj.download_report(name=target_desc, report_id=report_id, file_path=file_path, folder_abs=folder_abs)
             finished = True
-        except Exception as e:
+        except BaseException as e:
             _ = e
     return params
