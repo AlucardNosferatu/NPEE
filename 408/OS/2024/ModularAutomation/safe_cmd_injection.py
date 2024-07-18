@@ -14,11 +14,11 @@ if __name__ == '__main__':
     ready = False
     while not ready:
         try:
-            params_input = input('格式:IP地址-型号-EWEB密码-SSH密码\n')
+            params_input = input('格式:IP地址#型号#EWEB密码#SSH密码\n')
             if params_input == 'USE_HARDCODED':
                 ready = True
             else:
-                params_input = params_input.split('-')
+                params_input = params_input.split('#')
                 scan_host = params_input[0]
                 target_name = params_input[1]
                 eweb_pass = params_input[2]
