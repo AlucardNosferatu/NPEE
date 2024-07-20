@@ -153,6 +153,11 @@ def h7(params):
         all_queue_len = len(params['wvt']['testcases'])
         run_queue_len = req_queue_len + tst_queue_len + res_queue_len
         assert run_queue_len == all_queue_len or run_queue_len + 1 == all_queue_len
+        print('请求执行队列长度:{}'.format(req_queue_len))
+        print('测试用例队列长度:{}'.format(tst_queue_len))
+        print('性能统计队列长度:{}'.format(res_queue_len))
+        print('整体执行队列长度:{}'.format(run_queue_len))
+        print('所有用例队列长度:{}'.format(all_queue_len))
         params['wvt']['progress'] = 1 - (tst_queue_len / all_queue_len)
         floor_progress_per = floor(params['wvt']['progress'] * 100)
         if debug:
@@ -363,6 +368,11 @@ def h24(params):
         params['wvt'] = pickle.load(file=f)
     logger.info('已加载断点续测存档')
     params = init_sub_flowchart(params=params)
+    return params
+
+
+def h25(params):
+    params['if_switch'] = len(params['wvt']['injected_cmd']) > 0
     return params
 
 
