@@ -114,7 +114,11 @@ def h8(params):
 
 
 def h9(params):
-    time.sleep(60)
+    if 'wait_after_reboot' in params['wvt'].keys():
+        wait_after_reboot = params['wvt']['wait_after_reboot']
+    else:
+        wait_after_reboot = 60
+    time.sleep(wait_after_reboot)
     params = h11(params=params)
     return params
 

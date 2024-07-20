@@ -12,6 +12,12 @@ if __name__ == '__main__':
     # profiler = cProfile.Profile()
     # profiler.enable()
     ready = False
+    wait_after_reboot = 60
+    ping_times = 5
+    tp_size = 8
+    rq_size = 16
+    wait_per_injection = 0.25
+    repost_retry = 5
     while not ready:
         try:
             params_input = input('格式:IP地址#型号#EWEB密码#SSH密码\n')
@@ -27,6 +33,26 @@ if __name__ == '__main__':
                 print('型号:{}'.format(target_name))
                 print('EWEB密码:{}'.format(eweb_pass))
                 print('SSH密码:{}'.format(ssh_pass))
+                if len(params_input) > 4:
+                    for extra_param in params_input[4:]:
+                        if extra_param.startswith('$WAR:'):
+                            wait_after_reboot = float(extra_param.replace('$WAR:', ''))
+                            print('【$WAR:】重启后等待时长:{}'.format(wait_after_reboot))
+                        elif extra_param.startswith('$PT:'):
+                            ping_times = int(extra_param.replace('$PT:', ''))
+                            print('【$PT:】重启后PING次数:{}'.format(ping_times))
+                        elif extra_param.startswith('$TPS:'):
+                            tp_size = int(extra_param.replace('$TPS:', ''))
+                            print('【$TPS:】执行线程池大小:{}'.format(tp_size))
+                        elif extra_param.startswith('$RQS:'):
+                            rq_size = int(extra_param.replace('$RQS:', ''))
+                            print('【$RQS:】请求队列大小:{}'.format(rq_size))
+                        elif extra_param.startswith('$WPI:'):
+                            wait_per_injection = float(extra_param.replace('$WPI:', ''))
+                            print('【$WPI:】请求间隔时长:{}'.format(wait_per_injection))
+                        elif extra_param.startswith('$RR:'):
+                            repost_retry = int(extra_param.replace('$RR:', ''))
+                            print('【$RR:】请求重试次数:{}'.format(repost_retry))
                 confirm = input('确认无误?(Y)')
                 if confirm == 'Y':
                     ready = True
@@ -34,19 +60,20 @@ if __name__ == '__main__':
             print('解析输入参数时发生错误:{}'.format(repr(e)))
     params = {
         'wvt': {
-            'ping_times': 5,
+            'wait_after_reboot': wait_after_reboot,
+            'ping_times': ping_times,
             'checkpoint_path': 'reports/checkpoint-{}.pkl'.format(target_name),
             'dut_ip': scan_host,
             'ssh_pass': ssh_pass,
             'save_path': 'reports/{}-命令注入.xlsx'.format(target_name),
             'eweb_pass': eweb_pass,
-            'tp_size': 8,
-            'rq_size': 16,
+            'tp_size': tp_size,
+            'rq_size': rq_size,
             'payload_list': [],
             # 'slowdown_after': 66,
             'template_path': 'reports/template_payloads.xlsx',
-            'wait_per_injection': 0.25,
-            'repost_retry': 5,
+            'wait_per_injection': wait_per_injection,
+            'repost_retry': repost_retry,
             'path_whitelist': [
                 '/tmp/enetCap/single/modules',
                 '/etc/rg_config/global',
