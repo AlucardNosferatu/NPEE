@@ -13,7 +13,7 @@ from kill_thread import kill_thread
 
 from core.flow_chart import FlowChart
 
-debug = False
+debug = True
 
 
 def h0(params):
@@ -145,8 +145,15 @@ def h7(params):
             injected_module = cmd_dict['module']
         else:
             injected_module = None
-        params['wvt']['progress'] = 1 - (len(params['wvt']['queue']) / len(params['wvt']['testcases']))
-
+        req_queue_len = len(params['wvt']['injected_cmd'])
+        tst_queue_len = len(params['wvt']['queue'])
+        if 'reboot_count' not in params['wvt']:
+            params['wvt']['reboot_count'] = []
+        res_queue_len = len(params['wvt']['reboot_count'])
+        all_queue_len = len(params['wvt']['testcases'])
+        run_queue_len = req_queue_len + tst_queue_len + res_queue_len
+        assert run_queue_len == all_queue_len or run_queue_len + 1 == all_queue_len
+        params['wvt']['progress'] = 1 - (tst_queue_len / all_queue_len)
         floor_progress_per = floor(params['wvt']['progress'] * 100)
         if debug:
             logger.debug('进度:{}'.format(floor_progress_per))
@@ -165,8 +172,8 @@ def h7(params):
         logger.info(
             '注入API:{} 注入方法:{} 注入模块:{} 进度:{:.2%}={}/{}'.format(
                 next_case['api'], next_case['method'], injected_module, params['wvt']['progress'],
-                len(params['wvt']['testcases']) - len(params['wvt']['queue']),
-                len(params['wvt']['testcases'])
+                all_queue_len - tst_queue_len,
+                all_queue_len
             )
         )
     if 'wait_per_injection' in params['wvt'].keys():

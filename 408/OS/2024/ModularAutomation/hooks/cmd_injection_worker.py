@@ -4,7 +4,7 @@ import pickle
 import re
 import time
 
-debug = False
+debug = True
 
 
 def h0(params):
@@ -37,9 +37,6 @@ def h0(params):
 def h1(params):
     if not debug:
         time.sleep(0.5)
-    if 'eweb' not in params.keys():
-        params['eweb'] = {}
-    params['eweb']['repost_retry'] = params['wvt']['repost_retry']
     return params
 
 
@@ -196,4 +193,11 @@ def h17(params):
         't_name': 'wvt_cmd_injection',
         't_desc': '每个用例的测试用时'
     }
+    return params
+
+
+def h18(params):
+    if 'eweb' not in params.keys():
+        params['eweb'] = {}
+    params['eweb']['repost_retry'] = params['wvt']['repost_retry']
     return params
