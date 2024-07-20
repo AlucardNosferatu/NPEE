@@ -145,12 +145,17 @@ def h7(params):
             injected_module = cmd_dict['module']
         else:
             injected_module = None
+
+        locks: dict[str, threading.Lock] = params['flowchart']['locks']
+        locks[params['flowchart']['old_fc_name']].acquire()
         req_queue_len = len(params['wvt']['injected_cmd'])
         tst_queue_len = len(params['wvt']['queue'])
         if 'reboot_count' not in params['wvt']:
             params['wvt']['reboot_count'] = []
         res_queue_len = len(params['wvt']['reboot_count'])
         all_queue_len = len(params['wvt']['testcases'])
+        locks[params['flowchart']['old_fc_name']].release()
+
         run_queue_len = req_queue_len + tst_queue_len + res_queue_len
         assert run_queue_len == all_queue_len or run_queue_len + 1 == all_queue_len
         if debug:

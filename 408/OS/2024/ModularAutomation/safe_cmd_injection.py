@@ -1,5 +1,7 @@
 # import cProfile
 import os
+import traceback
+
 # import pstats
 
 from core.flow_chart import FlowChart
@@ -94,7 +96,24 @@ if __name__ == '__main__':
     }
     fc.params_bus = webhook_send(params=fc.params_bus)
     while not end:
-        end = fc.run_step()
+        try:
+            end = fc.run_step()
+        except BaseException as e:
+            err_str = '主流程中止执行，因为发生了未处理的错误:{}\n'.format(repr(e))
+            tb_info = traceback.extract_tb(tb=e.__traceback__)
+            tb_info = '\n===================\n'.join([
+                'File:{}\nLine:{}\nFunction:{}\nCode:{}'.format(
+                    tb.filename,
+                    tb.lineno,
+                    tb.name,
+                    tb.line
+                ) for tb in tb_info
+            ])
+            print(err_str)
+            print(tb_info)
+            fc.params_bus['webhook']['send_string'] = err_str + '\n' + tb_info
+            fc.params_bus = webhook_send(params=fc.params_bus)
+            end = True
     fc.params_bus['webhook']['send_string'] = '{}的命令注入测试已完成'.format(target_name)
     fc.params_bus = webhook_send(params=fc.params_bus)
     # profiler.disable()
