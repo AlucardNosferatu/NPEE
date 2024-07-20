@@ -13,7 +13,7 @@ from kill_thread import kill_thread
 
 from core.flow_chart import FlowChart
 
-debug = True
+debug = False
 
 
 def h0(params):
@@ -373,7 +373,10 @@ def h24(params):
 
 
 def h25(params):
+    locks: dict[str, threading.Lock] = params['flowchart']['locks']
+    locks[params['flowchart']['old_fc_name']].acquire()
     params['if_switch'] = len(params['wvt']['injected_cmd']) > 0
+    locks[params['flowchart']['old_fc_name']].release()
     return params
 
 

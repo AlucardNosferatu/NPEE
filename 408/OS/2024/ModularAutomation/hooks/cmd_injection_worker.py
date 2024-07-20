@@ -4,7 +4,7 @@ import pickle
 import re
 import time
 
-debug = True
+debug = False
 
 
 def h0(params):
