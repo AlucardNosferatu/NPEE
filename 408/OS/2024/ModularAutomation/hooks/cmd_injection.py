@@ -211,7 +211,7 @@ def h9(params):
 
 
 def h10(params):
-    params['flowchart']['exec_steps'] = 64
+    params['flowchart']['exec_steps'] = None
     params['flowchart']['use_lock'] = True
     params['flowchart']['reset_after_exe'] = True
     return params

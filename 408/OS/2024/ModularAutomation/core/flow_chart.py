@@ -58,15 +58,18 @@ def flowchart_step(params):
     try:
         print_('子流程开始执行')
         steps_count = 0
+        if 'exec_steps' not in fc_params.keys():
+            fc_params['exec_steps'] = 1
         exec_steps = fc_params['exec_steps']
         while not fc_params['end_status'][old_fc_name]:
-            if not exec_steps > 0:
+            if exec_steps is not None and not exec_steps > 0:
                 print_('子流程执行步数已耗尽，中止执行')
                 break
             else:
                 end_status = fc.run_step()
                 fc_params['end_status'][old_fc_name] = end_status
-                exec_steps -= 1
+                if exec_steps is not None:
+                    exec_steps -= 1
                 steps_count += 1
                 print_('子流程正在执行,已执行{}步'.format(steps_count))
         print_('子流程执行完毕')
