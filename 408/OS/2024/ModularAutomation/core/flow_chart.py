@@ -155,7 +155,7 @@ def module_timeout(params):
     thread_ft.join(timeout=timeout_seconds)
     if thread_ft.is_alive():
         misc_params['module_timeout']['exception'] = TimeoutError
-        print('模块{}运行超时'.format(module_function))
+        # print('模块{}运行超时'.format(module_function))
     else:
         misc_params['module_timeout']['exception'] = None
     kill_thread(thread=thread_ft)

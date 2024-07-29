@@ -21,7 +21,7 @@ if __name__ == '__main__':
     rq_size = 16
     wait_per_injection = 0.25
     repost_retry = 5
-    debug_shell = True
+    debug_shell = False
     while not ready:
         try:
             params_input = input('格式:IP地址#型号#EWEB密码#SSH密码\n')
@@ -67,7 +67,7 @@ if __name__ == '__main__':
             'module_timeout': {
                 'timeout': 0.125,
                 'module': 'GET_INPUT_STR',
-                'kill_confirmed': False
+                'kill_confirmed': True
             }
         },
         'wvt': {

@@ -130,8 +130,8 @@ if __name__ == '__main__':
                 # use in rx
                 'set_order': ['ATETXBW', 'ATETXANT', 'ATERXANT', 'ATETXMODE', 'ATETXMCS', 'ATECHANNEL'],
                 'ATETXBW': 0,
-                'ATETXANT': 1,
-                'ATERXANT': 1,
+                'ATETXANT': 7,
+                'ATERXANT': 7,
                 'ATETXMODE': 1,
                 'ATETXMCS': 7,
                 'ATECHANNEL': 1
@@ -147,7 +147,8 @@ if __name__ == '__main__':
                 'ATETXLEN': 1024,
                 'ATETXPOW0': 63
             }
-        }}
+        }
+    }
     params_ = console_login(params=params_)
     params_ = console_ate_start(params=params_)
     params_ = console_ate_rx_set(params=params_)

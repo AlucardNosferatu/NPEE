@@ -5,8 +5,10 @@ import os
 from scapy.volatile import RandMAC
 
 from modules.encryption.eweb_password import encrypt_pass
+from modules.nonblocking_input import NonBlockingStdIn
 
 time_format = "%Y年%m月%d日-%H时%M分%S秒"
+input_handler = None
 
 
 def nop(params):
@@ -17,15 +19,22 @@ def nop(params):
 
 
 def interactive_shell(params):
+    global input_handler
+    # noinspection PyUnresolvedReferences
+    input_handler.kill()
+    input_handler = None
     code.interact(local=locals(), banner='输入Ctrl+Z结束交互式控制台')
     return params
 
 
 def get_input_str(params):
+    global input_handler
     misc_params = params['misc']
     if 'input_prompt' in misc_params.keys():
         print(misc_params['input_prompt'])
-    misc_params['input_str'] = input()
+    if input_handler is None:
+        input_handler = NonBlockingStdIn()
+    misc_params['input_str'] = '\n'.join(input_handler.get_all_lines_wait_empty())
     return params
 
 
