@@ -67,7 +67,7 @@ if __name__ == '__main__':
             'module_timeout': {
                 'timeout': 0.125,
                 'module': 'GET_INPUT_STR',
-                'kill_confirmed': True
+                'kill_confirmed': False
             }
         },
         'wvt': {

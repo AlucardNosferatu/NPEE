@@ -2,7 +2,6 @@ import code
 import datetime
 import os
 
-from prompt_toolkit import prompt
 from scapy.volatile import RandMAC
 
 from modules.encryption.eweb_password import encrypt_pass
@@ -26,12 +25,7 @@ def get_input_str(params):
     misc_params = params['misc']
     if 'input_prompt' in misc_params.keys():
         print(misc_params['input_prompt'])
-    try:
-        misc_params['input_str'] = prompt()
-        misc_params['input_exception'] = None
-    except Exception as e:
-        misc_params['input_str'] = None
-        misc_params['input_exception'] = e
+    misc_params['input_str'] = input()
     return params
 
 
