@@ -22,10 +22,12 @@ def interactive_shell(params):
 
 
 def get_input_str(params):
+    print('输入开始')
     misc_params = params['misc']
     if 'input_prompt' in misc_params.keys():
         print(misc_params['input_prompt'])
     misc_params['input_str'] = input()
+    print('输入结束')
     return params
 
 
@@ -269,6 +271,4 @@ def ip_ping(params):
 
 
 if __name__ == '__main__':
-    params_ = {'misc': {'iface_name': '上网用'}}
-    iface_ip(params=params_)
     print('Done')

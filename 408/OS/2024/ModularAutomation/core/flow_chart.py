@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import threading
+import time
 
 from kill_thread import kill_thread
 
@@ -153,7 +154,7 @@ def module_timeout(params):
     thread_ft.join(timeout=timeout_seconds)
     if thread_ft.is_alive():
         misc_params['module_timeout']['exception'] = TimeoutError
-        print('输入超时')
+        print('模块{}运行超时'.format(module_function))
     else:
         misc_params['module_timeout']['exception'] = None
     while thread_ft.is_alive():
@@ -474,14 +475,22 @@ class FlowChart:
 
 
 if __name__ == '__main__':
-    fc_ = FlowChart()
-    fc_.load_map(hook_script='bin_scan.py', map_json='静态测试.pos')
-    end = False
-    fc_.params_bus['project_id'] = 'OW3.0PR5_R231'
-    fc_.params_bus['product_id'] = 'X30E'
-    fc_.params_bus['baseline_project'] = 'OW3.0PR5_R221'
-    fc_.params_bus[
-        'bin_url'
-    ] = 'http://10.52.16.112:20290/%E5%9B%BD%E5%86%85/X30E-R231/EW_3.0%281%29B11P231_X30E_10231920_install.bin'
-    while not end:
-        end = fc_.run_step()
+    def test1():
+        input()
+
+
+    def test2():
+        while True:
+            print('fuck')
+            time.sleep(1)
+
+
+    test = test2
+    tft = threading.Thread(target=test)
+    tft.start()
+    tft.join(timeout=2)
+    if tft.is_alive():
+        print('模块{}运行超时'.format(test))
+    while tft.is_alive():
+        kill_thread(thread=tft)
+    print('Done')

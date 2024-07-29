@@ -111,7 +111,7 @@ def kill_running_task(r_task_id):
     if r_task_id in running_tasks.keys():
         exists = True
         r_task = running_tasks.pop(r_task_id)
-        running_thread:threading.Thread = r_task[-1]
+        running_thread: threading.Thread = r_task[-1]
         while running_thread.is_alive():
             kill_thread(thread=running_thread)
         print('任务终止，id:{}'.format(r_task_id))

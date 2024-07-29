@@ -23,7 +23,7 @@ from modules.zap_api import zap_crawl_target, zap_download_report, zap_get_crawl
     zap_init_adapter, zap_kill_java, zap_scan_target, zap_start_exe
 from modules.mqtt_api import mqtt_init, mqtt_subscribe, mqtt_read_start, mqtt_read_stop
 
-kt = kill_thread.kill_thread
+_ = kill_thread.kill_thread
 m_dict = {
     'WEBHOOK_SEND': webhook_send,
 
