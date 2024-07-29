@@ -6,7 +6,7 @@ import requests
 from core.flow_chart import FlowChart
 from modules.logger import log_logger_init, log_handler_init
 from modules.webhook_api import webhook_send
-from power_cycle_daemon import custom_serializer
+from modules.watchdog import custom_serializer
 
 ip = 'localhost'
 port = 20291

@@ -7,6 +7,8 @@ import time
 from flask import Flask, request, Response
 from flask_cors import CORS
 
+from modules.watchdog import custom_serializer
+
 flask_app = Flask(__name__)
 CORS(flask_app)
 
@@ -16,16 +18,6 @@ period = 60
 pid = ''
 # worker_script = 'power_cycle_worker.py'
 worker_exe = 'power_cycle_worker.exe'
-
-
-# 自定义序列化函数
-def custom_serializer(obj):
-    try:
-        obj_str = json.dumps(obj=obj)
-        return obj_str
-    except BaseException as e:
-        print(repr(e))
-        return 'CANNOT_SERIALIZE'
 
 
 def resp_wrapper(ret: bool, msg: str | list | dict):
@@ -58,7 +50,7 @@ def report_result():
 
 
 def watchdog():
-    global keepalive, pid
+    global keepalive
     while True:
         time.sleep(1)
         keepalive += 1
