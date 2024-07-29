@@ -1,6 +1,7 @@
 import code
 import json
 import random
+import threading
 import time
 
 from kill_thread import kill_thread
@@ -136,7 +137,9 @@ def h8(params):
     logger.info('启机检查耗时:{}'.format(params['pc_testcase']['tboot']))
     params['if_switch'] = params['pc_testcase']['boot_ok']
     for thread in params['thread_pool']:
-        kill_thread(thread=thread['thread_obj'])
+        thread_: threading.Thread = thread['thread_obj']
+        while thread_.is_alive():
+            kill_thread(thread=thread_)
     params['thread_pool'].clear()
     logger.info('线程池已清空')
     params['misc']['timer'].clear()
@@ -174,7 +177,9 @@ def h11(params):
     ) and params['misc']['wifi_result'][0]
     logger.info('2.4G WiFi连接成功?:{}'.format(params['pc_testcase']['wifi_ok']))
     for thread in params['thread_pool']:
-        kill_thread(thread=thread['thread_obj'])
+        thread_: threading.Thread = thread['thread_obj']
+        while thread_.is_alive():
+            kill_thread(thread=thread_)
     params['thread_pool'].clear()
     logger.info('线程池已清空')
     params['misc']['timer'].clear()
@@ -320,7 +325,9 @@ def h21(params):
     ) and params['misc']['wifi_result'][0]
     logger.info('5G WiFi连接成功?:{}'.format(params['pc_testcase']['wifi_5g_ok']))
     for thread in params['thread_pool']:
-        kill_thread(thread=thread['thread_obj'])
+        thread_: threading.Thread = thread['thread_obj']
+        while thread_.is_alive():
+            kill_thread(thread=thread_)
     params['thread_pool'].clear()
     logger.info('线程池已清空')
     params['misc']['timer'].clear()

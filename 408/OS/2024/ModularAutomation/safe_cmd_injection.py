@@ -4,8 +4,9 @@ import traceback
 
 # import pstats
 
-from core.flow_chart import FlowChart
+from core.flow_chart import FlowChart, module_timeout
 from modules.logger import log_handler_init, log_logger_init
+from modules.misc import interactive_shell
 from modules.webhook_api import webhook_send
 
 from safe_common_config import scan_host, target_name, eweb_pass, ssh_pass
@@ -20,6 +21,7 @@ if __name__ == '__main__':
     rq_size = 16
     wait_per_injection = 0.25
     repost_retry = 5
+    debug_shell = True
     while not ready:
         try:
             params_input = input('格式:IP地址#型号#EWEB密码#SSH密码\n')
@@ -61,6 +63,12 @@ if __name__ == '__main__':
         except BaseException as e:
             print('解析输入参数时发生错误:{}'.format(repr(e)))
     params = {
+        'misc': {
+            'module_timeout': {
+                'timeout': 0.125,
+                'module': 'GET_INPUT_STR'
+            }
+        },
         'wvt': {
             'wait_after_reboot': wait_after_reboot,
             'ping_times': ping_times,
@@ -77,9 +85,9 @@ if __name__ == '__main__':
             'wait_per_injection': wait_per_injection,
             'repost_retry': repost_retry,
             'path_whitelist': [
-                '/tmp/enetCap/single/modules',
-                '/etc/rg_config/global',
-                '/etc/rg_config/single'
+                # '/tmp/enetCap/single/modules',
+                # '/etc/rg_config/global',
+                # '/etc/rg_config/single'
             ]
         }
     }
@@ -98,6 +106,10 @@ if __name__ == '__main__':
     while not end:
         try:
             end = fc.run_step()
+            if debug_shell:
+                fc.params_bus = module_timeout(params=fc.params_bus)
+                if fc.params_bus['misc']['module_timeout']['exception'] is None:
+                    fc.params_bus = interactive_shell(params=fc.params_bus)
         except BaseException as e:
             err_str = '主流程中止执行，因为发生了未处理的错误:{}\n'.format(repr(e))
             tb_info = traceback.extract_tb(tb=e.__traceback__)

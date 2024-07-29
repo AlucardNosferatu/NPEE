@@ -406,7 +406,9 @@ def pop_old_thread(params):
     else:
         thread_timeout = None
     oldest_thread['thread_obj'].join(timeout=thread_timeout)
-    kill_thread(thread=oldest_thread['thread_obj'])
+    thread_: threading.Thread = oldest_thread['thread_obj']
+    while thread_.is_alive():
+        kill_thread(thread=thread_)
     params['thread_pool'].pop(0)
     return params
 

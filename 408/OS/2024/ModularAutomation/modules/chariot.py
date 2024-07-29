@@ -566,8 +566,9 @@ class IxChariotAPI(object):
 
     def monitor_stop(self):
         try:
-            cm_thread = self.thr_meas_thread.pop(0)
-            kill_thread(cm_thread)
+            cm_thread: threading.Thread = self.thr_meas_thread.pop(0)
+            while cm_thread.is_alive():
+                kill_thread(thread=cm_thread)
             msg = '连续测速已停止'
             ret = True
         except BaseException as e:

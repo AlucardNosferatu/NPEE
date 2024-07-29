@@ -17,7 +17,15 @@ def nop(params):
 
 
 def interactive_shell(params):
-    code.interact(local=locals())
+    code.interact(local=locals(), banner='输入Ctrl+Z结束交互式控制台')
+    return params
+
+
+def get_input_str(params):
+    misc_params = params['misc']
+    if 'input_prompt' in misc_params.keys():
+        print(misc_params['input_prompt'])
+    misc_params['input_str'] = input()
     return params
 
 

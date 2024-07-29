@@ -3,13 +3,17 @@ import os
 import sys
 import threading
 
+from kill_thread import kill_thread
+
+from modules.misc import interactive_shell
 from modules.modules_dict import m_dict
 
-debug = False
+debug_print = False
+debug_shell_sub_fc = False
 
 
 def print_(str_):
-    if debug:
+    if debug_print:
         print(str_)
     else:
         pass
@@ -72,6 +76,12 @@ def flowchart_step(params):
                     exec_steps -= 1
                 steps_count += 1
                 print_('子流程正在执行,已执行{}步'.format(steps_count))
+                if debug_shell_sub_fc:
+                    fc.params_bus['misc']['module_timeout']['module'] = 'GET_INPUT_STR'
+                    fc.params_bus['misc']['module_timeout']['timeout'] = 1.0
+                    fc.params_bus = module_timeout(params=fc.params_bus)
+                    if fc.params_bus['misc']['module_timeout']['exception'] is None:
+                        fc.params_bus = interactive_shell(params=fc.params_bus)
         print_('子流程执行完毕')
         if 'reset_after_exe' in fc_params.keys() and fc_params['reset_after_exe']:
             print_('子流程进行复位')
@@ -134,6 +144,23 @@ def flowchart_set_node(params):
     return params
 
 
+def module_timeout(params):
+    misc_params = params['misc']
+    timeout_seconds = misc_params['module_timeout']['timeout']
+    module_function = m_dict[misc_params['module_timeout']['module']]
+    thread_ft = threading.Thread(target=module_function, args=(params,))
+    thread_ft.start()
+    thread_ft.join(timeout=timeout_seconds)
+    if thread_ft.is_alive():
+        misc_params['module_timeout']['exception'] = TimeoutError
+        print('输入超时')
+    else:
+        misc_params['module_timeout']['exception'] = None
+    while thread_ft.is_alive():
+        kill_thread(thread=thread_ft)
+    return params
+
+
 def xml_filter(text):
     text = list(text)
     in_label = False
@@ -154,6 +181,7 @@ m_dict['FLOWCHART_INIT'] = flowchart_init
 m_dict['FLOWCHART_STEP'] = flowchart_step
 m_dict['FLOWCHART_SET_NODE'] = flowchart_set_node
 m_dict['FLOWCHART_RESTART'] = flowchart_restart
+m_dict['MODULE_TIMEOUT'] = module_timeout
 
 
 class FlowChart:
@@ -174,7 +202,7 @@ class FlowChart:
         self.next_link = None
         self.link_list = []
         self.thread_pool = []
-        self.params_bus = {'thread_pool': self.thread_pool}
+        self.params_bus: dict = {'thread_pool': self.thread_pool}
         if prerequisite is not None:
             for key in prerequisite.keys():
                 self.params_bus[key] = prerequisite[key]
