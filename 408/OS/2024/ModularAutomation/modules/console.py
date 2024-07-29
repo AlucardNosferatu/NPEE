@@ -10,6 +10,8 @@ from modules.console_parsers.iwconfig import IWConfig
 from modules.console_parsers.iwpriv import IWPSiteSurvey, IWPStat, IWPReg
 from modules.console_parsers.wlanconfig import WCList, WCRadio
 
+connection_pool = []
+
 
 def console_close(params):
     console_params = params['console']
@@ -86,10 +88,15 @@ def console_login(params):
             ssh_ = paramiko.SSHClient()
             ssh_.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh_.connect(
-                hostname=console_ssh_ip, port=console_ssh_port, username=username, password=console_ssh_pass, timeout=10
+                hostname=console_ssh_ip, port=console_ssh_port, username=username, password=console_ssh_pass,
+                timeout=10
             )
+            while len(connection_pool) > 0:
+                old_connection: paramiko.SSHClient = connection_pool.pop(0)
+                old_connection.close()
+            connection_pool.append(ssh_)
             ssh_shell = ssh_.invoke_shell()
-            console_login_params.__setitem__('ssh', ssh_shell)
+            console_login_params['ssh'] = ssh_shell
         elif console_type == 'telnet':
             console_telnet_ip = console_login_params['dut_ip']
             if 'port' in console_login_params.keys():

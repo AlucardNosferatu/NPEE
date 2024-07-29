@@ -159,7 +159,7 @@ def module_timeout(params):
     else:
         misc_params['module_timeout']['exception'] = None
     kill_thread(thread=thread_ft)
-    while thread_ft.is_alive() and misc_params['module_timeout']['kill_confirmed']:
+    while thread_ft.is_alive():
         kill_thread(thread=thread_ft)
     return params
 
