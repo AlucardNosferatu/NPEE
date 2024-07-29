@@ -26,7 +26,12 @@ def get_input_str(params):
     misc_params = params['misc']
     if 'input_prompt' in misc_params.keys():
         print(misc_params['input_prompt'])
-    misc_params['input_str'] = prompt()
+    try:
+        misc_params['input_str'] = prompt()
+        misc_params['input_exception'] = None
+    except Exception as e:
+        misc_params['input_str'] = None
+        misc_params['input_exception'] = e
     return params
 
 
@@ -271,4 +276,3 @@ def ip_ping(params):
 
 if __name__ == '__main__':
     print('Done')
-
