@@ -1,5 +1,4 @@
 # import cProfile
-import gc
 import os
 import traceback
 
@@ -110,7 +109,6 @@ if __name__ == '__main__':
                 fc.params_bus = module_timeout(params=fc.params_bus)
                 if fc.params_bus['misc']['module_timeout']['exception'] is None:
                     fc.params_bus = interactive_shell(params=fc.params_bus)
-            gc.collect()
         except BaseException as e:
             err_str = '主流程中止执行，因为发生了未处理的错误:{}\n'.format(repr(e))
             tb_info = traceback.extract_tb(tb=e.__traceback__)
