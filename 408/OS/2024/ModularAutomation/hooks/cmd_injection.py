@@ -1,12 +1,10 @@
 import copy
 import datetime
-import gc
 import json
 import os.path
 import pickle
 import random
 import string
-import sys
 import threading
 import time
 from math import floor
@@ -412,8 +410,6 @@ def pop_old_thread(params):
     while thread_.is_alive():
         kill_thread(thread=thread_)
     params['thread_pool'].pop(0)
-    refcount = sys.getrefcount(thread_)
-    print('refcount:{}'.format(refcount))
     return params
 
 
