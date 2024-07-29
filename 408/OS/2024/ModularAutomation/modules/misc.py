@@ -2,6 +2,7 @@ import code
 import datetime
 import os
 
+from prompt_toolkit import prompt
 from scapy.volatile import RandMAC
 
 from modules.encryption.eweb_password import encrypt_pass
@@ -25,7 +26,7 @@ def get_input_str(params):
     misc_params = params['misc']
     if 'input_prompt' in misc_params.keys():
         print(misc_params['input_prompt'])
-    misc_params['input_str'] = input()
+    misc_params['input_str'] = prompt()
     return params
 
 
@@ -270,3 +271,4 @@ def ip_ping(params):
 
 if __name__ == '__main__':
     print('Done')
+
