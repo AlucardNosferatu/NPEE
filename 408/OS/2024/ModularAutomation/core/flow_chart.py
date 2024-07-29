@@ -146,6 +146,7 @@ def flowchart_set_node(params):
 
 
 def module_timeout(params):
+    # 注意，input()函数具有IO阻塞特性，线程没法杀死！！！
     misc_params = params['misc']
     timeout_seconds = misc_params['module_timeout']['timeout']
     module_function = m_dict[misc_params['module_timeout']['module']]
@@ -157,7 +158,8 @@ def module_timeout(params):
         print('模块{}运行超时'.format(module_function))
     else:
         misc_params['module_timeout']['exception'] = None
-    while thread_ft.is_alive():
+    kill_thread(thread=thread_ft)
+    while thread_ft.is_alive() and misc_params['module_timeout']['kill_confirmed']:
         kill_thread(thread=thread_ft)
     return params
 

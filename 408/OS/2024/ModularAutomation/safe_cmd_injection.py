@@ -66,7 +66,8 @@ if __name__ == '__main__':
         'misc': {
             'module_timeout': {
                 'timeout': 0.125,
-                'module': 'GET_INPUT_STR'
+                'module': 'GET_INPUT_STR',
+                'kill_confirmed': False
             }
         },
         'wvt': {
