@@ -23,7 +23,7 @@ def h0(params):
 
 def h1(params):
     params = h18(params=params)
-    worker_fc: FlowChart = params['flowchart']['fc_pools'][params['flowchart']['old_fc_name']]
+    worker_fc: FlowChart = params['flowchart']['fc_pool'][params['flowchart']['old_fc_name']]
     worker_fc.params_bus['console'] = params['console']
     worker_fc.params_bus['wvt'] = params['wvt']
     worker_fc.params_bus['log'] = params['log']

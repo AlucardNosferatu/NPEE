@@ -22,9 +22,9 @@ def print_(str_):
 
 def flowchart_init(params):
     fc_params = params['flowchart']
-    if 'fc_pools' not in fc_params.keys():
-        fc_params['fc_pools'] = {}
-    fc_pools = fc_params['fc_pools']
+    if 'fc_pool' not in fc_params.keys():
+        fc_params['fc_pool'] = {}
+    fc_pool = fc_params['fc_pool']
     new_fc_name = fc_params['new_fc_name']
     if 'new_fc_pre' in fc_params.keys():
         new_fc_pre = fc_params['new_fc_pre']
@@ -38,15 +38,15 @@ def flowchart_init(params):
         fc.params_bus['log'] = {'logger_name': fc_params['new_fc_log']}
         fc.params_bus = m_dict['LOG_LOGGER_INIT'](params=fc.params_bus)
         fc.params_bus = m_dict['LOG_HANDLER_INIT'](params=fc.params_bus)
-    fc_pools[new_fc_name] = fc
+    fc_pool[new_fc_name] = fc
     return params
 
 
 def flowchart_step(params):
     fc_params = params['flowchart']
-    fc_pools = fc_params['fc_pools']
+    fc_pool = fc_params['fc_pool']
     old_fc_name = fc_params['old_fc_name']
-    fc: FlowChart = fc_pools[old_fc_name]
+    fc: FlowChart = fc_pool[old_fc_name]
     if 'exec_steps' not in fc_params.keys():
         fc_params['exec_steps'] = 0
     if 'end_status' not in fc_params.keys():
@@ -105,9 +105,9 @@ def flowchart_restart(params):
     if 'given_fc' in fc_params:
         fc: FlowChart = fc_params['given_fc']
     else:
-        fc_pools = fc_params['fc_pools']
+        fc_pool = fc_params['fc_pool']
         old_fc_name = fc_params['old_fc_name']
-        fc: FlowChart = fc_pools[old_fc_name]
+        fc: FlowChart = fc_pool[old_fc_name]
         if 'end_status' in fc_params.keys():
             fc_params['end_status'][old_fc_name] = False
     fc.restart()
@@ -116,9 +116,9 @@ def flowchart_restart(params):
 
 def flowchart_set_node(params):
     fc_params = params['flowchart']
-    fc_pools = fc_params['fc_pools']
+    fc_pool = fc_params['fc_pool']
     old_fc_name = fc_params['old_fc_name']
-    fc: FlowChart = fc_pools[old_fc_name]
+    fc: FlowChart = fc_pool[old_fc_name]
     node_cat = fc_params['node_cat']
     node_type = fc_params['node_type']
     if 'to_link' in fc_params.keys():

@@ -14,9 +14,11 @@ fc_ptr = []
 
 
 def wake(params):
-    fc_wd = params['flowchart']['fc_pools']['看门狗']
+    fc_wd = params['flowchart']['fc_pool']['看门狗']
+    fc_ptr.clear()
+    fc_ptr.append(fc_wd)
     wd_params = fc_wd.params_bus['watchdog']
-    dr_thread = threading.Thread(target=routine, args=(fc_wd,))
+    dr_thread = threading.Thread(target=routine, args=(params,))
     dr_thread.start()
     flask_app.run(
         host='0.0.0.0',
@@ -28,15 +30,15 @@ def wake(params):
 
 @flask_app.route('/watchdog', methods=['GET', 'POST'])  # type: ignore
 def watchdog():
+    wd_params = fc_ptr[0].params_bus['watchdog']
     if request.method == 'GET':
-        resp = resp_wrapper(ret=True, msg={'params': fc_ptr[0].params_bus})
+        resp = resp_wrapper(ret=True, msg={'params': wd_params['watched_params']})
     elif request.method == 'POST':
         data = json.loads(request.data.decode())
-        wd_params = data['params']['watchdog']
         wd_params['pid'] = data['pid']
-        wd_params['keepalive'] = 0
-        fc_ptr[0].params_bus = data['params']
-        resp = resp_wrapper(ret=True, msg={'params': fc_ptr[0].params_bus})
+        wd_params['age'] = 0
+        wd_params['watched_params'] = data['params']
+        resp = resp_wrapper(ret=True, msg={'params': wd_params['watched_params']})
     else:
         resp = resp_wrapper(ret=False, msg='METHOD NOT IMPLEMENTED:{}'.format(request.method))
     return resp
@@ -51,11 +53,11 @@ def resp_wrapper(ret: bool, msg: str | list | dict):
     return resp
 
 
-def routine(fc):
-    fc.load_map(hook_script='watchdog.py', map_json='看门狗.pos')
+def routine(params):
+    fc_wd = params['flowchart']['fc_pool']['看门狗']
     end = False
     while not end:
-        end = fc.run_step()
+        end = fc_wd.run_step()
 
 
 def feed(params):
@@ -145,7 +147,7 @@ def bark(params):
 
 def digest(params):
     wd_params = params['watchdog']
-    wd_params['keepalive'] += 1
+    wd_params['age'] += 1
     return params
 
 

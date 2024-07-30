@@ -58,5 +58,5 @@ def h6(params):
 def h7(params):
     params['if_switch'] = params['flowchart']['end_status'][params['flowchart']['old_fc_name']]
     if params['if_switch']:
-        params['cv'] = params['flowchart']['fc_pools'][params['flowchart']['old_fc_name']].params_bus['cv'].copy()
+        params['cv'] = params['flowchart']['fc_pool'][params['flowchart']['old_fc_name']].params_bus['cv'].copy()
     return params
