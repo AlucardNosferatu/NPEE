@@ -98,16 +98,21 @@ def h6(params):
 
 def h7(params):
     params['database'] = {}
-    params['database']['db_type'] = 'mysql'
-    params['database']['db_ip'] = db_addr
-    params['database']['db_port'] = 3306
-    params['database']['db_user'] = 'root'
-    params['database']['db_pass'] = 'ruijie@mysql#family!'
-    params['database']['db_name'] = 'mac_records'
-    params['database']['db_table'] = 'mac_records'
+    # # comment following lines to use txt records
+    # params['database']['db_type'] = 'mysql'
+    # params['database']['db_ip'] = db_addr
+    # params['database']['db_port'] = 3306
+    # params['database']['db_user'] = 'root'
+    # params['database']['db_pass'] = 'ruijie@mysql#family!'
+    # params['database']['db_name'] = 'mac_records'
+    # params['database']['db_table'] = 'mac_records'
     return params
 
 
 def h8(params):
     params['if_switch'] = params['database']['exception'] is not None
+    return params
+
+
+def h9(params):
     return params
