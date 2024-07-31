@@ -106,3 +106,8 @@ def h7(params):
     params['database']['db_name'] = 'mac_records'
     params['database']['db_table'] = 'mac_records'
     return params
+
+
+def h8(params):
+    params['if_switch'] = params['database']['exception'] is not None
+    return params

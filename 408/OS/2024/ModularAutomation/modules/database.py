@@ -7,31 +7,38 @@ import redis
 
 
 def db_connect(params):
+    if 'database' not in params.keys():
+        params['database'] = {}
     db_connect_params = params['database']
-    db_type = db_connect_params['db_type']
-    if db_type == 'sqlite':
-        db_path = db_connect_params['db_path']
-        connector = sqlite3.connect(database=db_path)
-        db_connect_params['connector'] = connector
-    elif db_type == 'mysql':
-        db_ip = db_connect_params['db_ip']
-        db_port = db_connect_params['db_port']
-        db_user = db_connect_params['db_user']
-        db_pass = db_connect_params['db_pass']
-        db_name = db_connect_params['db_name']
-        connector = pymysql.connect(
-            host=db_ip, port=db_port, user=db_user, password=db_pass, database=db_name, autocommit=True
-        )
-        db_connect_params['connector'] = connector
-    elif db_type == 'redis':
-        db_ip = db_connect_params['db_ip']
-        db_port = db_connect_params['db_port']
-        db_index = db_connect_params['db_index']
-        db_pass = db_connect_params['db_pass']
-        connector = redis.Redis(host=db_ip, port=db_port, db=db_index, password=db_pass)
-        db_connect_params['connector'] = connector
-    else:
-        raise ValueError('Only sqlite processor has been implemented for now.')
+    try:
+        db_type = db_connect_params['db_type']
+        if db_type == 'sqlite':
+            db_path = db_connect_params['db_path']
+            connector = sqlite3.connect(database=db_path)
+            db_connect_params['connector'] = connector
+        elif db_type == 'mysql':
+            db_ip = db_connect_params['db_ip']
+            db_port = db_connect_params['db_port']
+            db_user = db_connect_params['db_user']
+            db_pass = db_connect_params['db_pass']
+            db_name = db_connect_params['db_name']
+            connector = pymysql.connect(
+                host=db_ip, port=db_port, user=db_user, password=db_pass, database=db_name, autocommit=True
+            )
+            db_connect_params['connector'] = connector
+        elif db_type == 'redis':
+            db_ip = db_connect_params['db_ip']
+            db_port = db_connect_params['db_port']
+            db_index = db_connect_params['db_index']
+            db_pass = db_connect_params['db_pass']
+            connector = redis.Redis(host=db_ip, port=db_port, db=db_index, password=db_pass)
+            db_connect_params['connector'] = connector
+        else:
+            raise ValueError('Only sqlite processor has been implemented for now.')
+        db_connect_params['exception'] = None
+    except BaseException as e:
+        db_connect_params['exception'] = e
+        db_connect_params['connector'] = None
     return params
 
 
@@ -44,56 +51,70 @@ def db_disconnect(params):
 
 def db_read_sql(params):
     db_read_sql_params = params['database']
-    db_type = db_read_sql_params['db_type']
-    if db_type in ['sqlite', 'mysql']:
-        connector = db_read_sql_params['connector']
-        sql_code = db_read_sql_params['sql_code']
-        del db_read_sql_params['sql_code']
-        result_df = pd.read_sql(sql=sql_code, con=connector)
-        db_read_sql_params['result_df'] = result_df
-    else:
-        raise ValueError('Only sqlite & mysql processor has been implemented for now.')
+    try:
+        db_type = db_read_sql_params['db_type']
+        if db_type in ['sqlite', 'mysql']:
+            connector = db_read_sql_params['connector']
+            sql_code = db_read_sql_params['sql_code']
+            del db_read_sql_params['sql_code']
+            result_df = pd.read_sql(sql=sql_code, con=connector)
+            db_read_sql_params['result_df'] = result_df
+        else:
+            raise ValueError('Only sqlite & mysql processor has been implemented for now.')
+        db_read_sql_params['exception'] = None
+    except BaseException as e:
+        db_read_sql_params['exception'] = e
+        db_read_sql_params['result_df'] = None
     return params
 
 
 def db_write_sql(params):
     db_params = params['database']
-    db_type = db_params['db_type']
-    if db_type in ['mysql']:
-        connector: pymysql.Connection = db_params['connector']
-        sql_code = db_params['sql_code']
-        del db_params['sql_code']
-        affected_rows = connector.query(sql=sql_code)
-        db_params['affected_rows'] = affected_rows
-    else:
-        raise ValueError('Only mysql processor has been implemented for now.')
+    try:
+        db_type = db_params['db_type']
+        if db_type in ['mysql']:
+            connector: pymysql.Connection = db_params['connector']
+            sql_code = db_params['sql_code']
+            del db_params['sql_code']
+            affected_rows = connector.query(sql=sql_code)
+            db_params['affected_rows'] = affected_rows
+        else:
+            raise ValueError('Only mysql processor has been implemented for now.')
+        db_params['exception'] = None
+    except BaseException as e:
+        db_params['exception'] = e
+        db_params['affected_rows'] = None
     return params
 
 
 def db_insert_sql(params):
     db_params = params['database']
-    db_type = db_params['db_type']
-    row_dict = db_params['row_dict']
-    if type(row_dict) is dict:
-        rd_list = [row_dict]
-    else:
-        rd_list = row_dict
-    for row_dict in rd_list:
-        if db_type in ['mysql']:
-            db_name = db_params['db_name']
-            db_table = db_params['db_table']
-            row_key_list = list(row_dict.keys())
-            row_val_list = [row_dict[key] for key in row_key_list]
-            row_key_str = ', '.join(['`{}`'.format(key) for key in row_key_list])
-            row_val_str = ', '.join(["'{}'".format(val) for val in row_val_list])
-            sql_code = '''
-            INSERT INTO `{}`.`{}` ({}) VALUES ({});
-            '''
-            sql_code = sql_code.format(db_name, db_table, row_key_str, row_val_str)
-            db_params['sql_code'] = sql_code
+    try:
+        db_type = db_params['db_type']
+        row_dict = db_params['row_dict']
+        if isinstance(row_dict, dict):
+            rd_list = [row_dict]
         else:
-            raise ValueError('Only mysql processor has been implemented for now.')
-        params = db_write_sql(params=params)
+            rd_list = row_dict
+        for row_dict in rd_list:
+            if db_type in ['mysql']:
+                db_name = db_params['db_name']
+                db_table = db_params['db_table']
+                row_key_list = list(row_dict.keys())
+                row_val_list = [row_dict[key] for key in row_key_list]
+                row_key_str = ', '.join(['`{}`'.format(key) for key in row_key_list])
+                row_val_str = ', '.join(["'{}'".format(val) for val in row_val_list])
+                sql_code = '''
+                INSERT INTO `{}`.`{}` ({}) VALUES ({});
+                '''
+                sql_code = sql_code.format(db_name, db_table, row_key_str, row_val_str)
+                db_params['sql_code'] = sql_code
+            else:
+                raise ValueError('Only mysql processor has been implemented for now.')
+            params = db_write_sql(params=params)
+        db_params['exception'] = None
+    except BaseException as e:
+        db_params['exception'] = e
     return params
 
 

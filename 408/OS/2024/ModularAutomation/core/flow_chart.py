@@ -477,22 +477,4 @@ class FlowChart:
 
 
 if __name__ == '__main__':
-    def test1():
-        input()
-
-
-    def test2():
-        while True:
-            print('fuck')
-            time.sleep(1)
-
-
-    test = test2
-    tft = threading.Thread(target=test)
-    tft.start()
-    tft.join(timeout=2)
-    if tft.is_alive():
-        print('模块{}运行超时'.format(test))
-    while tft.is_alive():
-        kill_thread(thread=tft)
     print('Done')
