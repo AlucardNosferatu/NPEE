@@ -30,3 +30,8 @@ def h3(params):
 
 def h4(params):
     return params
+
+
+def h5(params):
+    params['if_switch'] = params['nessus']['exception'] is not None
+    return params

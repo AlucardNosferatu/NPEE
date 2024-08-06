@@ -2,6 +2,7 @@ import time
 
 from selenium.common import NoSuchElementException
 
+from modules.misc import process_kill
 from modules.web_api import web_start, web_goto, web_find, web_click, web_find_by_xpath, web_input_compact
 
 nessus_ip = 'nessus.ruijie.com.cn'
@@ -19,6 +20,12 @@ page_types = [
 ]
 
 
+def nessus_kill_chrome(params):
+    params['misc'] = {'kill_processes': ['chromedriver.exe', 'chrome.exe']}
+    params = process_kill(params=params)
+    return params
+
+
 def process_live_page(func_after_found, params, xpath):
     found = False
     dt_index = 0
@@ -34,6 +41,7 @@ def process_live_page(func_after_found, params, xpath):
                 dt_index += 1
         except BaseException as e:
             _ = e
+            dt_index += 1
     return params
 
 
@@ -67,20 +75,27 @@ def nessus_login(params):
             if type(sign_in) is not NoSuchElementException:
                 params['web'].__setitem__('click_obj', sign_in)
                 params = web_click(params=params)
-                time.sleep(20)
+                time.sleep(30)
                 params = nessus_summary_action(params=params, status=True, msg=None, page='scan list')
+                params['nessus']['exception'] = None
             else:
+                msg = "Cannot find 'Sign In' button."
                 params = nessus_summary_action(
-                    params=params, status=False, msg="Cannot find 'Sign In' button.", page='login'
+                    params=params, status=False, msg=msg, page='login'
                 )
+                params['nessus']['exception'] = NoSuchElementException(msg)
         else:
+            msg = "Cannot find password inputbox."
             params = nessus_summary_action(
-                params=params, status=False, msg="Cannot find password inputbox.", page='login'
+                params=params, status=False, msg=msg, page='login'
             )
+            params['nessus']['exception'] = NoSuchElementException(msg)
     else:
+        msg = "Cannot find username inputbox."
         params = nessus_summary_action(
-            params=params, status=False, msg="Cannot find username inputbox.", page='login'
+            params=params, status=False, msg=msg, page='login'
         )
+        params['nessus']['exception'] = NoSuchElementException(msg)
     return params
 
 
@@ -92,17 +107,23 @@ def nessus_select_folder(params):
 
 
 def nessus_find(params):
-    assert params['nessus']['page'] in ['scan list', 'search result']
-    scan_name = params['nessus']['scan_name']
-    del params['nessus']['scan_name']
-    # noinspection SpellCheckingInspection
-    search_box = web_find_by_xpath(params=params, xpath='//*[@id="searchbox"]/input')
-    if type(search_box) is not NoSuchElementException:
-        params = web_input_compact(params=params, input_obj=search_box, input_text=scan_name)
-        time.sleep(5)
-        params = nessus_summary_action(params=params, status=True, msg=None, page='search result')
-    else:
-        params = nessus_summary_action(params=params, status=False, msg='Cannot find search box', page='scan list')
+    try:
+        assert params['nessus']['page'] in ['scan list', 'search result']
+        scan_name = params['nessus']['scan_name']
+        del params['nessus']['scan_name']
+        # noinspection SpellCheckingInspection
+        search_box = web_find_by_xpath(params=params, xpath='//*[@id="searchbox"]/input')
+        if type(search_box) is not NoSuchElementException:
+            params = web_input_compact(params=params, input_obj=search_box, input_text=scan_name)
+            time.sleep(5)
+            params = nessus_summary_action(params=params, status=True, msg=None, page='search result')
+            params['nessus']['exception'] = None
+        else:
+            msg = 'Cannot find search box'
+            params = nessus_summary_action(params=params, status=False, msg=msg, page='scan list')
+            params['nessus']['exception'] = NoSuchElementException(msg)
+    except BaseException as e:
+        params['nessus']['exception'] = e
     return params
 
 
@@ -112,226 +133,260 @@ def nessus_get_status(params):
         p['nessus']['scan_status'] = status.replace('glyphicons scan-status ', '').replace(' add-tip', '')
         return p
 
-    assert params['nessus']['page'] == 'search result'
-    xpath = '//*[@id="DataTables_Table_{}"]/thead/tr/th[7]'
-    func_after_found = click_obj
-
-    params = process_live_page(func_after_found=func_after_found, params=params, xpath=xpath)
-
-    xpath = '//*[@id="DataTables_Table_{}"]/tbody/tr/td[6]/i'
-    func_after_found = parse_status
-
-    params = process_live_page(func_after_found=func_after_found, params=params, xpath=xpath)
-
-    params = nessus_summary_action(params=params, status=True, msg=None, page='search result')
+    try:
+        assert params['nessus']['page'] == 'search result'
+        xpath = '//*[@id="DataTables_Table_{}"]/thead/tr/th[7]'
+        func_after_found = click_obj
+        params = process_live_page(func_after_found=func_after_found, params=params, xpath=xpath)
+        xpath = '//*[@id="DataTables_Table_{}"]/tbody/tr/td[6]/i'
+        func_after_found = parse_status
+        params = process_live_page(func_after_found=func_after_found, params=params, xpath=xpath)
+        params = nessus_summary_action(params=params, status=True, msg=None, page='search result')
+        params['nessus']['exception'] = None
+    except BaseException as e:
+        params['nessus']['exception'] = e
     return params
 
 
 def nessus_start_pause(params):
-    assert params['nessus']['page'] == 'search result'
-    xpath = '//*[@id="DataTables_Table_{}"]/tbody/tr[1]/td[9]/i'
-    func_after_found = click_obj
-
-    params = process_live_page(func_after_found=func_after_found, params=params, xpath=xpath)
-
-    time.sleep(10)
-    params = nessus_summary_action(params=params, status=True, msg=None, page='search result')
-    params = nessus_get_status(params=params)
+    try:
+        assert params['nessus']['page'] == 'search result'
+        xpath = '//*[@id="DataTables_Table_{}"]/tbody/tr[1]/td[9]/i'
+        func_after_found = click_obj
+        params = process_live_page(func_after_found=func_after_found, params=params, xpath=xpath)
+        time.sleep(10)
+        params = nessus_summary_action(params=params, status=True, msg=None, page='search result')
+        params = nessus_get_status(params=params)
+        params['nessus']['exception'] = None
+    except BaseException as e:
+        params['nessus']['exception'] = e
     return params
 
 
 def nessus_delete_stop(params):
-    assert params['nessus']['page'] == 'search result'
-    xpath = '//*[@id="DataTables_Table_{}"]/tbody/tr[1]/td[10]/i'
-    func_after_found = click_obj
-
-    params = process_live_page(func_after_found=func_after_found, params=params, xpath=xpath)
-
-    time.sleep(10)
-    params = nessus_summary_action(params=params, status=True, msg=None, page='search result')
-    # p = nessus_get_status(p=p)
-    # todo: delete operation will stuck get_status
+    try:
+        assert params['nessus']['page'] == 'search result'
+        xpath = '//*[@id="DataTables_Table_{}"]/tbody/tr[1]/td[10]/i'
+        func_after_found = click_obj
+        params = process_live_page(func_after_found=func_after_found, params=params, xpath=xpath)
+        time.sleep(10)
+        params = nessus_summary_action(params=params, status=True, msg=None, page='search result')
+        # p = nessus_get_status(p=p)
+        # todo: delete operation will stuck get_status
+        params['nessus']['exception'] = None
+    except BaseException as e:
+        params['nessus']['exception'] = e
     return params
 
 
 def nessus_export(params):
-    assert params['nessus']['page'] == 'search result'
-    xpath = '//*[@id="DataTables_Table_{}"]/tbody/tr/td[3]'
-    func_after_found = click_obj
-
-    params = process_live_page(func_after_found=func_after_found, params=params, xpath=xpath)
-
-    time.sleep(5)
-    params['web'].__setitem__('find_by', 'id')
-    # noinspection SpellCheckingInspection
-    params['web'].__setitem__('find_value', 'generate-scan-report')
-    params = web_find(params=params)
-    report = params['web']['find_result']
-    del params['web']['find_result']
-    if type(report) is not NoSuchElementException:
-        params['web'].__setitem__('click_obj', report)
-        params = web_click(params=params)
+    try:
+        assert params['nessus']['page'] == 'search result'
+        xpath = '//*[@id="DataTables_Table_{}"]/tbody/tr/td[3]'
+        func_after_found = click_obj
+        params = process_live_page(func_after_found=func_after_found, params=params, xpath=xpath)
         time.sleep(5)
-        format_html = web_find_by_xpath(
-            params=params,
-            xpath='//*[@id="modal-inside"]/div[1]/div[2]/div[1]/div/div[1]'
-        )
-        if type(format_html) is not NoSuchElementException:
-            params['web'].__setitem__('click_obj', format_html)
+        params['web'].__setitem__('find_by', 'id')
+        # noinspection SpellCheckingInspection
+        params['web'].__setitem__('find_value', 'generate-scan-report')
+        params = web_find(params=params)
+        report = params['web']['find_result']
+        del params['web']['find_result']
+        if type(report) is not NoSuchElementException:
+            params['web'].__setitem__('click_obj', report)
             params = web_click(params=params)
             time.sleep(5)
-            vul_operation = web_find_by_xpath(params=params, xpath='//*[@id="templates"]/option[16]')
-            if type(vul_operation) is not NoSuchElementException:
-                vul_operation.click()
+            format_html = web_find_by_xpath(
+                params=params,
+                xpath='//*[@id="modal-inside"]/div[1]/div[2]/div[1]/div/div[1]'
+            )
+            if type(format_html) is not NoSuchElementException:
+                params['web'].__setitem__('click_obj', format_html)
+                params = web_click(params=params)
                 time.sleep(5)
-                params['web'].__setitem__('find_by', 'id')
-                # noinspection SpellCheckingInspection
-                params['web'].__setitem__('find_value', 'report-save')
-                params = web_find(params=params)
-                report_save = params['web']['find_result']
-                del params['web']['find_result']
-                if type(report_save) is not NoSuchElementException:
-                    params['web'].__setitem__('click_obj', report_save)
-                    params = web_click(params=params)
+                vul_operation = web_find_by_xpath(params=params, xpath='//*[@id="templates"]/option[16]')
+                if type(vul_operation) is not NoSuchElementException:
+                    vul_operation.click()
                     time.sleep(5)
-                    back = web_find_by_xpath(params=params, xpath='//*[@id="titlebar"]/div/a')
-                    if type(back) is not NoSuchElementException:
-                        params['web'].__setitem__('click_obj', back)
+                    params['web'].__setitem__('find_by', 'id')
+                    # noinspection SpellCheckingInspection
+                    params['web'].__setitem__('find_value', 'report-save')
+                    params = web_find(params=params)
+                    report_save = params['web']['find_result']
+                    del params['web']['find_result']
+                    if type(report_save) is not NoSuchElementException:
+                        params['web'].__setitem__('click_obj', report_save)
                         params = web_click(params=params)
-                        time.sleep(10)
-                        params = nessus_summary_action(params=params, status=True, msg=None, page='scan list')
+                        time.sleep(5)
+                        back = web_find_by_xpath(params=params, xpath='//*[@id="titlebar"]/div/a')
+                        if type(back) is not NoSuchElementException:
+                            params['web'].__setitem__('click_obj', back)
+                            params = web_click(params=params)
+                            time.sleep(10)
+                            params = nessus_summary_action(params=params, status=True, msg=None, page='scan list')
+                            params['nessus']['exception'] = None
+                        else:
+                            msg = "Cannot find 'Back to [folder_name]' link."
+                            params = nessus_summary_action(
+                                params=params,
+                                status=False,
+                                msg=msg,
+                                page='scan detail'
+                            )
+                            params['nessus']['exception'] = NoSuchElementException(msg)
                     else:
+                        msg = "Cannot find 'Generate Report' button."
                         params = nessus_summary_action(
                             params=params,
                             status=False,
-                            msg="Cannot find 'Back to [folder_name]' link.",
-                            page='scan detail'
+                            msg=msg,
+                            page='report export'
                         )
+                        params['nessus']['exception'] = NoSuchElementException(msg)
                 else:
+                    msg = "Cannot find 'vul_operation' option for report export."
                     params = nessus_summary_action(
                         params=params,
                         status=False,
-                        msg="Cannot find 'Generate Report' button.",
+                        msg=msg,
                         page='report export'
                     )
+                    params['nessus']['exception'] = NoSuchElementException(msg)
             else:
+                msg = "Cannot find 'HTML' option for report export format."
                 params = nessus_summary_action(
                     params=params,
                     status=False,
-                    msg="Cannot find 'vul_operation' option for report export.",
+                    msg=msg,
                     page='report export'
                 )
+                params['nessus']['exception'] = NoSuchElementException(msg)
         else:
+            msg = "Cannot find 'Report' button in scan detail page."
             params = nessus_summary_action(
                 params=params,
                 status=False,
-                msg="Cannot find 'HTML' option for report export format.",
-                page='report export'
+                msg=msg,
+                page='scan detail'
             )
-    else:
-        params = nessus_summary_action(
-            params=params,
-            status=False,
-            msg="Cannot find 'Report' button in scan detail page.",
-            page='scan detail'
-        )
-
+            params['nessus']['exception'] = NoSuchElementException(msg)
+    except BaseException as e:
+        params['nessus']['exception'] = e
     return params
 
 
 def nessus_new_scan(params):
-    assert params['nessus']['page'] in ['scan list', 'search result']
-    scan_name = params['nessus']['scan_name']
-    del params['nessus']['scan_name']
-    scan_hosts = params['nessus']['scan_hosts']
-    del params['nessus']['scan_hosts']
-
-    params['web'].__setitem__('find_by', 'id')
-    # noinspection SpellCheckingInspection
-    params['web'].__setitem__('find_value', 'new-scan')
-    params = web_find(params=params)
-    new_scan = params['web']['find_result']
-    del params['web']['find_result']
-    if type(new_scan) is not NoSuchElementException:
-        params['web'].__setitem__('click_obj', new_scan)
-        params = web_click(params=params)
-        time.sleep(5)
-        advanced_scan = web_find_by_xpath(params=params, xpath='//*[@id="content"]/section/div[1]/div[2]/div[2]/a[2]')
-        if type(advanced_scan) is not NoSuchElementException:
-            params['web'].__setitem__('click_obj', advanced_scan)
+    try:
+        assert params['nessus']['page'] in ['scan list', 'search result']
+        scan_name = params['nessus']['scan_name']
+        del params['nessus']['scan_name']
+        scan_hosts = params['nessus']['scan_hosts']
+        del params['nessus']['scan_hosts']
+        params['web'].__setitem__('find_by', 'id')
+        # noinspection SpellCheckingInspection
+        params['web'].__setitem__('find_value', 'new-scan')
+        params = web_find(params=params)
+        new_scan = params['web']['find_result']
+        del params['web']['find_result']
+        if type(new_scan) is not NoSuchElementException:
+            params['web'].__setitem__('click_obj', new_scan)
             params = web_click(params=params)
-            time.sleep(10)
-            scan_name_inputbox = web_find_by_xpath(
+            time.sleep(5)
+            advanced_scan = web_find_by_xpath(
                 params=params,
-                xpath='//*[@id="editor-tab-view"]/div/div[1]/section/div[1]/div[1]/div[1]/div[1]/div/input'
+                xpath='//*[@id="content"]/section/div[1]/div[2]/div[2]/a[2]'
             )
-            if type(scan_name_inputbox) is not NoSuchElementException:
-                params = web_input_compact(params=params, input_obj=scan_name_inputbox, input_text=scan_name)
-                time.sleep(1)
-                scan_hosts_inputbox = web_find_by_xpath(
+            if type(advanced_scan) is not NoSuchElementException:
+                params['web'].__setitem__('click_obj', advanced_scan)
+                params = web_click(params=params)
+                time.sleep(10)
+                scan_name_inputbox = web_find_by_xpath(
                     params=params,
-                    xpath='//*[@id="editor-tab-view"]/div/div[1]/section/div[1]/div[1]/div[1]/div[5]/div/textarea'
+                    xpath='//*[@id="editor-tab-view"]/div/div[1]/section/div[1]/div[1]/div[1]/div[1]/div/input'
                 )
-                if type(scan_hosts_inputbox) is not NoSuchElementException:
-                    params = web_input_compact(params=params, input_obj=scan_hosts_inputbox, input_text=scan_hosts)
-                    description = web_find_by_xpath(
+                if type(scan_name_inputbox) is not NoSuchElementException:
+                    params = web_input_compact(params=params, input_obj=scan_name_inputbox, input_text=scan_name)
+                    time.sleep(1)
+                    scan_hosts_inputbox = web_find_by_xpath(
                         params=params,
-                        xpath='//*[@id="editor-tab-view"]/div/div[1]/section/div[1]/div[1]/div[1]/div[2]/div/textarea'
+                        xpath='//*[@id="editor-tab-view"]/div/div[1]/section/div[1]/div[1]/div[1]/div[5]/div/textarea'
                     )
-                    if type(description) is not NoSuchElementException:
-                        params = web_input_compact(params=params, input_obj=description, input_text='')
-                        time.sleep(1)
-                        save_scan = web_find_by_xpath(
+                    if type(scan_hosts_inputbox) is not NoSuchElementException:
+                        params = web_input_compact(params=params, input_obj=scan_hosts_inputbox, input_text=scan_hosts)
+                        description = web_find_by_xpath(
                             params=params,
-                            xpath='//*[@id="content"]/section/form/div[2]/span'
+                            xpath='//*[@id="editor-tab-view"]/div/div[1]/section/div[1]/div[1]/div[1]/div['
+                                  '2]/div/textarea'
                         )
-                        if type(save_scan) is not NoSuchElementException:
-                            params['web'].__setitem__('click_obj', save_scan)
-                            params = web_click(params=params)
-                            time.sleep(20)
-                            params = nessus_summary_action(params=params, status=True, msg=None, page='scan list')
+                        if type(description) is not NoSuchElementException:
+                            params = web_input_compact(params=params, input_obj=description, input_text='')
+                            time.sleep(1)
+                            save_scan = web_find_by_xpath(
+                                params=params,
+                                xpath='//*[@id="content"]/section/form/div[2]/span'
+                            )
+                            if type(save_scan) is not NoSuchElementException:
+                                params['web'].__setitem__('click_obj', save_scan)
+                                params = web_click(params=params)
+                                time.sleep(20)
+                                params = nessus_summary_action(params=params, status=True, msg=None, page='scan list')
+                                params['nessus']['exception'] = None
+                            else:
+                                msg = "Cannot find 'Save' button for saving scan."
+                                params = nessus_summary_action(
+                                    params=params,
+                                    status=False,
+                                    msg=msg,
+                                    page='create scan'
+                                )
+                                params['nessus']['exception'] = NoSuchElementException(msg)
                         else:
+                            msg = "Cannot find 'Description' inputbox."
                             params = nessus_summary_action(
                                 params=params,
                                 status=False,
-                                msg="Cannot find 'Save' button for saving scan.",
+                                msg=msg,
                                 page='create scan'
                             )
+                            params['nessus']['exception'] = NoSuchElementException(msg)
                     else:
+                        msg = "Cannot find 'Targets' inputbox."
                         params = nessus_summary_action(
                             params=params,
                             status=False,
-                            msg="Cannot find 'Description' inputbox.",
+                            msg=msg,
                             page='create scan'
                         )
+                        params['nessus']['exception'] = NoSuchElementException(msg)
                 else:
+                    msg = "Cannot find 'Name' inputbox."
                     params = nessus_summary_action(
                         params=params,
                         status=False,
-                        msg="Cannot find 'Targets' inputbox.",
+                        msg=msg,
                         page='create scan'
                     )
+                    params['nessus']['exception'] = NoSuchElementException(msg)
             else:
+                msg = "Cannot find 'Advanced Scan' template."
                 params = nessus_summary_action(
                     params=params,
                     status=False,
-                    msg="Cannot find 'Name' inputbox.",
-                    page='create scan'
+                    msg=msg,
+                    page='select template'
                 )
+                params['nessus']['exception'] = NoSuchElementException(msg)
         else:
+            msg = "Cannot find '+New Scan' button."
             params = nessus_summary_action(
                 params=params,
                 status=False,
-                msg="Cannot find 'Advanced Scan' template.",
-                page='select template'
+                msg=msg,
+                page='scan list'
             )
-    else:
-        params = nessus_summary_action(
-            params=params,
-            status=False,
-            msg="Cannot find '+New Scan' button.",
-            page='scan list'
-        )
+            params['nessus']['exception'] = NoSuchElementException(msg)
+    except BaseException as e:
+        params['nessus']['exception'] = e
     return params
 
 

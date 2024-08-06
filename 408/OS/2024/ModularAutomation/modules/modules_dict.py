@@ -9,7 +9,7 @@ from modules.misc import ip_ping, mac_generate, mac_increase, mac_read_record, m
     interactive_shell, process_kill, timer_transience, get_input_str
 from modules.misc_singleton import wifi_connect
 from modules.nessus_api import nessus_delete_stop, nessus_export, nessus_find, nessus_get_status, nessus_login, \
-    nessus_new_scan, nessus_start_pause
+    nessus_new_scan, nessus_start_pause, nessus_kill_chrome
 from modules.nmap_api import nmap_init, nmap_scan
 from modules.power_supply import ps_init, ps_reset, ps_acdc, ps_range, ps_freq, ps_toggle, ps_volt
 from modules.logger import log_logger_init, log_handler_init
@@ -74,7 +74,7 @@ m_dict = {
 
     'NESSUS_LOGIN': nessus_login, 'NESSUS_NEW_SCAN': nessus_new_scan, 'NESSUS_FIND': nessus_find,
     'NESSUS_START_PAUSE': nessus_start_pause, 'NESSUS_GET_STATUS': nessus_get_status, 'NESSUS_EXPORT': nessus_export,
-    'NESSUS_DELETE_STOP': nessus_delete_stop,
+    'NESSUS_DELETE_STOP': nessus_delete_stop, 'NESSUS_KILL_CHROME': nessus_kill_chrome,
 
     'ZAP_KILL_JAVA': zap_kill_java, 'ZAP_START_EXE': zap_start_exe, 'ZAP_INIT_ADAPTER': zap_init_adapter,
     'ZAP_CRAWL_TARGET': zap_crawl_target, 'ZAP_GET_CRAWL_STATUS': zap_get_crawl_status,
