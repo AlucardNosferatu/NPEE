@@ -45,7 +45,8 @@ def h1(params):
 
 def h2(params):
     logger = params['log']['logger']
-    params['pc_testcase'] = params['pc_testcases'].pop(0)
+    if params['pc_testcase'] is None:
+        params['pc_testcase'] = params['pc_testcases'].pop(0)
     logger.info('测试参数出队:\n{}'.format(params['pc_testcase']))
     params['ps']['volt'] = params['pc_testcase']['volt']
     logger.info('电压设置为:{}'.format(params['ps']['volt']))
@@ -265,6 +266,7 @@ def h17(params):
     params['excel']['data_src_dict'] = params['pc_results']
     params['excel']['save_path'] = params['pc_report_savepath']
     logger.info('测试结果将写入:{}'.format(params['excel']['save_path']))
+    params['pc_testcase'] = None
     return params
 
 
