@@ -59,15 +59,18 @@ def h3(params):
     logger = params['log']['logger']
     ton = params['pc_testcase']['ton']
     if isinstance(ton, str):
-        ton = ton.split(':')
-        ton_lb = float(ton[1])
-        ton_ub = float(ton[2])
-        logger.info('随机Ton，范围：{}<=Ton<={}秒'.format(ton_lb, ton_ub))
-        ton_interval = ton_ub - ton_lb
-        ton = random.random() * ton_interval + ton_lb
-        params['pc_testcase']['ton'] = ton
-    logger.info('保持电源打开Ton={}秒'.format(ton))
-    time.sleep(ton)
+        if ':' in ton:
+            ton = ton.split(':')
+            ton_lb = float(ton[1])
+            ton_ub = float(ton[2])
+            logger.info('随机Ton，范围：{}<=Ton<={}秒'.format(ton_lb, ton_ub))
+            ton_interval = ton_ub - ton_lb
+            ton = random.random() * ton_interval + ton_lb
+            params['pc_testcase']['ton'] = ton
+        else:
+            params['pc_testcase']['ton'] = float(ton)
+    logger.info('保持电源打开Ton={}秒'.format(params['pc_testcase']['ton']))
+    time.sleep(params['pc_testcase']['ton'])
     params['ps']['toggle'] = 'off'
     return params
 
