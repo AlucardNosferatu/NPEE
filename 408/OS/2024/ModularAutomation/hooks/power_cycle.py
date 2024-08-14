@@ -45,6 +45,8 @@ def h1(params):
 
 def h2(params):
     logger = params['log']['logger']
+    if 'pc_testcase' not in params.keys():
+        params['pc_testcase'] = None
     if params['pc_testcase'] is None:
         params['pc_testcase'] = params['pc_testcases'].pop(0)
     logger.info('测试参数出队:\n{}'.format(params['pc_testcase']))
@@ -63,7 +65,7 @@ def h3(params):
         logger.info('随机Ton，范围：{}<=Ton<={}秒'.format(ton_lb, ton_ub))
         ton_interval = ton_ub - ton_lb
         ton = random.random() * ton_interval + ton_lb
-        params['pc_testcase']['ton'] = str(ton)
+        params['pc_testcase']['ton'] = ton
     logger.info('保持电源打开Ton={}秒'.format(ton))
     time.sleep(ton)
     params['ps']['toggle'] = 'off'
