@@ -271,7 +271,6 @@ def h17(params):
     params['excel']['data_src_dict'] = params['pc_results']
     params['excel']['save_path'] = params['pc_report_savepath']
     logger.info('测试结果将写入:{}'.format(params['excel']['save_path']))
-    params['pc_testcase'] = None
     return params
 
 
@@ -299,6 +298,7 @@ def h18(params):
     if params['if_switch']:
         params['if_switch'] = len(params['pc_testcases']) > 0
     logger.info('继续测试？:{}'.format(params['if_switch']))
+    params['pc_testcase'] = None
     return params
 
 
