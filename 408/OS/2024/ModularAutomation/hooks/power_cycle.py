@@ -142,10 +142,14 @@ def h8(params):
     params['pc_testcase']['tboot'] = params['misc']['timer']['time_delta'].total_seconds()
     logger.info('启机检查耗时:{}'.format(params['pc_testcase']['tboot']))
     params['if_switch'] = params['pc_testcase']['boot_ok']
+    logger.info('当前线程池:{}'.format(params['thread_pool']))
     for thread in params['thread_pool']:
-        thread_: threading.Thread = thread['thread_obj']
-        while thread_.is_alive():
-            kill_thread(thread=thread_)
+        thread_: threading.Thread | str = thread['thread_obj']
+        if type(thread_) is threading.Thread:
+            while thread_.is_alive():
+                kill_thread(thread=thread_)
+        else:
+            print('重启前存在的虚线程，不处理')
     params['thread_pool'].clear()
     logger.info('线程池已清空')
     params['misc']['timer'].clear()
@@ -182,10 +186,14 @@ def h11(params):
     params['pc_testcase']['wifi_ok'] = 'wifi_result' in params['misc'].keys(
     ) and params['misc']['wifi_result'][0]
     logger.info('2.4G WiFi连接成功?:{}'.format(params['pc_testcase']['wifi_ok']))
+    logger.info('当前线程池:{}'.format(params['thread_pool']))
     for thread in params['thread_pool']:
-        thread_: threading.Thread = thread['thread_obj']
-        while thread_.is_alive():
-            kill_thread(thread=thread_)
+        thread_: threading.Thread | str = thread['thread_obj']
+        if type(thread_) is threading.Thread:
+            while thread_.is_alive():
+                kill_thread(thread=thread_)
+        else:
+            print('重启前存在的虚线程，不处理')
     params['thread_pool'].clear()
     logger.info('线程池已清空')
     params['misc']['timer'].clear()
@@ -331,10 +339,14 @@ def h21(params):
     params['pc_testcase']['wifi_5g_ok'] = 'wifi_result' in params['misc'].keys(
     ) and params['misc']['wifi_result'][0]
     logger.info('5G WiFi连接成功?:{}'.format(params['pc_testcase']['wifi_5g_ok']))
+    logger.info('当前线程池:{}'.format(params['thread_pool']))
     for thread in params['thread_pool']:
-        thread_: threading.Thread = thread['thread_obj']
-        while thread_.is_alive():
-            kill_thread(thread=thread_)
+        thread_: threading.Thread | str = thread['thread_obj']
+        if type(thread_) is threading.Thread:
+            while thread_.is_alive():
+                kill_thread(thread=thread_)
+        else:
+            print('重启前存在的虚线程，不处理')
     params['thread_pool'].clear()
     logger.info('线程池已清空')
     params['misc']['timer'].clear()

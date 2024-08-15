@@ -2,7 +2,6 @@ import json
 import os
 import sys
 import threading
-import time
 
 from kill_thread import kill_thread
 
@@ -204,11 +203,13 @@ class FlowChart:
         self.current_node = ''
         self.next_link = None
         self.link_list = []
-        self.thread_pool = []
-        self.params_bus: dict = {'thread_pool': self.thread_pool}
+        self.params_bus = {}
         if prerequisite is not None:
             for key in prerequisite.keys():
                 self.params_bus[key] = prerequisite[key]
+        if 'thread_pool' not in self.params_bus.keys():
+            self.params_bus['thread_pool'] = []
+        self.thread_pool = self.params_bus['thread_pool']
 
     def load_map(self, hook_script, map_json='多线程实验.pos'):
         self.hook_script = hook_script
