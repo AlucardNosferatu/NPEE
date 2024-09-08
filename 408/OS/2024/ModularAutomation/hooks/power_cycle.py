@@ -1,4 +1,5 @@
 import code
+import datetime
 import json
 import random
 import threading
@@ -52,6 +53,7 @@ def h2(params):
     logger.info('测试参数出队:\n{}'.format(params['pc_testcase']))
     params['ps']['volt'] = params['pc_testcase']['volt']
     logger.info('电压设置为:{}'.format(params['ps']['volt']))
+    params['pc_testcase']['start_time'] = datetime.datetime.now().strftime(time_format)
     return params
 
 
@@ -269,6 +271,7 @@ def h16(params):
 
 def h17(params):
     logger = params['log']['logger']
+    params['pc_testcase']['end_time'] = datetime.datetime.now().strftime(time_format)
     if 'pc_results' not in params.keys():
         params['pc_results'] = {}
         for key in params['pc_testcase'].keys():
