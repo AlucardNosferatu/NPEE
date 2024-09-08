@@ -1,8 +1,10 @@
 *.vs
 *.log
+*.log.*
 *.exe
 *.idea
 *.spec
+*.vscode
 __pycache__
 Math/Calculus/Calculation/build/
 Math/Calculus/Solutions/Lean/.lake/packages/
