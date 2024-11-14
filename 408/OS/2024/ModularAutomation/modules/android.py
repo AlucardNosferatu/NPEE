@@ -47,7 +47,7 @@ def android_init_device(params):
     uid = init_device_params['uid']
     del init_device_params['uid']
     u2_obj = u2.connect(uid)
-    u2_obj.uiautomator.start()
+    u2_obj.start_uiautomator()
     init_device_params.__setitem__('u2_obj', u2_obj)
     return params
 
@@ -125,7 +125,7 @@ def android_get_element(params):
     value = get_element_params['value']
     del get_element_params['value']
     if by == 'xpath':
-        results = u2_obj.xpath(xpath=value)
+        results = u2_obj.xpath(xpath=value).all()
     elif by == 'class':
         path = value.split('||')[0]
         index = int(value.split('||')[1])
@@ -268,16 +268,3 @@ def android_reset_watcher(params):
         while len(reset_watcher_params['watchers']) > 0:
             reset_watcher_params['watchers'].clear()
     return params
-
-
-if __name__ == '__main__':
-    params_ = {
-        'android': {
-            'uid': 'OZRCWWCYIFDMKFYL'
-        }
-    }
-    params_ = android_init_device(params=params_)
-    params_['android']['device_action'] = 'screenshot'
-    params_['android']['screenshot_filepath'] = 'reports/WZRY.png'
-    params_ = android_interact_device(params=params_)
-    print('Done')

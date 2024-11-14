@@ -1,5 +1,6 @@
 import json
 import time
+
 import paho.mqtt.client as mqtt
 
 
@@ -41,7 +42,15 @@ def mqtt_init(params):
 def mqtt_subscribe(params):
     mqtt_params = params['mqtt']
     client_: mqtt.Client = mqtt_params['client']
-    client_.subscribe(mqtt_params['topic'])
+    client_.subscribe(topic=mqtt_params['topic'])
+    return params
+
+
+def mqtt_publish(params):
+    mqtt_params = params['mqtt']
+    client_: mqtt.Client = mqtt_params['client']
+    print('topic:', mqtt_params['topic'])
+    client_.publish(topic=mqtt_params['topic'], payload=mqtt_params['payload'])
     return params
 
 
@@ -87,8 +96,8 @@ if __name__ == '__main__':
             msg_: mqtt.MQTTMessage = params_['mqtt']['msg_queue'].pop(0)
             msg_ = msg_.payload.decode('utf-8')
             data = json.loads(s=msg_)
-            formatted_json = json.dumps(data, indent=4, ensure_ascii=False)
-            print(formatted_json)
+            formatted_json_ = json.dumps(data, indent=4, ensure_ascii=False)
+            print(formatted_json_)
             cd -= 1
     params_ = mqtt_read_stop(params=params_)
     print('第二轮开始')
@@ -99,7 +108,7 @@ if __name__ == '__main__':
             msg_: mqtt.MQTTMessage = params_['mqtt']['msg_queue'].pop(0)
             msg_ = msg_.payload.decode('utf-8')
             data = json.loads(s=msg_)
-            formatted_json = json.dumps(data, indent=4, ensure_ascii=False)
-            print(formatted_json)
+            formatted_json_ = json.dumps(data, indent=4, ensure_ascii=False)
+            print(formatted_json_)
             cd += 1
     params_ = mqtt_read_stop(params=params_)
