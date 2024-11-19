@@ -1,4 +1,5 @@
 import json
+import ssl
 import time
 
 import paho.mqtt.client as mqtt
@@ -23,6 +24,8 @@ def mqtt_init(params):
     client_ = mqtt.Client()
     print('mqtt客户端对象已初始化')
     mqtt_params['client'] = client_
+    if 'username' in mqtt_params.keys() and 'password' in mqtt_params.keys():
+        client_.username_pw_set(username=mqtt_params["username"], password=mqtt_params["password"])
     if 'on_connect' in mqtt_params.keys():
         client_.on_connect = mqtt_params['on_connect']
         print('设置自定义连接后回调')
@@ -35,7 +38,15 @@ def mqtt_init(params):
     port = 1883
     if 'port' in mqtt_params.keys():
         port = mqtt_params['port']
-    client_.connect(mqtt_params['host'], port)
+    if 'ssl' in mqtt_params.keys() and mqtt_params['ssl']:
+        context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+        context.set_ciphers('HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4:!DH')
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        client_.tls_set_context(context)
+        client_.tls_insecure_set(value=True)
+    client_.connect(host=mqtt_params['host'], port=port)
     return params
 
 

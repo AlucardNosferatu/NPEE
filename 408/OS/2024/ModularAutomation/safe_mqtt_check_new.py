@@ -130,6 +130,22 @@ topics = {
     }
 }
 
+# topics = {
+#     'sys/001/AP/': {
+#         '#MODEL#/#SN#/groupid': None,
+#         '#MODEL#/#SN#/inform': None,
+#         '#MODEL#/#SN#/setnetworkId': None,
+#         '#MODEL#/#SN#/stalog': None,
+#         'rpc/shell/request/#TIMESTAMP#': None,
+#         'rpc/shell/response/#TIMESTAMP#': None
+#     },
+#     'sys/FFFF/': {
+#         'master': None,
+#         'wifi_diag_start': None,
+#         'wifi_diag_result': None
+#     }
+# }
+
 
 def read_payloads(filename='reports/payloads.xlsx'):
     # 打开 Excel 文件
@@ -160,7 +176,10 @@ def empty_payload_test(broker_ip, ssh_password, topic_prefix, topic_postfix):
         'mqtt': {
             'host': broker_ip,
             'topic': topic,
-            'payload': None
+            'payload': None,
+            'username': 'ruijie',
+            'password': 'reyeeos',
+            'ssl': True
         },
         'console': {
             'console_type': 'ssh',
@@ -169,7 +188,8 @@ def empty_payload_test(broker_ip, ssh_password, topic_prefix, topic_postfix):
         }
     }
     params = console_login(params=params)
-    params = mqtt_init(params=params)
+    if 'client' not in params['mqtt'].keys():
+        params = mqtt_init(params=params)
     params['console']['send_string'] = 'echo > /tmp/mqtt/mqtt.log'
     params = console_send(params=params)
     params = mqtt_publish(params=params)
@@ -219,7 +239,7 @@ def cmd_injection_test(params):
             cmd_str = cmd_str.replace('占位符', injected_filename)
             params['mqtt']['payload'] = cmd_str
             params = mqtt_publish(params=params)
-            print(t, '\n', cmd_str, '\n', 'Done', '\n', '\n')
+            print(t, '\n', cmd_str, '\n', '\n', '\n')
             time.sleep(0.5)
     return cmd_injection_pass
 
@@ -242,9 +262,9 @@ def cmd_injection_check(params):
 
 
 if __name__ == '__main__':
-    ip = '192.168.1.1'
-    ssh_pass = '68be6a1e3d451fab'
-    master_model = 'EW3000GX-PRO'
+    ip = '10.51.132.73'
+    ssh_pass = '537f300ccabec155'
+    master_model = 'EW300T'
     slave_model = 'H30M'
     salve_sn = 'G1SK4AT00061B'
     results = {}
@@ -307,7 +327,7 @@ if __name__ == '__main__':
                 conclusion_text[conclusion_ep], conclusion_text[conclusion_ci]
             )
         )
-    lines='\n'.join(lines)
+    lines = '\n'.join(lines)
     with open('reports/{} MQTT空载&注入测试.txt'.format(master_model), 'w') as f:
         f.writelines(lines)
     print('Done')
