@@ -13,24 +13,34 @@ class CacheSys:
 
     def __init__(self):
         self.sy = {
+            # 缓存容量（如缓存能存储的条目数或字节数）
             'Nc': sympy.Symbol('Nc'),
+            # 缓存访问时间（访问缓存所需的时间）
             'Tc': sympy.Symbol('Tc'),
+            # 内存容量（内存的总条目数或字节数）
             'Nm': sympy.Symbol('Nm'),
+            # 内存访问时间（直接访问内存所需的时间）
             'Tm': sympy.Symbol('Tm'),
+            # 命中率（0 ≤ Rh ≤ 1，表示请求在缓存中找到数据的概率）
             'Rh': sympy.Symbol('Rh'),
+            # 平均访问时间（单位通常是纳秒或时钟周期，表示访问数据的平均耗时）
             'Ta': sympy.Symbol('Ta'),
+            # 效率（Ef = Tc / Ta，表示缓存系统相比直接访问内存的效率提升倍数）
             'Ef': sympy.Symbol('Ef')
         }
+        # 命中率：物理意义：缓存容量越大（Nc 越大），命中率越高。
         self.hr_equ = sympy.Eq(
             self.sy['Nc'] / (self.sy['Nc'] + self.sy['Nm']),
             self.sy['Rh']
         )
         self.hr_equ_vars = {'Nc', 'Nm', 'Rh'}
+        # 平均访问时间：物理意义：命中率越高，平均访问时间越接近缓存时间 Tc，反之接近内存时间 Tm。
         self.ta_equ = sympy.Eq(
             self.sy['Rh'] * self.sy['Tc'] + (1 - self.sy['Rh']) * self.sy['Tm'],
             self.sy['Ta']
         )
         self.ta_equ_vars = {'Rh', 'Tc', 'Tm', 'Ta'}
+        # 效率：物理意义：效率值 Ef > 1 表示缓存系统比直接访问内存更快，值越大提升越明显。
         self.eff_equ = sympy.Eq(self.sy['Tc'] / self.sy['Ta'], self.sy['Ef'])
         self.eff_equ_vars = {'Tc', 'Ta', 'Ef'}
         self.equ_dict = {
@@ -71,20 +81,6 @@ class CacheSys:
                 temp_equ = temp_equ.subs(self.sy[key], cond[key])
         cond[need] = sympy.solve(temp_equ, self.sy[need])[0]
         return cond
-
-
-def hit_rate(cond):
-    result = {}
-    nc = cond['Cache']['Nc']
-    tc = cond['Cache']['Tc']
-    nm = cond['MEM']['Nm']
-    tm = cond['MEM']['Tm']
-    h = nc / (nc + nm)
-    result['HitRate'] = h
-    ta = h * tc + (1 - h) * tm
-    result['AveTime'] = ta
-    result['Efficiency'] = tc / ta
-    return result
 
 
 if __name__ == '__main__':
