@@ -27,10 +27,10 @@ def crc_check(bin_list_src, crc_bin):
             slide_window.pop(0)
             slide_window.append(bin_list[count])
             count += 1
-    return slide_window[1:], bin_list_src + slide_window[1:]
+    return slide_window[1:], bin_list_src + slide_window[1:], (sum(slide_window[1:]) == 0)
 
 
 if __name__ == '__main__':
     crc_bin_poly = poly_bin([3, 2, 0])
-    check_code, full_bin = crc_check([1, 0, 1, 0, 1, 0, 1, 1], [1, 0, 0, 1, 1])
+    check_code, full_bin, is_valid = crc_check(bin_list_src=[1, 0, 1, 0, 1, 0, 1, 1], crc_bin=[1, 0, 0, 1, 1])
     print('Done')
