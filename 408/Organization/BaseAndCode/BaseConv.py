@@ -78,10 +78,37 @@ def digit2bin(digits):
     return bin_template
 
 
-def test():
+def func_test():
     dec = random.randint(0, 65535)
     w = dec2bin_weights(dec)
     d = weight2digit(w)
     b = digit2bin(d)
     h = bin2hex(b)
     print(h)
+
+
+def generate_conversion_qa():
+    # 生成随机十进制数（范围可调）
+    dec_num = random.randint(1, 65535)
+
+    # 转换流程
+    weights = dec2bin_weights(dec_num)  # [[4]]
+    digits = weight2digit(weights)  # [[4]]
+    bin_list = digit2bin(digits)  # [[4]]
+    hex_result = ''.join(bin2hex(bin_list))  # [[4]]
+
+    # 构造二进制字符串（处理前导零）
+    bin_str = ''.join(map(str, bin_list)).lstrip('0') or '0'
+
+    # 生成格式化输出
+    question = f"将十进制数 {dec_num} 转换为二进制和十六进制表示"
+    answer = f"二进制：{bin_str}\n十六进制：0x{hex_result.upper()}"
+
+    return question, answer
+
+
+if __name__ == '__main__':
+    # 示例使用
+    q, a = generate_conversion_qa()
+    print("问题：", q)
+    print("答案：", a)

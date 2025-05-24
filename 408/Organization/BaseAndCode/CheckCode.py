@@ -2,7 +2,7 @@ import random
 
 # 0 for even
 # 1 for odd
-from BaseAndCode.BaseConv import dec2bin_weights, weight2digit, digit2bin
+from BaseConv import dec2bin_weights, weight2digit, digit2bin
 
 
 def parity(bin_list):
