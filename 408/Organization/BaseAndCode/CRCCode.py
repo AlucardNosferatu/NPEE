@@ -1,5 +1,5 @@
 crc32_poly = [32, 26, 23, 22, 16, 12, 11, 10, 8, 7, 5, 4, 2, 1, 0]
-crc12_ploy = [12, 11, 3, 2, 1, 0]
+crc12_poly = [12, 11, 3, 2, 1, 0]
 crc4_poly = [4, 1, 0]
 
 
@@ -30,6 +30,7 @@ def crc_check(bin_list_src, crc_bin):
     return slide_window[1:], bin_list_src + slide_window[1:]
 
 
-# crc_bin_poly = poly_bin([3, 2, 0])
-check_code, full_bin = crc_check([1, 0, 1, 0, 1, 0, 1, 1], [1, 0, 0, 1, 1])
-print('Done')
+if __name__ == '__main__':
+    crc_bin_poly = poly_bin([3, 2, 0])
+    check_code, full_bin = crc_check([1, 0, 1, 0, 1, 0, 1, 1], [1, 0, 0, 1, 1])
+    print('Done')
