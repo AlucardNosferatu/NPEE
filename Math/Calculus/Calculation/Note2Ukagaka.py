@@ -1,7 +1,6 @@
 from NoteReview import get_worksheet, read_worksheet, parse2dict, recursive_read, parse_blanks
 
 if __name__ == '__main__':
-    weight_ = 0.5
     file_lines = ['label start:\n']
     worksheets, sheet_names, poss = get_worksheet(sheet_name='', get_all=True)
     all_layers_hierarchy_ = [read_worksheet(worksheet) for worksheet in worksheets]
@@ -14,6 +13,9 @@ if __name__ == '__main__':
             lines_ = recursive_read(entry=entry_)
             lines_with_blanks_, lines_, answers__, contexts_ = parse_blanks(lines=lines_)
             lines_in_a_line = '"{}"\n'.format('\\n'.join([line.strip() for line in lines_]))
-            file_lines.append(lines_in_a_line)
+            if '[UKAGAKA]' in lines_in_a_line:
+                break
+            else:
+                file_lines.append(lines_in_a_line)
     with open(file='script.rpy', mode='w') as f:
         f.writelines(file_lines)
