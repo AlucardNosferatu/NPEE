@@ -15,7 +15,7 @@ def remove_letters(text):
     return re.sub(pattern, "", text)
 
 
-def get_worksheet(sheet_name=''):
+def get_worksheet(sheet_name='', get_all=False):
     note_path = r'C:\Users\16413\Desktop\NPEE\统计\WWII\工作日志.xlsx'
     workbook: openpyxl.Workbook = openpyxl.load_workbook(filename=note_path)
     sheet_names = workbook.sheetnames
@@ -33,28 +33,38 @@ def get_worksheet(sheet_name=''):
         lines = [line.split('@')[-1] for line in lines]
     else:
         lines = []
-
-    if sheet_name == '':
-        if len(lines) > 0:
-            print('无指定，按LRU算法指定复习笔记')
-            sheet_name = general_lru(all_candidates=sheet_names, reviewed=lines)
-        else:
-            print('无指定，且无既存复习记录，随机挑选复习笔记')
-            sheet_name = random.choice(sheet_names)
-
-    if sheet_name in workbook.sheetnames:
-        worksheet: openpyxl.Worksheet | None = workbook[sheet_name]
-        print('已找到指定名称【{}】的笔记。'.format(sheet_name))
+    if get_all:
+        sheet_names = list(workbook.sheetnames)
+        worksheets = [workbook[sheet_name] for sheet_name in sheet_names]
+        problems_of_sheets = []
+        for sheet_name in sheet_names:
+            problems_of_sheet = []
+            for index, sn in enumerate(lines):
+                if sn == sheet_name:
+                    problems_of_sheet.append(problems[index])
+            problems_of_sheets.append(problems_of_sheet)
+        return worksheets, sheet_names, problems_of_sheets
     else:
-        worksheet = None
-        print('未找到指定名称【{}】的笔记！'.format(sheet_name))
+        if sheet_name == '':
+            if len(lines) > 0:
+                print('无指定，按LRU算法指定复习笔记')
+                sheet_name = general_lru(all_candidates=sheet_names, reviewed=lines)
+            else:
+                print('无指定，且无既存复习记录，随机挑选复习笔记')
+                sheet_name = random.choice(sheet_names)
 
-    problems_of_sheet = []
-    for index, sn in enumerate(lines):
-        if sn == sheet_name:
-            problems_of_sheet.append(problems[index])
+        if sheet_name in workbook.sheetnames:
+            worksheet: openpyxl.Worksheet | None = workbook[sheet_name]
+            print('已找到指定名称【{}】的笔记。'.format(sheet_name))
+        else:
+            worksheet = None
+            print('未找到指定名称【{}】的笔记！'.format(sheet_name))
 
-    return worksheet, sheet_name, problems_of_sheet
+        problems_of_sheet = []
+        for index, sn in enumerate(lines):
+            if sn == sheet_name:
+                problems_of_sheet.append(problems[index])
+        return worksheet, sheet_name, problems_of_sheet
 
 
 def read_worksheet(worksheet):
