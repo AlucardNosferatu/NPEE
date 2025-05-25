@@ -11,7 +11,7 @@ class CacheSys:
     sy = None
     equ_dict = None
 
-    def __init__(self):
+    def __init__(self, mode='串行访存'):
         self.sy = {
             # 缓存容量（如缓存能存储的条目数或字节数）
             'Nc': sympy.Symbol('Nc'),
@@ -35,10 +35,18 @@ class CacheSys:
         )
         self.hr_equ_vars = {'Nc', 'Nm', 'Rh'}
         # 平均访问时间：物理意义：命中率越高，平均访问时间越接近缓存时间 Tc，反之接近内存时间 Tm。
-        self.ta_equ = sympy.Eq(
-            self.sy['Rh'] * self.sy['Tc'] + (1 - self.sy['Rh']) * self.sy['Tm'],
-            self.sy['Ta']
-        )
+        if mode == '串行访存':
+            self.ta_equ = sympy.Eq(
+                self.sy['Rh'] * self.sy['Tc'] + (1 - self.sy['Rh']) * (self.sy['Tm'] + self.sy['Tc']),
+                self.sy['Ta']
+            )
+        elif mode == '并行访存':
+            self.ta_equ = sympy.Eq(
+                self.sy['Rh'] * self.sy['Tc'] + (1 - self.sy['Rh']) * self.sy['Tm'],
+                self.sy['Ta']
+            )
+        else:
+            raise ValueError('mode必须是“串行访存”或者“并行访存”')
         self.ta_equ_vars = {'Rh', 'Tc', 'Tm', 'Ta'}
         # 效率：物理意义：效率值 Ef > 1 表示缓存系统比直接访问内存更快，值越大提升越明显。
         self.eff_equ = sympy.Eq(self.sy['Tc'] / self.sy['Ta'], self.sy['Ef'])
