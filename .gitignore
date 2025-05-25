@@ -6,14 +6,10 @@
 *.spec
 *.vscode
 __pycache__
-Math/Calculus/Calculation/build/
 Math/Calculus/Solutions/Lean/.lake/packages/
 408/Organization/FixPoint/Debug/
 408/Organization/AssemblyLanguage/x64/Debug/
-408/OS/2024/ModularAutomation/build/
 408/OS/2024/ModularAutomation/modules/rf_test/packages/
 408/OS/2024/ModularAutomation/modules/rf_test/WT_SCPI_SampleCode/bin/Debug/
 408/OS/2024/ModularAutomation/modules/rf_test/WT_SCPI_SampleCode/obj/Debug/
-408/Organization/Storage/build/
-408/Organization/IEEE754/build/
-408/Organization/BaseAndCode/build/
+build/
