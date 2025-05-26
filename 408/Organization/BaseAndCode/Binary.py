@@ -2,11 +2,12 @@ import random
 
 
 def int_to_bin(n, bits=8):
-    """整数转二进制字符串（含符号位）"""
     if n >= 0:
-        return '0' + bin(n)[2:].zfill(bits - 1)
+        # 正数：符号位0 + 绝对值的二进制（左填充0至bits-1位）
+        return '0' + bin(abs(n))[2:].zfill(bits - 1)
     else:
-        return '1' + bin(n & ((1 << (bits - 1)) - 1))[2:].zfill(bits - 1)
+        # 负数：符号位1 + 绝对值的二进制（左填充0至bits-1位）
+        return '1' + bin(abs(n))[2:].zfill(bits - 1)
 
 
 def complement(code):
@@ -44,11 +45,10 @@ def generate_question():
         ('补码转移码', '移码')
     ]
     conv_type, target = random.choice(conversions)
-
     # 生成原码/补码作为题目基础
     original_code = int_to_bin(number, 8)
     if conv_type.startswith('补码'):
-        base_code = int_to_bin(number, 8) if number >= 0 else int_to_bin(number + (1 << 7), 8)
+        base_code = int_to_bin(number, 8) if number >= 0 else complement(int_to_bin(number, 8))
     else:
         base_code = original_code
 
@@ -56,7 +56,7 @@ def generate_question():
     question = f"将二进制{base_code}的{conv_type.split('转')[0]}转换为{target}："
 
     if conv_type == '原码转补码':
-        answer = int_to_bin(number, 8) if number >= 0 else int_to_bin(number + (1 << 7), 8)
+        answer = int_to_bin(number, 8) if number >= 0 else complement(int_to_bin(number, 8))
     elif conv_type == '补码转原码':
         answer = complement(base_code)
     elif conv_type == '原码转反码':
