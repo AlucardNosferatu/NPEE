@@ -38,12 +38,16 @@ def generate_storage_question():
         display_unit = 'B'
         display_cap = f"{capacity_bytes} {display_unit}"
 
+    show_addr_line = random.choice([True, False])
+    add_cond_type = {True: '根地址线', False: '个地址引脚'}[show_addr_line]
+    address_lines_show = {True: address_lines, False: address_lines_show}[show_addr_line]
+    addr_cond_text = f'{address_lines_show}{add_cond_type}'
     if question_type == "capacity":
-        question = f"某{chip_type}芯片有{address_lines_show}根地址引脚，按{unit['name']}编址，最大存储容量是多少？请用{display_unit}表示。"
+        question = f"某{chip_type}芯片有{addr_cond_text}，按{unit['name']}编址，最大存储容量是多少？请用{display_unit}表示。"
         answer = display_cap
     else:
-        question = f"某{chip_type}存储芯片容量为{display_cap}，按{unit['name']}编址，需要多少个地址引脚？"
-        answer = f"{address_lines_show}根"
+        question = f"某{chip_type}存储芯片容量为{display_cap}，按{unit['name']}编址，需要多少{add_cond_type}？"
+        answer = f"{addr_cond_text}"
     return question, answer
 
 
