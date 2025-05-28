@@ -78,7 +78,7 @@ if __name__ == '__main__':
     hc, pb = hamming_code_check(data_bits, cdp, gl)
     cdp_ask = random.randint(0, len(cdp) - 1)
     # 生成问题
-    question = f"数据位{data_bits}，校验位p{cdp[cdp_ask]}的覆盖位置是？p{cdp[cdp_ask]}等于多少？"
-    answer = f"覆盖位置：{sorted(gl[cdp[cdp_ask]])}，计算得p{cdp[cdp_ask]}={pb[cdp_ask]}"
+    question = f"数据位{data_bits}，校验位p{cdp_ask + 1}的覆盖位置是？p{cdp_ask + 1}等于多少？"
+    answer = f"覆盖位置：{sorted(gl[cdp[cdp_ask]])}，计算得p{cdp_ask + 1}={pb[cdp_ask]}"
     print(question)
     print(answer)
