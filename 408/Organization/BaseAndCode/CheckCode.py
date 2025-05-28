@@ -70,15 +70,15 @@ def hamming_code_check(bin_list, check_digits_pos, groups_list):
 
 if __name__ == '__main__':
     # 生成随机数据
-    data_bits = [random.randint(0, 1) for _ in range(6)]
+    data_bits = [random.randint(0, 1) for _ in range(random.randint(2, 8))]
 
     # 计算校验参数
     cdp, le = hamming_code_check_digits(data_bits)
     gl = hamming_code_group(data_bits, cdp)
     hc, pb = hamming_code_check(data_bits, cdp, gl)
-
+    cdp_ask = random.randint(0, len(cdp) - 1)
     # 生成问题
-    question = f"数据位{data_bits}，校验位p{cdp[1]}的覆盖位置是？p{cdp[1]}等于多少？"
-    answer = f"覆盖位置：{sorted(gl[cdp[1]])}，计算得p{cdp[1]}={pb[1]}"
+    question = f"数据位{data_bits}，校验位p{cdp[cdp_ask]}的覆盖位置是？p{cdp[cdp_ask]}等于多少？"
+    answer = f"覆盖位置：{sorted(gl[cdp[cdp_ask]])}，计算得p{cdp[cdp_ask]}={pb[cdp_ask]}"
     print(question)
     print(answer)
