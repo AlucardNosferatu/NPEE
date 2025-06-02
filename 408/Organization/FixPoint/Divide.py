@@ -1,16 +1,23 @@
-import random
-
-
-def decimal_to_binary(n, bits=8):  # 修改默认位数为8
-    """将十进制数转换为指定位数的二进制字符串"""
+def decimal_to_binary(n, bits=8):
+    """将十进制数转换为指定位数的二进制字符串，考虑补码"""
     if n < 0:
         n = (1 << bits) + n  # 转换为补码
     binary = bin(n)[2:].zfill(bits)
     return binary
 
 
-def binary_division_dividend(dividend, divisor, bits=8):  # 修改默认位数为8
+def binary_to_decimal(binary, bits=8):
+    """将二进制字符串转换为十进制数，考虑补码"""
+    if binary[0] == '1':
+        return int(binary, 2) - (1 << bits)
+    return int(binary, 2)
+
+
+def binary_division_dividend(dividend, divisor, bits=8):
     """模拟定点整数二进制恢复余数法的计算过程"""
+    if divisor == 0:
+        raise ValueError("除数不能为 0")
+
     # 取绝对值进行计算
     dividend_abs = abs(dividend)
     divisor_abs = abs(divisor)
@@ -89,23 +96,14 @@ def binary_division_dividend(dividend, divisor, bits=8):  # 修改默认位数�
 
 def generate_question():
     """生成随机的定点整数除法题目"""
-    bits = 8  # 修改为8位定点整数
-
-    # 随机生成被除数和除数
-    # 确保除数不为0，且被除数的绝对值大于等于除数的绝对值
+    bits = 8  # 8位定点整数
     dividend = 0
+    # 随机生成被除数和除数
     while True:
         divisor = random.randint(-(1 << (bits - 1)) + 1, (1 << (bits - 1)) - 1)
         if divisor == 0:
             continue
-
-        # 确保被除数的绝对值大于等于除数的绝对值
-        if divisor > 0:
-            dividend = random.randint(-(1 << (bits - 1)), (1 << bits) - 1 - divisor)
-        else:
-            dividend = random.randint(-(1 << bits) + 1 + abs(divisor), (1 << (bits - 1)) - 1)
-
-        # 避免溢出情况
+        dividend = random.randint(-(1 << (bits - 1)), (1 << (bits - 1)) - 1)
         if abs(dividend) >= abs(divisor):
             break
 
@@ -143,18 +141,18 @@ def format_answer(result):
     for i, step in enumerate(result['steps']):
         if step['operation'] == 'Shift left':
             answer += f"\n步骤 {step['step']}: 左移\n"
-            answer += f"  A: {step['A_before']} → {step['A_after']}\n"
-            answer += f"  Q: {step['Q_before']} → {step['Q_after']}\n"
+            answer += f"  A: {step['A_before']} ({binary_to_decimal(step['A_before'])}) → {step['A_after']} ({binary_to_decimal(step['A_after'])})\n"
+            answer += f"  Q: {step['Q_before']} ({binary_to_decimal(step['Q_before'])}) → {step['Q_after']} ({binary_to_decimal(step['Q_after'])})\n"
         elif step['operation'] == 'Subtract M':
-            answer += f"步骤 {step['step']}: 减去除数 M\n"
-            answer += f"  A: {step['A_after']} - M = {step['A_after_subtract']}\n"
+            answer += f"步骤 {step['step']}: 减去除数 M ({result['divisor_binary']} {result['divisor']})\n"
+            answer += f"  A: {step['A_after']} ({binary_to_decimal(step['A_after'])}) - M = {step['A_after_subtract']} ({binary_to_decimal(step['A_after_subtract'])})\n"
             if step['restore']:
-                answer += f"  余数为负，恢复余数: {step['A_after_subtract']} + M = {step['A_after_restore']}\n"
+                answer += f"  余数为负，恢复余数: {step['A_after_subtract']} ({binary_to_decimal(step['A_after_subtract'])}) + M = {step['A_after_restore']} ({binary_to_decimal(step['A_after_restore'])})\n"
                 answer += f"  商位上0\n"
             else:
                 answer += f"  余数为正，商位上1\n"
-            answer += f"  最终 A: {step['A_final']}\n"
-            answer += f"  最终 Q: {step['Q_final']}\n"
+            answer += f"  最终 A: {step['A_final']} ({binary_to_decimal(step['A_final'])})\n"
+            answer += f"  最终 Q: {step['Q_final']} ({binary_to_decimal(step['Q_final'])})\n"
 
     # 添加最终结果
     answer += f"""
@@ -169,28 +167,35 @@ def format_answer(result):
     return answer
 
 
+import random
+
+
 def main(dividend=None, divisor=None, bits=8):
     """主函数：生成题目和答案并打印"""
-    # 生成题目
-    if dividend is None or divisor is None or bits is None:
-        dividend, divisor, bits = generate_question()
+    try:
+        # 生成题目
+        if dividend is None or divisor is None or bits is None:
+            dividend, divisor, bits = generate_question()
 
-    # 计算结果
-    result = binary_division_dividend(dividend, divisor, bits)
+        # 计算结果
+        result = binary_division_dividend(dividend, divisor, bits)
 
-    # 格式化题目和答案
-    question = format_question(dividend, divisor, bits)
-    answer = format_answer(result)
+        # 格式化题目和答案
+        question = format_question(dividend, divisor, bits)
+        answer = format_answer(result)
 
-    # 打印题目和答案
-    print("=" * 50)
-    print("题目:")
-    print(question)
-    print("=" * 50)
-    print("答案:")
-    print(answer)
-    print("=" * 50)
+        # 打印题目和答案
+        print("=" * 50)
+        print("题目:")
+        print(question)
+        print("=" * 50)
+        print("答案:")
+        print(answer)
+        print("=" * 50)
+    except ValueError as e:
+        print(f"错误: {e}")
 
 
 if __name__ == "__main__":
-    main(dividend=129, divisor=8)
+    # main(dividend=127, divisor=8)
+    main()
