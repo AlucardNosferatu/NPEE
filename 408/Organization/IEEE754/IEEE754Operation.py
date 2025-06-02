@@ -65,33 +65,28 @@ def ieee754_to_float(sign_bit, exponent_bits, mantissa_bits):
     return result
 
 
-def ieee754_operation(op, num1, num2):
-    s1, e1, m1 = num1
-    s2, e2, m2 = num2
+def parse_ieee754(num):
+    s, e, m = num
+    sign = -1 if s == '1' else 1
+    exponent = int(e, 2) - 127
+    mantissa = 1.0 + int(m, 2) / (2 ** 23)
+    return sign, exponent, mantissa
 
-    # 转换阶码为整数
-    E1 = int(e1, 2) - 127
-    E2 = int(e2, 2) - 127
 
-    # 转换尾数为带隐含位的小数
-    M1 = 1.0 + int(m1, 2) / (2 ** 23)
-    M2 = 1.0 + int(m2, 2) / (2 ** 23)
-
-    # 符号处理
-    sign1 = -1 if s1 == '1' else 1
-    sign2 = -1 if s2 == '1' else 1
-
-    # 对阶：调整较小的指数
+def align_exponents(E1, E2, M1, M2):
     if E1 > E2:
         delta_E = E1 - E2
-        M2 = M2 / (2 ** delta_E)
-        E2 = E1
+        M2_aligned = M2 / (2 ** delta_E)
+        return E1, M1, M2_aligned
     elif E2 > E1:
         delta_E = E2 - E1
-        M1 = M1 / (2 ** delta_E)
-        E1 = E2
+        M1_aligned = M1 / (2 ** delta_E)
+        return E2, M1_aligned, M2
+    else:
+        return E1, M1, M2
 
-    # 尾数加减
+
+def compute_sign_and_magnitude(sign1, sign2, M1, M2, op):
     if op == '+':
         M_sum = sign1 * M1 + sign2 * M2
     elif op == '-':
@@ -99,36 +94,54 @@ def ieee754_operation(op, num1, num2):
     else:
         raise ValueError("Unsupported operation")
 
-    # 规格化处理
     sign_result = 1 if M_sum >= 0 else -1
     M_sum_abs = abs(M_sum)
+    return sign_result, M_sum_abs
 
-    # 规格化：调整到1.0 <= M < 2.0
-    E_result = E1
+
+def normalize_result(M_sum_abs, E_result):
     while M_sum_abs >= 2.0:
         M_sum_abs /= 2.0
         E_result += 1
     while M_sum_abs < 1.0 and M_sum_abs != 0:
         M_sum_abs *= 2.0
         E_result -= 1
+    return M_sum_abs, E_result
 
-    # 特殊情况处理：零值
+
+def format_ieee754(sign_result, E_result, M_sum_abs):
     if M_sum_abs == 0:
         return '0', '00000000', '00000000000000000000000'
 
-    # 提取尾数（去掉隐含位）
     fraction = M_sum_abs - 1.0
     mantissa = int(fraction * (2 ** 23))
     mantissa_bin = format(mantissa, '023b')
 
-    # 计算阶码（加上偏移量）
     exponent = E_result + 127
     exponent_bin = format(exponent, '08b')
 
-    # 符号位
     sign_bin = '1' if sign_result == -1 else '0'
-
     return sign_bin, exponent_bin, mantissa_bin
+
+
+def ieee754_operation(op, num1, num2):
+    # 解析IEEE754表示
+    sign1, E1, M1 = parse_ieee754(num1)
+    sign2, E2, M2 = parse_ieee754(num2)
+
+    # 对阶
+    E_aligned, M1_aligned, M2_aligned = align_exponents(E1, E2, M1, M2)
+
+    # 尾数加减
+    sign_result, M_sum_abs = compute_sign_and_magnitude(
+        sign1, sign2, M1_aligned, M2_aligned, op
+    )
+
+    # 规格化处理
+    M_normalized, E_normalized = normalize_result(M_sum_abs, E_aligned)
+
+    # 格式化结果
+    return format_ieee754(sign_result, E_normalized, M_normalized)
 
 
 if __name__ == '__main__':
@@ -137,6 +150,7 @@ if __name__ == '__main__':
     print(a, b)
     a_ieee754 = float_to_ieee754(a)
     b_ieee754 = float_to_ieee754(b)
+    print(a_ieee754)
     sign, exp, man = ieee754_operation('+', a_ieee754, b_ieee754)
     print(ieee754_to_float(sign_bit=sign, exponent_bits=exp, mantissa_bits=man))
     print(a + b)
