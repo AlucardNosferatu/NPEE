@@ -72,4 +72,4 @@ print("\n解答步骤：")
 for step in problem['steps']:
     print(f"→ {step}")
 
-print(f"最终结果：{problem['result']} [[1,2,14]]")
+print(f"最终结果：{problem['result']}")

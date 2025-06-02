@@ -144,6 +144,7 @@ def ieee754_operation(op, num1, num2):
     return format_ieee754(sign_result, E_normalized, M_normalized)
 
 
+
 if __name__ == '__main__':
     a = generate_float()
     b = generate_float()
