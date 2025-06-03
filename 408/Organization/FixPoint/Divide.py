@@ -158,8 +158,8 @@ def generate_8bit_division():
 
 if __name__ == '__main__':
     dividend, divisor = generate_8bit_division()
-    print(f"被除数: {dividend}（4位二进制：{format(dividend & 0b11111111, '08b')}）")
-    print(f"除数: {divisor}（4位二进制：{format(divisor & 0b11111111, '08b')}）")
+    print(f"被除数: {dividend}（8位二进制：{format(dividend & 0b11111111, '08b')}）")
+    print(f"除数: {divisor}（8位二进制：{format(divisor & 0b11111111, '08b')}）")
     print(f"验证商：{dividend // divisor}")
     q_, log = resume_remainder(dividend, divisor)
     print(f"答案商：{q_}")
