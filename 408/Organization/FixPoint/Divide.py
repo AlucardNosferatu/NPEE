@@ -73,12 +73,7 @@ def resume_remainder(a, b):
 
     for i in range(9):
         info_log.append(f"\n-- 第{i}次迭代 --")
-        r = tentative_divisor_sub(b, q_bin, r_bin)
-        # 记录试探减法结果
-        if r < 0:
-            info_log.append(f"试探减法结果r={r} < 0 -> 商位设为0，恢复余数: {r}+{b}={r + b}")
-        else:
-            info_log.append(f"试探减法结果r={r} >= 0 -> 商位设为1")
+        r, info_log = tentative_divisor_sub(b, q_bin, r_bin, info_log)
 
         r_bin, a_bin = left_shift_remainder(a_bin, r)
         # 记录左移操作结果
@@ -101,15 +96,18 @@ def left_shift_remainder(a_bin, r):
     return r_bin, a_bin
 
 
-def tentative_divisor_sub(b, q_bin, r_bin):
+def tentative_divisor_sub(b, q_bin, r_bin, info_log):
     r = binary_to_int(r_bin)
     r -= b
+    # 记录试探减法结果
     if r < 0:
+        info_log.append(f"试探减法结果r={r} < 0 -> 商位设为0，恢复余数: {r}+{b}={r + b}")
         q_bin.append('0')
         r += b
     else:
+        info_log.append(f"试探减法结果r={r} >= 0 -> 商位设为1")
         q_bin.append('1')
-    return r
+    return r, info_log
 
 
 def init_remainder(a, b):

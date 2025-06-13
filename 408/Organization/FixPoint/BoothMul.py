@@ -16,9 +16,13 @@ def from_twos_complement(s):
 
 
 def generate_multiplication():
-    bits = 4
-    x = random.randint(-7, 7)
-    y = random.randint(-7, 7)
+    bits = 8
+    x = 0
+    y = 0
+    while x == 0:
+        x = random.randint(-31, 31)
+    while y == 0:
+        y = random.randint(-31, 31)
     x_tc = to_twos_complement(x, bits)
     y_tc = to_twos_complement(y, bits)
     steps = []
@@ -52,12 +56,21 @@ def generate_multiplication():
         steps.append(f"右移后：A={A}, Q={Q}, Q₋₁={Q_1}")
 
     result = A + Q
+
+    if '0' in A and '1' in A:
+        overflow = True
+    elif A[0] != Q[0]:
+        overflow = True
+    else:
+        overflow = False
+    result = from_twos_complement(result)
     return {
         "type": "乘法",
         "x": x,
         "y": y,
         "steps": steps,
-        "result": from_twos_complement(result)
+        "result": result,
+        "overflow": overflow
     }
 
 
@@ -73,3 +86,4 @@ for step in problem['steps']:
     print(f"→ {step}")
 
 print(f"最终结果：{problem['result']}")
+print(f"是否溢出：{problem['overflow']}")
