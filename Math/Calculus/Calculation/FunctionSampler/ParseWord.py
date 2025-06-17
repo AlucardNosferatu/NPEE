@@ -30,6 +30,20 @@ def read_docx(file_path):
                     i += 1
                 prop_examples.append(combo_examples.copy())
             op_examples.append(prop_examples.copy())
+    prefixes = ['00', '01', '10', '11']
+    for i in range(9):
+        print('')
+        prop_examples = op_examples[i]
+        for j in range(4):
+            print(prefixes[j] + '：', end='')
+            for k in range(13):
+                print('###', end='')
+                combo_examples = prop_examples[k]
+                print(combo_examples[j].replace('\n', ''), end='')
+                print('###', end='')
+                print('-', end='')
+            print('')
+
     return '\n'.join(full_text)
 
 
