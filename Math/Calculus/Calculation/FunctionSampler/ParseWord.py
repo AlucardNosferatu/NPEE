@@ -48,5 +48,5 @@ def read_docx(file_path):
 
 
 # 使用示例
-text = read_docx(r'C:\Users\16413\Desktop\NPEE\统计\WWII\抽象函数举例.docx')
+text = read_docx(r'C:\Users\16413\Desktop\NPEE\统计\WWII\抽象函数举例（一元运算）.docx')
 print(text)
