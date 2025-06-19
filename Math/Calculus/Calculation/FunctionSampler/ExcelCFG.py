@@ -49,4 +49,5 @@ op2_sheet_name = '二元运算'
 op1_variation_code = ['00', '01', '10', '11']
 op2_variation_code = ['000', '001', '010', '011', '100', '101', '110', '111']
 op2_row_index = [2, 9, 16, 25, 32, 39]
-file_path = 'resources/抽象函数.xlsx'
+default_load_file_path = 'resources/抽象函数.xlsx'
+default_save_file_path = 'resources/抽象函数.temp.xlsx'
