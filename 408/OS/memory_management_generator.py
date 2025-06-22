@@ -375,9 +375,9 @@ if __name__ == "__main__":
 
     # print("\n\n=== 生成特定类型的问题 ===")
     #
-    # 示例2：生成页面置换问题 (LRU算法)
-    print("\n--- 页面置换问题 (LRU) ---")
-    page_replacement_problem, pr_solution = generator_.generate_page_replacement_problem("LRU")
+    # 示例2：生成页面置换问题
+    print("\n--- 页面置换问题 ---")
+    page_replacement_problem, pr_solution = generator_.generate_page_replacement_problem()
     print(generator_.format_problem_description(page_replacement_problem))
     print(generator_.format_solution_description(page_replacement_problem, pr_solution))
     #
