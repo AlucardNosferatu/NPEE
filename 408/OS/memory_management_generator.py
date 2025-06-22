@@ -8,7 +8,7 @@ class MemoryManagementProblemGenerator:
         # 常见物理块数量
         self.frame_counts = [3, 4, 5, 6]
         # 页面访问序列的长度范围
-        self.access_sequence_length = (10, 15)
+        self.access_sequence_length = (20, 30)
         # 页号和段号的范围
         self.page_segment_range = (0, 9)
         # 段大小的范围，单位为字节
@@ -52,15 +52,8 @@ class MemoryManagementProblemGenerator:
                 page_faults += 1
 
                 # 如果内存已满，需要置换
-                replaced_page = None
                 if len(frames) == frame_count:
-                    if algorithm == 'FIFO':
-                        # 先进先出，置换最先进入的页面
-                        replaced_page = frames.pop(0)
-                    elif algorithm == 'LRU':
-                        # 最近最少使用，置换最久未使用的页面
-                        replaced_page = frames.pop(0)
-                    elif algorithm == 'OPT':
+                    if algorithm == 'OPT':
                         # 最优置换，置换未来最长时间不会使用的页面
                         future_usage = [page_sequence[i + 1:].index(p)
                                         if p in page_sequence[i + 1:]
@@ -68,6 +61,10 @@ class MemoryManagementProblemGenerator:
                                         for p in frames]
                         replace_index = future_usage.index(max(future_usage))
                         replaced_page = frames.pop(replace_index)
+                    else:
+                        # 先进先出，置换最先进入的页面
+                        # 最近最少使用，置换最久未使用的页面
+                        replaced_page = frames.pop(0)
 
                     frames.append(page)
                     replacement_steps.append({
@@ -92,12 +89,12 @@ class MemoryManagementProblemGenerator:
                     frames.remove(page)
                     frames.append(page)
 
-                    # 关键修复：更新置换步骤中的内存状态，确保反映正确的访问顺序
-                    # 找到最近一次该页面的置换记录并更新其frames状态
-                    for step in reversed(replacement_steps):
-                        if step['page'] == page:
-                            step['frames'] = frames.copy()
-                            break
+                replacement_steps.append({
+                    'step': i,
+                    'page': page,
+                    'replaced': page,
+                    'frames': frames.copy()
+                })
 
         solution = {
             'page_faults': page_faults,
@@ -370,19 +367,19 @@ class MemoryManagementProblemGenerator:
 if __name__ == "__main__":
     generator_ = MemoryManagementProblemGenerator()
 
-    # 示例1：生成随机类型的问题
-    print("=== 随机生成的内存管理问题 ===")
-    problem_, solution_ = generator_.generate_random_problem()
-    print(generator_.format_problem_description(problem_))
-    print(generator_.format_solution_description(problem_, solution_))
+    # # 示例1：生成随机类型的问题
+    # print("=== 随机生成的内存管理问题 ===")
+    # problem_, solution_ = generator_.generate_random_problem()
+    # print(generator_.format_problem_description(problem_))
+    # print(generator_.format_solution_description(problem_, solution_))
 
     # print("\n\n=== 生成特定类型的问题 ===")
     #
-    # # 示例2：生成页面置换问题 (LRU算法)
-    # print("\n--- 页面置换问题 (LRU) ---")
-    # page_replacement_problem, pr_solution = generator_.generate_page_replacement_problem("LRU")
-    # print(generator_.format_problem_description(page_replacement_problem))
-    # print(generator_.format_solution_description(page_replacement_problem, pr_solution))
+    # 示例2：生成页面置换问题 (LRU算法)
+    print("\n--- 页面置换问题 (LRU) ---")
+    page_replacement_problem, pr_solution = generator_.generate_page_replacement_problem("LRU")
+    print(generator_.format_problem_description(page_replacement_problem))
+    print(generator_.format_solution_description(page_replacement_problem, pr_solution))
     #
     # # 示例3：生成地址转换问题
     # print("\n--- 地址转换问题 ---")
