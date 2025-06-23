@@ -3,7 +3,7 @@ from math import floor
 
 
 class BankersAlgorithmGenerator:
-    def __init__(self, min_processes=2, max_processes=4, min_resources=3, max_resources=4):
+    def __init__(self, min_processes=3, max_processes=5, min_resources=3, max_resources=4):
         self.min_processes = min_processes
         self.max_processes = max_processes
         self.min_resources = min_resources
@@ -77,7 +77,8 @@ class BankersAlgorithmGenerator:
             'request': request
         }
 
-    def is_safe_state(self, available, max_matrix, allocation_matrix, need_matrix):
+    @staticmethod
+    def is_safe_state(available, max_matrix, allocation_matrix, need_matrix):
         work = available.copy()
         finish = [False] * len(max_matrix)
         safe_sequence = []
@@ -102,7 +103,6 @@ class BankersAlgorithmGenerator:
             return False, []
 
     def solve_problem(self, problem):
-        num_processes = problem['num_processes']
         num_resources = problem['num_resources']
         total_resources = problem['total_resources']
         max_matrix = [row.copy() for row in problem['max_matrix']]
@@ -127,8 +127,8 @@ class BankersAlgorithmGenerator:
         }
 
         # 检查请求是否合法
-        request_valid = all(request[j] <= need_matrix[requesting_process][j] for j in range(num_resources)) and \
-                        all(request[j] <= available[j] for j in range(num_resources))
+        request_valid = all(request[j] <= need_matrix[requesting_process][j] for j in range(num_resources)) and all(
+            request[j] <= available[j] for j in range(num_resources))
 
         solution['request_valid'] = request_valid
 
@@ -154,43 +154,43 @@ class BankersAlgorithmGenerator:
 
         return solution
 
-    def format_problem(self, problem):
+    @staticmethod
+    def format_problem(problem):
         num_processes = problem['num_processes']
-        num_resources = problem['num_resources']
+        num_res = problem['num_resources']
         total_resources = problem['total_resources']
         available = problem['available']
         max_matrix = problem['max_matrix']
         allocation_matrix = problem['allocation_matrix']
-        need_matrix = problem['need_matrix']
         requesting_process = problem['requesting_process']
-        request = problem['request']
+        req = problem['request']
 
-        resource_names = [chr(ord('A') + i) for i in range(num_resources)]
+        res_names = [chr(ord('A') + i) for i in range(num_res)]
 
         problem_text = f"""银行家算法题目
 ================================
 
-系统中有 {num_processes} 个进程（P0, P1, ..., P{num_processes - 1}）和 {num_resources} 种资源（{", ".join(resource_names)}）。
+系统中有 {num_processes} 个进程（P0, P1, ..., P{num_processes - 1}）和 {num_res} 种资源（{", ".join(res_names)}）。
 
 已知条件如下：
-1. 总资源向量: {total_resources} ({", ".join([f"{resource_names[i]}: {total_resources[i]}" for i in range(num_resources)])})
+1. 总资源向量: {total_resources} ({", ".join([f"{res_names[i]}: {total_resources[i]}" for i in range(num_res)])})
 2. 最大需求矩阵 (Max):
    """
 
-        problem_text += "    " + " ".join([f"{r:>5}" for r in resource_names]) + "\n"
+        problem_text += "    " + " ".join([f"{r:>5}" for r in res_names]) + "\n"
         for i in range(num_processes):
             problem_text += f"  P{i}: " + " ".join([f"{val:5}" for val in max_matrix[i]]) + "\n"
 
         problem_text += "3. 已分配资源矩阵 (Allocation):\n"
-        problem_text += "    " + " ".join([f"{r:>5}" for r in resource_names]) + "\n"
+        problem_text += "    " + " ".join([f"{r:>5}" for r in res_names]) + "\n"
         for i in range(num_processes):
             problem_text += f"  P{i}: " + " ".join([f"{val:5}" for val in allocation_matrix[i]]) + "\n"
 
         problem_text += "4. 可用资源向量 (Available): " + ", ".join(
-            [f"{resource_names[i]}: {available[i]}" for i in range(num_resources)]) + "\n"
+            [f"{res_names[i]}: {available[i]}" for i in range(num_res)]) + "\n"
 
         problem_text += f"""
-现在进程 P{requesting_process} 发出资源请求: {request} ({", ".join([f"{resource_names[i]}: {request[i]}" for i in range(num_resources)])})
+现在进程 P{requesting_process} 发出资源请求: {req} ({", ".join([f"{res_names[i]}: {req[i]}" for i in range(num_res)])})
 
 问题:
 1. 计算每个进程的需求矩阵 (Need)。
@@ -199,31 +199,33 @@ class BankersAlgorithmGenerator:
 
         return problem_text
 
-    def format_solution(self, solution):
-        num_resources = len(solution['initial_state']['total_resources'])
-        resource_names = [chr(ord('A') + i) for i in range(num_resources)]
+    @staticmethod
+    def format_solution(solution):
+        num_res = len(solution['initial_state']['total_resources'])
+        res_names = [chr(ord('A') + i) for i in range(num_res)]
 
         solution_text = "银行家算法题目解答\n==============================\n\n"
 
         solution_text += "1. 需求矩阵 (Need) 计算:\n"
-        solution_text += "    " + " ".join([f"{r:>5}" for r in resource_names]) + "\n"
+        solution_text += "    " + " ".join([f"{r:>5}" for r in res_names]) + "\n"
         for i in range(len(solution['initial_state']['need_matrix'])):
             solution_text += f"  P{i}: " + " ".join(
                 [f"{val:5}" for val in solution['initial_state']['need_matrix'][i]]) + "\n"
 
         solution_text += "\n2. 请求合法性检查:\n"
-        process = solution['request']['process']
-        request = solution['request']['request']
+        p = solution['request']['process']
+        req = solution['request']['request']
 
-        solution_text += f"   进程 P{process} 请求资源: {request} ({', '.join([f'{resource_names[i]}: {request[i]}' for i in range(num_resources)])})\n"
+        req_res = [f'{res_names[i]}: {req[i]}' for i in range(num_res)]
+        solution_text += f"   进程 P{p} 请求资源: {req} ({', '.join(req_res)})\n"
 
         if solution['request_valid']:
             solution_text += "   该请求是合法的（满足 Need 和 Available 约束）。\n\n"
 
             solution_text += "3. 安全性检查:\n"
             solution_text += "   模拟分配后的可用资源向量: "
-            solution_text += ", ".join([f"{resource_names[i]}: {solution['simulated_state']['available'][i]}" for i in
-                                        range(num_resources)]) + "\n\n"
+            solution_text += ", ".join([f"{res_names[i]}: {solution['simulated_state']['available'][i]}" for i in
+                                        range(num_res)]) + "\n\n"
 
             if solution['safe']:
                 solution_text += "   系统处于安全状态，安全序列为: <" + " -> ".join(
@@ -234,9 +236,9 @@ class BankersAlgorithmGenerator:
                 solution_text += "   因此，不能立即批准该请求，必须让进程 P{process} 等待。"
         else:
             solution_text += "   该请求是非法的，因为：\n"
-            if any(request[j] > solution['initial_state']['need_matrix'][process][j] for j in range(num_resources)):
+            if any(req[j] > solution['initial_state']['need_matrix'][p][j] for j in range(num_res)):
                 solution_text += "   - 请求超过了进程 P{process} 的最大需求 (Need)。\n"
-            if any(request[j] > solution['initial_state']['available'][j] for j in range(num_resources)):
+            if any(req[j] > solution['initial_state']['available'][j] for j in range(num_res)):
                 solution_text += "   - 请求超过了当前可用资源 (Available)。\n"
             solution_text += "\n   因此，不能立即批准该请求。"
 
