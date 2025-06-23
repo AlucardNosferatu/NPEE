@@ -1,8 +1,9 @@
 import random
+from math import floor
 
 
 class BankersAlgorithmGenerator:
-    def __init__(self, min_processes=3, max_processes=5, min_resources=2, max_resources=4):
+    def __init__(self, min_processes=2, max_processes=4, min_resources=3, max_resources=4):
         self.min_processes = min_processes
         self.max_processes = max_processes
         self.min_resources = min_resources
@@ -10,26 +11,32 @@ class BankersAlgorithmGenerator:
 
     def generate_problem(self):
         # 随机确定进程数和资源类型数
+        deadlock = random.choice([True, False, False])
         num_processes = random.randint(self.min_processes, self.max_processes)
-        num_resources = random.randint(self.min_resources, self.max_resources)
+        num_resources_types = random.randint(self.min_resources, self.max_resources)
 
         # 生成总资源向量
-        total_resources = [random.randint(5, 10) for _ in range(num_resources)]
+        total_resources = [random.randint(7, 15) for _ in range(num_resources_types)]
 
         # 生成Max矩阵和Allocation矩阵，同时确保Available非负
         max_matrix = []
         allocation_matrix = []
 
         # 预先分配部分资源，但不超过总资源
-        allocated_sum = [0] * num_resources
+        allocated_sum = [0] * num_resources_types
         for _ in range(num_processes):
             # 为每个进程生成Max向量，确保不超过总资源
-            process_max = [random.randint(1, total_resources[i]) for i in range(num_resources)]
+            if deadlock:
+                process_max = [random.randint(0, total_resources[i]) for i in range(num_resources_types)]
+            else:
+                process_max = [
+                    random.randint(0, floor(total_resources[i] / num_processes)) for i in range(num_resources_types)
+                ]
             max_matrix.append(process_max)
 
             # 为每个进程生成Allocation向量，确保不超过Max且总和不超过总资源
             process_allocation = []
-            for j in range(num_resources):
+            for j in range(num_resources_types):
                 # 计算该资源类型还能分配的最大量
                 max_allocation = min(process_max[j], total_resources[j] - allocated_sum[j])
                 allocated = random.randint(0, max_allocation)
@@ -40,16 +47,16 @@ class BankersAlgorithmGenerator:
         # 计算Need矩阵
         need_matrix = []
         for i in range(num_processes):
-            need = [max_matrix[i][j] - allocation_matrix[i][j] for j in range(num_resources)]
+            need = [max_matrix[i][j] - allocation_matrix[i][j] for j in range(num_resources_types)]
             need_matrix.append(need)
 
         # 计算Available向量（此时必定非负）
-        available = [total_resources[i] - allocated_sum[i] for i in range(num_resources)]
+        available = [total_resources[i] - allocated_sum[i] for i in range(num_resources_types)]
 
         # 随机选择一个进程和资源请求，确保请求合法
         requesting_process = random.randint(0, num_processes - 1)
         request = []
-        for j in range(num_resources):
+        for j in range(num_resources_types):
             # 请求不能超过Need和Available
             max_request = min(need_matrix[requesting_process][j], available[j])
             if max_request > 0:
@@ -60,7 +67,7 @@ class BankersAlgorithmGenerator:
 
         return {
             'num_processes': num_processes,
-            'num_resources': num_resources,
+            'num_resources': num_resources_types,
             'total_resources': total_resources,
             'max_matrix': max_matrix,
             'allocation_matrix': allocation_matrix,
