@@ -98,40 +98,32 @@ class DiskSchedulingGenerator:
             pos += 1
 
         # 分成两部分：小于当前位置的和大于等于当前位置的
-        lower = sorted_requests[:pos]
-        upper = sorted_requests[pos:]
+        lower = sorted_requests[:pos]  # 所有小于当前位置的请求
+        upper = sorted_requests[pos:]  # 所有大于等于当前位置的请求
 
-        # 假设向磁道号增加的方向移动（向右）
-        # 先处理所有大于等于当前位置的请求，直到磁盘最大磁道号
-        # 然后跳转到磁盘最小磁道号，继续处理剩余请求
-        order = upper.copy()
-
-        # 如果有大于当前位置的请求，才需要考虑跳转
+        # 计算寻道顺序
+        order = []
         if upper:
-            # 从最大请求磁道移动到磁盘最大磁道
+            order.extend(upper)
             if upper[-1] < track_range[1]:
                 order.append(track_range[1])
-                # 从磁盘最大磁道跳转到最小磁道（隐含的跳转，不计入距离）
-
-            # 从磁盘最小磁道开始处理剩余请求
-            if lower:
-                # 先添加磁盘最小磁道号（隐含的跳转终点）
-                order.append(track_range[0])
-                # 再添加所有小于当前位置的请求
-                order.extend(lower)
         else:
-            # 如果没有大于当前位置的请求，直接处理所有小于当前位置的请求
-            # 但需要先移动到磁盘最大磁道，再跳回最小磁道
-            order.append(track_range[1])  # 移动到磁盘最大磁道
-            order.append(track_range[0])  # 跳回磁盘最小磁道
+            order.append(track_range[1])
+
+        if lower:
+            order.append(track_range[0])
             order.extend(lower)
 
-        # 计算总寻道距离
-        total_distance = 0
-        prev = current_position
-        for track in order:
-            total_distance += abs(track - prev)
-            prev = track
+        # 使用数学公式优化总寻道距离计算
+        L, U = track_range  # 最小和最大磁道号
+
+        # 找到小于当前位置的最大请求（最近小请求磁道）
+        if lower:
+            S = lower[-1]  # 最近小请求磁道
+            total_distance = 2 * (U - L) - (current_position - S)
+        else:
+            # 没有小于当前位置的请求
+            total_distance = (U - current_position) + (U - L)
 
         return {
             "order": order,
