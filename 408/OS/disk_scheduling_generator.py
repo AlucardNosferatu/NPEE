@@ -6,7 +6,8 @@ class DiskSchedulingGenerator:
         # 初始化随机数生成器
         random.seed()
 
-    def generate_question(self):
+    @staticmethod
+    def generate_question():
         """生成随机磁盘调度问题"""
         # 磁道范围
         track_range = (0, 200)
@@ -28,7 +29,8 @@ class DiskSchedulingGenerator:
             "track_range": track_range
         }
 
-    def fcfs(self, current_position, requests):
+    @staticmethod
+    def fcfs(current_position, requests):
         """先来先服务(FCFS)算法"""
         # 顺序就是请求到达的顺序
         order = list(requests)
@@ -39,7 +41,8 @@ class DiskSchedulingGenerator:
             "total_distance": total_distance
         }
 
-    def sstf(self, current_position, requests):
+    @staticmethod
+    def sstf(current_position, requests):
         """最短寻道时间优先(SSTF)算法"""
         remaining = list(requests)
         order = []
@@ -59,8 +62,12 @@ class DiskSchedulingGenerator:
             "total_distance": total_distance
         }
 
-    def scan(self, current_position, requests, track_range):
+    @staticmethod
+    def scan(current_position, requests, track_range):
         """扫描(SCAN)算法（电梯算法）"""
+        if not requests:
+            return {"order": [], "total_distance": 0}
+
         # 将请求排序
         sorted_requests = sorted(requests)
 
@@ -69,16 +76,24 @@ class DiskSchedulingGenerator:
         while pos < len(sorted_requests) and sorted_requests[pos] < current_position:
             pos += 1
 
-        # 分成两部分：小于等于当前位置的和大于当前位置的
+        # 分成两部分：小于当前位置的和大于等于当前位置的
         lower = sorted_requests[:pos]
         upper = sorted_requests[pos:]
 
         # 假设向磁道号增加的方向移动（向右）
-        order = upper + lower[::-1]
+        order = []
+        if upper:
+            order.extend(upper)
+            # 移动到磁盘最大磁道（无论是否有请求）
+            if upper[-1] < track_range[1]:
+                order.append(track_range[1])
+        else:
+            # 如果没有大于当前位置的请求，直接移动到磁盘最大磁道
+            order.append(track_range[1])
 
-        # 如果没有大于当前位置的请求，则直接处理小于的部分（向左移动）
-        if not upper:
-            order = lower[::-1]
+        # 反向移动，处理所有小于当前位置的请求
+        if lower:
+            order.extend(reversed(lower))
 
         # 计算总寻道距离
         total_distance = sum(abs(order[i] - (current_position if i == 0 else order[i - 1])) for i in range(len(order)))
@@ -87,7 +102,8 @@ class DiskSchedulingGenerator:
             "total_distance": total_distance
         }
 
-    def cscan(self, current_position, requests, track_range):
+    @staticmethod
+    def cscan(current_position, requests, track_range):
         """循环扫描(CSCAN)算法"""
         # 将请求排序
         sorted_requests = sorted(requests)
@@ -115,22 +131,23 @@ class DiskSchedulingGenerator:
             order.extend(lower)
 
         # 使用数学公式优化总寻道距离计算
-        L, U = track_range  # 最小和最大磁道号
+        l, u = track_range  # 最小和最大磁道号
 
         # 找到小于当前位置的最大请求（最近小请求磁道）
         if lower:
-            S = lower[-1]  # 最近小请求磁道
-            total_distance = 2 * (U - L) - (current_position - S)
+            s = lower[-1]  # 最近小请求磁道
+            total_distance = 2 * (u - l) - (current_position - s)
         else:
             # 没有小于当前位置的请求
-            total_distance = (U - current_position) + (U - L)
+            total_distance = (u - current_position) + (u - l)
 
         return {
             "order": order,
             "total_distance": total_distance
         }
 
-    def look(self, current_position, requests, track_range):
+    @staticmethod
+    def look(current_position, requests):
         """LOOK调度算法"""
         if not requests:
             return {"order": [], "total_distance": 0}
@@ -161,11 +178,11 @@ class DiskSchedulingGenerator:
             "total_distance": total_distance
         }
 
-    def clook(self, current_position, requests, track_range):
+    @staticmethod
+    def clook(current_position, requests):
         """CLOOK调度算法"""
         if not requests:
             return {"order": [], "total_distance": 0}
-
         # 将请求排序
         sorted_requests = sorted(requests)
 
@@ -214,8 +231,8 @@ class DiskSchedulingGenerator:
         sstf_result = self.sstf(current_position, requests)
         scan_result = self.scan(current_position, requests, track_range)
         cscan_result = self.cscan(current_position, requests, track_range)
-        look_result = self.look(current_position, requests, track_range)
-        clook_result = self.clook(current_position, requests, track_range)
+        look_result = self.look(current_position, requests)
+        clook_result = self.clook(current_position, requests)
 
         return {
             "fcfs": fcfs_result,
@@ -230,17 +247,17 @@ class DiskSchedulingGenerator:
             )
         }
 
-    def generate_question_text(self, question):
+    @staticmethod
+    def generate_question_text(question):
         """生成问题文本"""
         return (f"当前磁头位于磁道 {question['current_position']}，磁盘请求序列为："
                 f"{question['requests']}，磁盘可用磁道范围为 {question['track_range'][0]}-{question['track_range'][1]}。"
                 f"请计算FCFS、SSTF、SCAN、CSCAN、LOOK和CLOOK算法的寻道顺序和总寻道距离。")
 
-    def generate_answer_text(self, question, solution):
+    @staticmethod
+    def generate_answer_text(question, solution):
         """生成答案文本"""
-        answer = []
-        answer.append(f"问题：当前磁头位于磁道 {question['current_position']}，请求序列为 {question['requests']}")
-        answer.append("\n答案：")
+        answer = [f"问题：当前磁头位于磁道 {question['current_position']}，请求序列为 {question['requests']}", "\n答案："]
 
         algorithms = ["fcfs", "sstf", "scan", "cscan", "look", "clook"]
         algorithm_names = {
@@ -270,8 +287,8 @@ class DiskSchedulingGenerator:
 # 示例使用
 if __name__ == "__main__":
     generator = DiskSchedulingGenerator()
-    question = generator.generate_question()
-    solution = generator.solve_question(question)
+    question_ = generator.generate_question()
+    solution_ = generator.solve_question(question_)
 
-    print(generator.generate_question_text(question))
-    print(generator.generate_answer_text(question, solution))
+    print(generator.generate_question_text(question_))
+    print(generator.generate_answer_text(question_, solution_))
