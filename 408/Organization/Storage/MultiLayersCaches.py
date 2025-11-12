@@ -13,11 +13,11 @@ class CacheSys:
 
     def __init__(self, mode='串行访存'):
         self.sy = {
-            # 缓存容量（如缓存能存储的条目数或字节数）
+            # 缓存访问次数
             'Nc': sympy.Symbol('Nc'),
             # 缓存访问时间（访问缓存所需的时间）
             'Tc': sympy.Symbol('Tc'),
-            # 内存容量（内存的总条目数或字节数）
+            # 内存访问次数
             'Nm': sympy.Symbol('Nm'),
             # 内存访问时间（直接访问内存所需的时间）
             'Tm': sympy.Symbol('Tm'),
@@ -28,7 +28,7 @@ class CacheSys:
             # 效率（Ef = Tc / Ta，表示缓存系统相比直接访问内存的效率提升倍数）
             'Ef': sympy.Symbol('Ef')
         }
-        # 命中率：物理意义：缓存容量越大（Nc 越大），命中率越高。
+        # 命中率
         self.hr_equ = sympy.Eq(
             self.sy['Nc'] / (self.sy['Nc'] + self.sy['Nm']),
             self.sy['Rh']
