@@ -36,10 +36,10 @@ def get_crc(data_bin, poly_bin):
 # check_code, full_bin = get_crc(data_bin=[1, 0, 1, 0, 1, 0, 1, 1], poly_bin=crc_bin_poly)
 # print('Done')
 
-def generate_polynomial_forms():
+def generate_polynomial_forms(poly_bin=None):
     # 生成5位二进制多项式（固定x⁴位为1）
-    poly_bin = '1' + ''.join(random.choice('01') for _ in range(4))
-
+    if poly_bin is None:
+        poly_bin = '1' + ''.join(random.choice('01') for _ in range(4))
     # 转换为自然形式（代数表达式）
     degree_map = {4: 'x⁴', 3: 'x³', 2: 'x²', 1: 'x', 0: '1'}
     natural_terms = []
@@ -64,12 +64,12 @@ def select_display_mode():
     return random.choices(modes, weights=weights, k=1)[0]
 
 
-def generate_question():
+def generate_question(data_bits=None, poly_bin=None):
     # 生成随机数据（4-8位）
-    data_bits = [random.choice([0, 1]) for _ in range(random.randint(4, 8))]
-
+    if data_bits is None:
+        data_bits = [random.choice([0, 1]) for _ in range(random.randint(4, 8))]
     # 获取多项式所有形式
-    poly_forms = generate_polynomial_forms()
+    poly_forms = generate_polynomial_forms(poly_bin=poly_bin)
     poly_bin = [int(digit) for digit in list(poly_forms['binary'])]
     # 随机选择展示形式
     display_mode = select_display_mode()
@@ -88,7 +88,10 @@ def generate_question():
 
 
 if __name__ == '__main__':
-    # 示例输出
-    q, a = generate_question()
+    # 指定数据位和生成多项式，不使用随机数
+    # db = [1, 0, 1, 1, 1]
+    # pb = '10011'
+    db, pb = None, None
+    q, a = generate_question(data_bits=db, poly_bin=pb)
     print("问题：", q)
     print("答案：", a)
