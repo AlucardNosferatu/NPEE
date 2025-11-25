@@ -133,9 +133,10 @@ class QuestionGenerator:
         question += "3. 广播地址\n"
         question += "4. 可用IP地址范围"
 
-        # 生成答案 - 修复VLSM逻辑
+        # 生成答案 - 完全重写VLSM逻辑
         answer = []
-        current_network = ipaddress.IPv4Network(f"{base_ip}/{base_prefix}", strict=False)
+        base_network = ipaddress.IPv4Network(f"{base_ip}/{base_prefix}", strict=False)
+        current_address = base_network.network_address
 
         for dept in departments:
             # 计算所需的主机位数
@@ -147,32 +148,32 @@ class QuestionGenerator:
             # 计算子网前缀长度
             subnet_prefix = 32 - host_bits
 
-            # 获取当前网络的所有可能子网
-            subnets = list(current_network.subnets(new_prefix=subnet_prefix))
+            # 计算子网大小
+            subnet_size = 2 ** host_bits
 
-            if not subnets:
-                # 如果当前网络无法划分，尝试使用更大的网络块
-                answer.append(f"\n{dept['name']}: 无法分配足够的地址空间")
-                continue
+            # 确保当前地址对齐到子网边界
+            current_int = int(current_address)
+            if current_int % subnet_size != 0:
+                # 对齐到下一个子网边界
+                current_int = ((current_int // subnet_size) + 1) * subnet_size
+                current_address = ipaddress.IPv4Address(current_int)
 
-            # 分配第一个子网给当前部门
-            subnet = subnets[0]
-
-            # 更新当前网络为下一个可用的网络块
-            # 使用当前子网广播地址之后的下一个地址作为新起点
-            next_start = subnet.broadcast_address + 1
-            if next_start > current_network.broadcast_address:
-                # 如果超出当前网络范围，结束分配
+            # 检查是否超出基网络范围
+            if current_int + subnet_size - 1 > int(base_network.broadcast_address):
                 answer.append(f"\n{dept['name']}: 网络地址不足")
                 break
 
-            current_network = ipaddress.IPv4Network(f"{next_start}/{base_prefix}", strict=False)
+            # 创建子网
+            subnet = ipaddress.IPv4Network(f"{current_address}/{subnet_prefix}", strict=False)
 
             answer.append(f"\n{dept['name']} ({dept['hosts']}台主机):")
             answer.append(f"1. 网络地址: {subnet.network_address}")
             answer.append(f"2. 子网掩码: {subnet.netmask} ({subnet_prefix})")
             answer.append(f"3. 广播地址: {subnet.broadcast_address}")
             answer.append(f"4. 可用IP地址范围: {subnet.network_address + 1} - {subnet.broadcast_address - 1}")
+
+            # 更新下一个子网的起始地址
+            current_address = subnet.broadcast_address + 1
 
         return question, answer
 
