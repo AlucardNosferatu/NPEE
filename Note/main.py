@@ -16,7 +16,7 @@ def replace_in_excel(input_file, output_file="输出.xlsx", replace_configs=None
     """
     if replace_configs is None:
         with open('测试.json', 'r', encoding='utf-8') as f:
-            replace_configs = json.load(f)
+            replace_configs = json.load(f)['replace']
 
     # 加载工作簿
     wb = openpyxl.load_workbook(input_file)
