@@ -61,19 +61,26 @@ class PipelinePerformanceAnalyzer:
         num_instructions = problem["num_instructions"]
         hazard_info = problem["hazard_info"]
         clock_cycle = max(stage_times)
-        theoretical_time = sum(stage_times) + (num_instructions - 1) * clock_cycle
+
+        # 修复：第一条指令的总耗时应该是段数×时钟周期，而不是各段时间之和
+        first_instruction_time = num_stages * clock_cycle
+        theoretical_time = first_instruction_time + (num_instructions - 1) * clock_cycle
+
         total_stalls = 0
         if hazard_info:
             for pair in hazard_info["pairs"]:
                 i, j, stall = pair
                 total_stalls += stall
+
         actual_time = theoretical_time + total_stalls * clock_cycle
         throughput = num_instructions / actual_time
         speedup = (num_instructions * sum(stage_times)) / actual_time
-        # 修改前
-        # efficiency = (num_instructions * sum(stage_times)) / (actual_time * num_stages)
-        # 修改后
-        efficiency = (num_instructions * sum(stage_times)) / (theoretical_time * num_stages)
+
+        # 修复：效率计算应该使用实际的流水线工作时间
+        # 流水线实际工作时间 = 实际时间 × 段数
+        # 有效工作时间 = 指令数 × 各段时间之和
+        efficiency = (num_instructions * sum(stage_times)) / (actual_time * num_stages)
+
         return {
             "clock_cycle": clock_cycle,
             "theoretical_time": theoretical_time,
@@ -120,16 +127,17 @@ class PipelinePerformanceAnalyzer:
         stage_times = problem["stage_times"]
         num_instructions = problem["num_instructions"]
         hazard_info = problem["hazard_info"]
+        clock_cycle = solution['clock_cycle']
 
         solution_text = f"""
 解答：
 
 1. 流水线的时钟周期：
-   时钟周期等于各段执行时间的最大值，即 max({', '.join(map(str, stage_times))}) = {solution['clock_cycle']}ns
+   时钟周期等于各段执行时间的最大值，即 max({', '.join(map(str, stage_times))}) = {clock_cycle}ns
 
 2. 不考虑数据冲突的总时间：
    总时间 = 第一条指令耗时 + (n - 1) × 时钟周期
-          = {sum(stage_times)} + ({num_instructions} - 1) × {solution['clock_cycle']}
+          = {problem["num_stages"]} × {clock_cycle} + ({num_instructions} - 1) × {clock_cycle}
           = {solution['theoretical_time']}ns
 
 3. 考虑数据冲突的总时间：
