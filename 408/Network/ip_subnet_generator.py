@@ -14,15 +14,17 @@ class QuestionGenerator:
         ]
         network_class = random.choice(classes)
 
-        # 随机生成基础网络
+        # 随机生成基础网络 - 修复IP地址生成逻辑
         base_ip = network_class["prefix"]
         if network_class["default_mask"] == 8:
-            base_ip += f"{random.randint(0, 255)}.{random.randint(0, 255)}"
+            # A类地址: 10.x.0.0
+            base_ip += f"{random.randint(0, 255)}.0.0"
         elif network_class["default_mask"] == 12:
-            base_ip += f"{random.randint(0, 15)}.{random.randint(0, 255)}"
+            # B类地址: 172.16.x.0
+            base_ip += f"{random.randint(0, 15)}.0"
         else:
-            base_ip += str(random.randint(0, 255))
-        base_ip += ".0"
+            # C类地址: 192.168.x.0
+            base_ip += f"{random.randint(0, 255)}.0"
 
         # 随机确定子网数量（2的幂）
         subnet_bits = random.randint(1, 6)  # 最多64个子网
@@ -131,35 +133,46 @@ class QuestionGenerator:
         question += "3. 广播地址\n"
         question += "4. 可用IP地址范围"
 
-        # 生成答案
+        # 生成答案 - 修复VLSM逻辑
         answer = []
-        remaining_network = ipaddress.IPv4Network(f"{base_ip}/{base_prefix}", strict=False)
+        current_network = ipaddress.IPv4Network(f"{base_ip}/{base_prefix}", strict=False)
 
         for dept in departments:
             # 计算所需的主机位数
             required_hosts = dept["hosts"]
-            n = 1
-            while (2 ** n) - 2 < required_hosts:
-                n += 1
+            host_bits = 0
+            while (2 ** host_bits) - 2 < required_hosts:
+                host_bits += 1
 
-            # 计算子网掩码
-            subnet_prefix = 32 - n
-            subnet_mask = ipaddress.IPv4Network(f"0.0.0.0/{subnet_prefix}").netmask
+            # 计算子网前缀长度
+            subnet_prefix = 32 - host_bits
 
-            # 分配子网
-            subnets = list(remaining_network.subnets(new_prefix=subnet_prefix))
-            if subnets:
-                subnet = subnets[0]
-                # 更新剩余网络
-                remaining_network = ipaddress.IPv4Network(
-                    f"{subnet.broadcast_address + 1}/{base_prefix}", strict=False
-                )
+            # 获取当前网络的所有可能子网
+            subnets = list(current_network.subnets(new_prefix=subnet_prefix))
 
-                answer.append(f"\n{dept['name']} ({required_hosts}台主机):")
-                answer.append(f"1. 网络地址: {subnet.network_address}")
-                answer.append(f"2. 子网掩码: {subnet_mask} ({subnet_prefix})")
-                answer.append(f"3. 广播地址: {subnet.broadcast_address}")
-                answer.append(f"4. 可用IP地址范围: {subnet.network_address + 1} - {subnet.broadcast_address - 1}")
+            if not subnets:
+                # 如果当前网络无法划分，尝试使用更大的网络块
+                answer.append(f"\n{dept['name']}: 无法分配足够的地址空间")
+                continue
+
+            # 分配第一个子网给当前部门
+            subnet = subnets[0]
+
+            # 更新当前网络为下一个可用的网络块
+            # 使用当前子网广播地址之后的下一个地址作为新起点
+            next_start = subnet.broadcast_address + 1
+            if next_start > current_network.broadcast_address:
+                # 如果超出当前网络范围，结束分配
+                answer.append(f"\n{dept['name']}: 网络地址不足")
+                break
+
+            current_network = ipaddress.IPv4Network(f"{next_start}/{base_prefix}", strict=False)
+
+            answer.append(f"\n{dept['name']} ({dept['hosts']}台主机):")
+            answer.append(f"1. 网络地址: {subnet.network_address}")
+            answer.append(f"2. 子网掩码: {subnet.netmask} ({subnet_prefix})")
+            answer.append(f"3. 广播地址: {subnet.broadcast_address}")
+            answer.append(f"4. 可用IP地址范围: {subnet.network_address + 1} - {subnet.broadcast_address - 1}")
 
         return question, answer
 
@@ -221,4 +234,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()    
+    main()
