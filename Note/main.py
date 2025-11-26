@@ -5,7 +5,7 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 
 
-def replace_in_excel(input_file, output_file="输出.xlsx", replace_configs=None):
+def replace_in_excel(input_file, output_file="输出.xlsx", replace_configs=None, process_b_col=False):
     """
     在Excel中根据配置替换内容，输出到新文件，支持自动搜索定位和偏移量校准。
 
@@ -31,7 +31,7 @@ def replace_in_excel(input_file, output_file="输出.xlsx", replace_configs=None
         cell_pos: str = config["cell"]
         old_val = config["old"]
         new_val = config["new"]
-        if cell_pos.upper().startswith('B'):
+        if not process_b_col and cell_pos.upper().startswith('B'):
             print(f"B列作为标题均不处理，跳过")
             continue
         # --- 新增：应用偏移量来修正目标单元格位置 ---
@@ -112,4 +112,4 @@ def replace_in_excel(input_file, output_file="输出.xlsx", replace_configs=None
 if __name__ == "__main__":
     input_excel = "测试.xlsx"
     output_excel = "输出.xlsx"
-    replace_in_excel(input_excel, output_excel)
+    replace_in_excel(input_excel, output_excel, None, True)
