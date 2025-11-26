@@ -3,6 +3,20 @@ import re
 
 import openpyxl
 from openpyxl.utils import get_column_letter
+# noinspection PyUnresolvedReferences
+from openpyxl.worksheet.formula import ArrayFormula
+
+str_unify_map = {
+    '“': '"',
+    '”': '"'
+}
+
+
+def unify_str(input_str: str | None | ArrayFormula):
+    if type(input_str) is str:
+        for key in str_unify_map.keys():
+            input_str = input_str.replace(key, str_unify_map[key])
+    return input_str
 
 
 def replace_in_excel(input_file, output_file="输出.xlsx", replace_configs=None, process_b_col=False):
@@ -66,7 +80,7 @@ def replace_in_excel(input_file, output_file="输出.xlsx", replace_configs=None
                 current_val = None
 
         # 2. 检查当前单元格内容是否与old_val一致
-        if current_val == old_val:
+        if unify_str(current_val) == unify_str(old_val):
             # 内容一致，直接替换
             target_cell.value = new_val
             print(f"已在 {corrected_cell_pos if corrected_cell_pos else cell_pos} 完成替换。")
@@ -81,7 +95,7 @@ def replace_in_excel(input_file, output_file="输出.xlsx", replace_configs=None
                 for col in range(1, max_col + 1):
                     col_letter_found = get_column_letter(col)
                     cell_found = sheet[f"{col_letter_found}{row}"]
-                    if cell_found.value == old_val:
+                    if unify_str(cell_found.value) == unify_str(old_val):
                         # 找到匹配项，更新为新值
                         cell_found.value = new_val
                         print(f"已在 {col_letter_found}{row} 找到并替换。")
