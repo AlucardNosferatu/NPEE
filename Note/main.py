@@ -28,10 +28,12 @@ def replace_in_excel(input_file, output_file="输出.xlsx", replace_configs=None
     row_offset = 0
 
     for config in replace_configs:
-        cell_pos = config["cell"]
+        cell_pos: str = config["cell"]
         old_val = config["old"]
         new_val = config["new"]
-
+        if cell_pos.upper().startswith('B'):
+            print(f"B列作为标题均不处理，跳过")
+            continue
         # --- 新增：应用偏移量来修正目标单元格位置 ---
         # 1. 使用正则表达式解析单元格的列字母和行号
         match = re.match(r'^([A-Za-z]+)(\d+)$', cell_pos)
