@@ -70,7 +70,7 @@ def compute_nextval(pattern, next_arr):
 if __name__ == "__main__":
     # 示例1：2024真题模式串"aabaab"
     # noinspection SpellCheckingInspection
-    pattern1 = "abcaabbcabcaabdab"
+    pattern1 = "aabaab"
     next1 = compute_next(pattern1)
     print(f"模式串：{pattern1}")
     print(f"next数组：{next1}")  # 预期输出：[-1, 0, 1, 0, 1, 2]（完全匹配真题）
