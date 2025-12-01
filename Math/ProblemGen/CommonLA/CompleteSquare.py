@@ -97,7 +97,6 @@ class QuadraticFormGenerator:
     def generate_problem(self):
         """随机生成一个问题"""
         problem_type = random.choice(["常规题", "陷阱题", "送分题"])
-
         if problem_type == "常规题":
             return self.generate_regular_problem()
         elif problem_type == "陷阱题":
@@ -105,39 +104,91 @@ class QuadraticFormGenerator:
         else:
             return self.generate_easy_problem()
 
-    @staticmethod
-    def solve_problem(poly, problem_type, T=None):
-        """解决问题并提供解析"""
+    def complete_square(self, poly):
+        """
+        使用配方法将二次型化为标准形。
+        返回 (标准形, 变换矩阵)
+        """
+        n = self.num_vars
+        x = self.vars
+
+        # 首先展开多项式
+        poly_expanded = sp.expand(poly)
+
+        # 提取系数矩阵
+        A = sp.zeros(n)
+        for i in range(n):
+            for j in range(n):
+                if i == j:
+                    # 平方项系数
+                    A[i, j] = poly_expanded.coeff(x[i] ** 2)
+                else:
+                    # 交叉项系数（除以2，因为交叉项会出现两次）
+                    coeff = poly_expanded.coeff(x[i] * x[j])
+                    A[i, j] = coeff / 2
+                    A[j, i] = coeff / 2
+
+        # 使用配方法计算变换矩阵
+        T = sp.eye(n)
+
+        # 对每个变量进行配方
+        for i in range(n):
+            # 如果当前变量的平方项系数为0，跳过
+            if A[i, i] == 0:
+                continue
+
+            # 创建当前步骤的变换矩阵
+            T_step = sp.eye(n)
+
+            # 更新变换矩阵 - 只更新当前行
+            for j in range(i + 1, n):
+                if A[i, j] != 0:
+                    T_step[i, j] = -A[i, j] / A[i, i]
+
+            # 应用变换到系数矩阵
+            A = T_step.T * A * T_step
+
+            # 更新总变换矩阵
+            T = T * T_step
+
+        # 计算标准形
+        y_vars = symbols(f'y1:{n + 1}')
+        substitution = {}
+        for i in range(n):
+            substitution[x[i]] = sum(T[i, j] * y_vars[j] for j in range(n))
+
+        standard_form = poly_expanded.subs(substitution)
+        standard_form = sp.expand(standard_form)
+
+        return standard_form, T
+
+    def solve_problem(self, poly, problem_type, T=None):
+        """解决问题并提供解析和正确答案"""
         solution = f"题目类型: {problem_type}\n\n"
         solution += f"二次型: {poly}\n\n"
-
-        if problem_type == "常规题":
-            solution += "解析:\n"
-            solution += "1. 这是一个需要配方的常规题\n"
-            solution += "2. 使用配方法将二次型化为标准形\n"
-            solution += "3. 寻找可逆线性变换\n\n"
-
-            # 这里可以添加具体的配方步骤
-            solution += "配方步骤:\n"
-            # 实际实现中，这里应该添加具体的配方算法
-
-        elif problem_type == "陷阱题":
-            solution += "解析:\n"
-            solution += "1. 这是一个陷阱题，看起来已经配好\n"
-            solution += "2. 表面上有与未知数个数相同的平方项\n"
-            solution += "3. 但变换矩阵行列式为0，变换不可逆\n"
-            solution += f"4. 变换矩阵: {T}\n"
-            solution += f"5. 行列式: {T.det()}\n"
-            solution += "6. 需要重新寻找可逆变换\n\n"
-
-        else:  # 送分题
-            solution += "解析:\n"
+        solution += "解析:\n"
+        if problem_type == '送分题':
             solution += "1. 这是一个送分题，已经配好\n"
             solution += "2. 变换矩阵可逆\n"
-            solution += f"3. 变换矩阵: {T}\n"
-            solution += f"4. 行列式: {T.det()}\n"
+            solution += f"3. 变换矩阵: {T.inv()}\n"
+            solution += f"4. 行列式: {T.det()} (≠0，变换可逆)\n"
             solution += "5. 可直接使用该变换\n\n"
-
+        else:
+            if problem_type == "常规题":
+                solution += "1. 这是一个需要配方的常规题\n"
+                solution += "2. 使用配方法将二次型化为标准形\n"
+                solution += "3. 寻找可逆线性变换\n\n"
+            else:
+                solution += "1. 这是一个陷阱题，看起来已经配好\n"
+                solution += "2. 表面上有与未知数个数相同的平方项\n"
+                solution += "3. 但变换矩阵行列式为0，变换不可逆\n"
+                solution += f"4. 给定变换矩阵: {T}\n"
+                solution += f"5. 给定变换矩阵行列式: {T.det()} (=0，变换不可逆)\n"
+                solution += "6. 需要重新寻找可逆变换\n\n"
+            # 使用配方法求解
+            standard_form, correct_T = self.complete_square(poly)
+            solution += f"可逆线性变换矩阵:\n{correct_T}\n"
+            solution += f"变换矩阵行列式: {correct_T.det()} (≠0，变换可逆)\n"
         return solution
 
 
@@ -152,7 +203,7 @@ if __name__ == "__main__":
     for i_ in range(5):
         print(f"\n问题 {i_ + 1}:")
         p, pt, T_ = generator.generate_problem()
-        print(f"将下列二次型化为标准形，并写出所用的可逆线性变换:")
+        print(f"用拉格朗日配方法将下列二次型化为标准形，并写出所用的可逆线性变换:")
         print(f"f(x) = {p}")
 
         # 显示答案和解析
