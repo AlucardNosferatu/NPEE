@@ -203,7 +203,7 @@ if __name__ == "__main__":
     for i_ in range(5):
         print(f"\n问题 {i_ + 1}:")
         p, pt, T_ = generator.generate_problem()
-        print(f"用拉格朗日配方法将下列二次型化为标准形，并写出所用的可逆线性变换:")
+        print(f"用配方法将下列二次型化为标准形，并写出所用的可逆线性变换x=Cy的矩阵C\n（如果不存在显式配方或显式配方不可逆，则用拉格朗日配方法进行配方）：")
         print(f"f(x) = {p}")
 
         # 显示答案和解析
