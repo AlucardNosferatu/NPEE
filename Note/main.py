@@ -8,7 +8,9 @@ from openpyxl.worksheet.formula import ArrayFormula
 
 str_unify_map = {
     '“': '"',
-    '”': '"'
+    '”': '"',
+    "‘": "'",
+    "’": "'",
 }
 
 
