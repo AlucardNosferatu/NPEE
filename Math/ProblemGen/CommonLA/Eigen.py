@@ -1,6 +1,5 @@
 import random
 
-import numpy as np
 import sympy as sp
 from sympy import Matrix, symbols, latex
 
@@ -71,15 +70,26 @@ class EigenProblemGenerator:
         J = self._block_diag(*J_blocks)
         P = self._generate_invertible_matrix()
         A = P * J * P.inv()
-
         return A, eigenvalues
 
     def _generate_invertible_matrix(self):
-        """生成可逆矩阵"""
-        while True:
-            P = Matrix(np.random.randint(-3, 4, (self.size, self.size)))
-            if P.det() != 0:
-                return P
+        """生成行列式为±1的小整数矩阵"""
+        # 从单位矩阵开始
+        P = sp.eye(self.size)
+        # 进行几次初等变换
+        for _ in range(self.size + 2):
+            i, j = random.sample(range(self.size), 2)
+            # 随机选择操作
+            op = random.choices(['swap', 'add', 'negate'], weights=[0.2, 0.7, 0.1])[0]
+            if op == 'swap':
+                P[i, :], P[j, :] = P[j, :], P[i, :]
+            elif op == 'add':
+                # 使用小整数倍数
+                k = random.choice([-1, 1])
+                P[i, :] = P[i, :] + k * P[j, :]
+            else:  # negate
+                P[i, :] = -P[i, :]
+        return P
 
     @staticmethod
     def _create_jordan_block(size, eigenvalue):
@@ -144,8 +154,16 @@ class EigenProblemGenerator:
             A, true_eigenvalues = self.generate_type3()
             description = "存在代数重数大于1的特征值，且几何重数小于代数重数"
 
+        print('raw A:{}'.format(A))
+        print('raw Eigen:{}'.format(true_eigenvalues))
+
         # 简化矩阵元素
-        A = A.applyfunc(lambda x: x if abs(x) <= 10 else x / 2)
+        max_abs = max(abs(x) for x in A)
+        if max_abs > 10:
+            scale_power = 1
+            while max_abs / (2 ** scale_power) > 5:
+                scale_power += 1
+            A = (sp.Rational(1, 2 ** scale_power)) * A
         A = A.applyfunc(sp.simplify)
 
         solution = self.solve_eigenproblem(A)
