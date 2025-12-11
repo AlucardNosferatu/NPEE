@@ -5,8 +5,14 @@
 import datetime
 import time
 from collections import defaultdict
+from typing import Dict, List
 
 from DoN import ExamNotesSearcher, ST_ID, AK, NotesKnowledgeBase, logger
+
+"""
+考点日期定位接口函数
+功能：为真题检索引擎提供考点对应笔记日期的定位服务
+"""
 
 
 def locate_exam_point_dates(
@@ -16,7 +22,7 @@ def locate_exam_point_dates(
         searcher: ExamNotesSearcher = None,
         max_queries: int = 2,
         return_objects: bool = True
-):
+) -> Dict:
     """
     定位考点对应的笔记日期 - 核心接口函数
 
@@ -175,12 +181,12 @@ def locate_exam_point_dates(
 
 
 def batch_locate_dates(
-        exam_points,
+        exam_points: List[Dict],
         knowledge_base: NotesKnowledgeBase = None,
         searcher: ExamNotesSearcher = None,
         max_queries_per_point: int = 2,
         return_objects: bool = True
-):
+) -> Dict:
     """
     批量定位多个考点的笔记日期
 
@@ -211,6 +217,7 @@ def batch_locate_dates(
             "searcher": <对象>         # 可选
         }
     """
+
     # 初始化对象（如果未提供）
     if knowledge_base is None:
         knowledge_base = NotesKnowledgeBase(api_key=AK, search_topic_id=ST_ID)
