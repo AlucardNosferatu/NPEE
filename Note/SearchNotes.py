@@ -11,7 +11,7 @@ import time
 from collections import defaultdict, Counter
 from typing import Dict, List
 
-from DateOfNote import ExamNotesSearcher, ST_ID, AK, NotesKnowledgeBase, logger
+from DatesOfNotes import ExamNotesSearcher, ST_ID, AK, NotesKnowledgeBase, logger
 
 """
 考点日期定位接口函数

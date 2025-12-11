@@ -1,32 +1,26 @@
-import openpyxl
+import glob
+import os
+import pickle
 
+from CropNotes import copy_sheets_simple
+from DatesAnalyzer import IncrementalDateAnalyzer
 
-def copy_sheets_simple(input_file, output_file, sheet_list):
-    """简化版本，只复制数据不复制格式"""
-    input_wb = openpyxl.load_workbook(input_file)
-    output_wb = openpyxl.Workbook()
-
-    # 删除默认工作表
-    output_wb.remove(output_wb.active)
-
-    for sheet_name in sheet_list:
-        if sheet_name in input_wb.sheetnames:
-            # 复制整个工作表
-            source = input_wb[sheet_name]
-            target = output_wb.create_sheet(title=sheet_name)
-
-            # 只复制值
-            for row in source.iter_rows(values_only=True):
-                target.append(row)
-
-    output_wb.save(output_file)
-    print(f"已保存到: {output_file}")
-
-
-if __name__ == "__main__":
-    # 使用示例
+if __name__ == '__main__':
+    # 准备真题问题列表
+    pkl_files = glob.glob(os.path.join('日期', "**", "*.pkl"), recursive=True)
+    # 假设这是您已有的RAG结果
+    rag_results = []
+    for pkl_file in pkl_files:
+        with open(pkl_file, "rb") as f:
+            # 3. 调用dump，把字典写入文件
+            rag_result = pickle.load(f)
+            rag_results.append(rag_result)
+    analyzer = IncrementalDateAnalyzer(top_k=10, memory_limit=100)
+    for rag_item in rag_results:
+        analyzer.update(rag_item)
+    top_k = analyzer.get_top_dates_df(top_n=10)['日期'].to_list()
     copy_sheets_simple(
-        "原始文件.xlsx",
-        "新文件.xlsx",
-        ["Sheet1", "Sheet2"]
+        "C:\\Users\\16413\\Desktop\\NPEE\\统计\\WWII\\工作日志.xlsx",
+        "工作摘要.xlsx",
+        top_k
     )
