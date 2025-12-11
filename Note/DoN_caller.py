@@ -2,6 +2,7 @@
 考点日期定位接口函数
 功能：为真题检索引擎提供考点对应笔记日期的定位服务
 """
+import datetime
 import time
 from collections import defaultdict
 
@@ -55,11 +56,9 @@ def locate_exam_point_dates(
             "searcher": <ExamNotesSearcher object>          # 可选
         }
     """
-    import time
-    from datetime import datetime
 
     start_time = time.time()
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # 初始化对象（如果未提供）
     if knowledge_base is None:
@@ -212,8 +211,6 @@ def batch_locate_dates(
             "searcher": <对象>         # 可选
         }
     """
-    from datetime import datetime
-
     # 初始化对象（如果未提供）
     if knowledge_base is None:
         knowledge_base = NotesKnowledgeBase(api_key=AK, search_topic_id=ST_ID)
@@ -284,7 +281,7 @@ def batch_locate_dates(
             "total_time_seconds": total_time,
             "avg_time_per_point": round(total_time / len(exam_points), 2) if exam_points else 0
         },
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         **({"knowledge_base": knowledge_base, "searcher": searcher} if return_objects else {})
     }
 
