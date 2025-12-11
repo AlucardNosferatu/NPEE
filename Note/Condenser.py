@@ -754,7 +754,7 @@ def batch_process_questions(
         questions_results.append(result)
 
         # 统计
-        if result["status"] in ["success", "partial"]:
+        if result["status"] in ["complete", "partial"]:
             successful_count += 1
 
             # 统计科目分布
@@ -852,3 +852,5 @@ if __name__ == '__main__':
     print("复习优先级分布:")
     for priority_, count in b_res['summary']['priority_distribution'].items():
         print(f"  {priority_}: {count} 个问题")
+
+    print(b_res['questions_results'][0])

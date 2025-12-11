@@ -1,5 +1,5 @@
 """
-笔记知识库API测试与检索脚本
+笔记知识库API测试与检索脚本（适配单sheet单文件版本）
 功能：测试秘塔搜索API，建立真题到笔记的检索系统框架
 """
 
@@ -138,41 +138,15 @@ class NotesKnowledgeBase:
     def parse_search_result(self, result: Dict) -> Dict:
         """
         解析秘塔搜索API返回的搜索结果
-
-        根据实际API返回结构：
-        {
-            'errCode': 0,
-            'data': {
-                'resultId': '...',
-                'references': [
-                    {
-                        'link': '',
-                        'title': 'Excel 笔记转换 - 批次 22',
-                        'author': '',
-                        'article_type': '笔记',
-                        'index': 1,
-                        'page': 59,
-                        'total_page': 59,
-                        'publish_date': '2025-12-10',
-                        'display': {'refer_id': 1},
-                        'file_meta': {'type': 'docx', 'url': '...'}
-                    },
-                    ...
-                ],
-                'balance': 5771,
-                'sessionId': 8687123735392067584,
-                'text': '回答内容...'  # 这里包含[[1]]这样的引用标记
-            }
-        }
         """
         parsed = {
             'has_answer': False,
             'answer': '',
-            'clean_answer': '',  # 清理后的答案（不含引用标记）
+            'clean_answer': '',
             'sources': [],
             'confidence': 0.0,
-            'references': [],  # 原始references
-            'balance': 0,  # API余额
+            'references': [],
+            'balance': 0,
             'raw_data': result
         }
 
@@ -195,7 +169,7 @@ class NotesKnowledgeBase:
                 parsed['has_answer'] = True
                 parsed['answer'] = answer_text.strip()
 
-                # 清理引用标记，如[[1]]、[[2]]
+                # 清理引用标记
                 clean_text = re.sub(r'\[\[\d+]]', '', answer_text)
                 clean_text = re.sub(r'\s+', ' ', clean_text).strip()
                 parsed['clean_answer'] = clean_text
@@ -204,49 +178,32 @@ class NotesKnowledgeBase:
             if 'references' in data and isinstance(data['references'], list):
                 parsed['references'] = data['references']
 
-                # 构建sources列表（去重并增强）
+                # 构建sources列表
                 seen_references = {}
                 for ref in data['references']:
                     try:
-                        # 使用(title, page)作为唯一标识
                         title = ref.get('title', '')
                         page = ref.get('page', 1)
                         key = f"{title}_{page}"
 
                         if key not in seen_references:
-                            # 提取更详细的信息
                             source_info = {
-                                'title': title,
-                                'page': page,
-                                'total_page': ref.get('total_page', 1),
+                                'title': title, 'page': page, 'total_page': ref.get('total_page', 1),
                                 'index': ref.get('index', 0),
                                 'refer_id': ref.get('display', {}).get('refer_id', 0),
                                 'article_type': ref.get('article_type', ''),
                                 'publish_date': ref.get('publish_date', ''),
-                                'file_type': ref.get('file_meta', {}).get('type', ''),
-                                'file_url': ref.get('file_meta', {}).get('url', ''),
-                                'score': self.calculate_reference_score(ref)  # 计算相关性分数
+                                'file_meta': ref.get('file_meta', {}),
+                                'score': self.calculate_reference_score(ref),
+                                'extracted_date': self.extract_date_from_string(title)
                             }
 
-                            # 提取内容片段（从answer中提取引用此来源的部分）
+                            # 提取日期信息（从title中）
+
+                            # 提取内容片段
                             if parsed['answer']:
-                                # 查找[[index]]标记的内容
                                 ref_content = self.extract_reference_content(parsed['answer'], ref.get('index', 0))
                                 source_info['content'] = ref_content
-
-                            # 判断是否是sheet（基于标题格式）
-                            title_lower = title.lower()
-                            is_sheet = (
-                                    'excel' in title_lower or
-                                    '笔记转换' in title_lower or
-                                    '批次' in title_lower or
-                                    re.search(r'batch\d+', title_lower) or
-                                    re.search(r'第.*[章节页]', title)
-                            )
-                            source_info['is_sheet'] = is_sheet
-
-                            # 计算批次信息
-                            source_info['batch_info'] = self.extract_batch_info(title)
 
                             seen_references[key] = source_info
 
@@ -256,10 +213,9 @@ class NotesKnowledgeBase:
 
                 parsed['sources'] = list(seen_references.values())
 
-                # 如果有引用，计算平均置信度
+                # 计算平均置信度
                 if parsed['sources']:
-                    sources: list = parsed['sources']
-                    scores = [s.get('score', 0) for s in sources]
+                    scores = [s.get('score', 0) for s in parsed['sources']]
                     parsed['confidence'] = sum(scores) / len(scores)
                 else:
                     parsed['confidence'] = 0.5 if parsed['has_answer'] else 0.0
@@ -282,21 +238,11 @@ class NotesKnowledgeBase:
 
     @staticmethod
     def calculate_reference_score(reference: Dict) -> float:
-        """
-        计算单个引用的相关性分数
-
-        基于以下因素：
-        1. 页面信息：如果引用的是特定页面，分数较高
-        2. 标题相关性：如果标题包含关键词，分数较高
-        3. 引用索引：前面的引用通常更相关
-
-        Returns:
-            0.0 到 1.0 之间的分数
-        """
+        """计算单个引用的相关性分数"""
         score = 0.5  # 基础分
 
         try:
-            # 1. 根据索引调整分数（前面的引用更重要）
+            # 1. 根据索引调整分数
             index = reference.get('index', 1)
             if index <= 3:
                 score += 0.2
@@ -313,14 +259,6 @@ class NotesKnowledgeBase:
             article_type = reference.get('article_type', '')
             if article_type == '笔记':
                 score += 0.1
-            elif article_type == '技术文档':
-                score += 0.05
-
-            # 4. 如果标题包含重要关键词
-            title = reference.get('title', '').lower()
-            important_keywords = ['excel', '笔记', '考研', '政治', '408', '数学', '算法', '数据结构']
-            if any(keyword in title for keyword in important_keywords):
-                score += 0.05
 
             # 确保分数在0-1之间
             score = max(0.0, min(1.0, score))
@@ -332,58 +270,38 @@ class NotesKnowledgeBase:
 
     @staticmethod
     def extract_reference_content(answer: str, ref_index: int) -> str:
-        """
-        从回答中提取特定引用的相关内容
-
-        查找包含[[ref_index]]标记的句子或段落
-
-        Args:
-            answer: 完整回答文本
-            ref_index: 引用索引（从1开始）
-
-        Returns:
-            提取的内容片段
-        """
+        """从回答中提取特定引用的相关内容"""
         if not answer or ref_index <= 0:
             return ""
 
         try:
-            # 查找引用标记
             ref_marker = f"[[{ref_index}]]"
-
-            # 查找引用标记前后的内容
             start_pos = answer.find(ref_marker)
             if start_pos == -1:
                 return ""
 
-            # 向前找句子开始
+            # 查找句子边界
             sentence_start = answer.rfind('.', 0, start_pos)
             if sentence_start == -1:
                 sentence_start = 0
             else:
-                sentence_start += 1  # 跳过句点
+                sentence_start += 1
 
-            # 向后找句子结束
             sentence_end = answer.find('.', start_pos)
             if sentence_end == -1:
                 sentence_end = len(answer)
             else:
-                sentence_end += 1  # 包含句点
+                sentence_end += 1
 
-            # 提取句子
             sentence = answer[sentence_start:sentence_end].strip()
-
-            # 移除引用标记
             sentence = sentence.replace(ref_marker, '').strip()
 
             # 如果句子太短，扩展范围
             if len(sentence) < 20:
-                # 向前扩展一段
                 para_start = answer.rfind('\n\n', 0, start_pos)
                 if para_start == -1:
                     para_start = 0
 
-                # 向后扩展一段
                 para_end = answer.find('\n\n', start_pos)
                 if para_end == -1:
                     para_end = len(answer)
@@ -402,72 +320,104 @@ class NotesKnowledgeBase:
             return ""
 
     @staticmethod
-    def extract_batch_info(title: str) -> Dict:
-        """
-        从标题中提取批次信息
+    def extract_date_from_string(text: str) -> str:
+        """从字符串中提取8位日期"""
+        if not text:
+            return ""
 
-        示例标题: "Excel 笔记转换 - 批次 22"
+        import re
+        matches = re.findall(r'\b(20\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01]))\b', text)
+
+        if matches:
+            for match in matches:
+                date_str = match[0]
+                if len(date_str) == 8 and date_str.isdigit():
+                    return date_str
+
+        return ""
+
+    def extract_dates_from_sources(self, sources: List[Dict]) -> List[str]:
+        """
+        从源文档元数据中提取日期
+
+        Args:
+            sources: parse_search_result返回的sources列表
 
         Returns:
-            {'batch_num': 22, 'has_excel': True, 'is_note_conversion': True}
+            日期列表，如 ['20251208', '20251209']
         """
-        batch_info = {
-            'batch_num': 0,
-            'has_excel': False,
-            'is_note_conversion': False,
-            'original_title': title
-        }
+        dates = []
+
+        for source in sources:
+            try:
+                # 从title中提取日期
+                title = source.get('title', '')
+                date_from_title = self.extract_date_from_string(title)
+                if date_from_title:
+                    dates.append(date_from_title)
+                    continue
+
+                # 从文件元数据中提取
+                file_meta = source.get('file_meta', {})
+                if file_meta:
+                    file_url = file_meta.get('url', '')
+                    if file_url:
+                        # 从URL中提取文件名
+                        file_name = file_url.split('/')[-1] if '/' in file_url else file_url
+                        date_from_file = self.extract_date_from_string(file_name)
+                        if date_from_file:
+                            dates.append(date_from_file)
+
+            except Exception as e:
+                logger.debug(f"从源文档提取日期时出错: {e}")
+                continue
+
+        # 去重并排序
+        return sorted(list(set(dates)))
+
+    @staticmethod
+    def extract_sheet_dates_from_answer(answer: str) -> List[str]:
+        """
+        从回答中提取工作表日期（备用方法）
+
+        这是备用的日期提取方法，当从源文档中提取不到日期时使用
+        """
+        dates = []
 
         try:
-            title_lower = title.lower()
+            # 方法1：从###框住的区域提取
+            hash_pattern = r'###(.*?)###'
+            hash_matches = re.findall(hash_pattern, answer, re.DOTALL)
 
-            # 检查是否包含Excel和笔记转换
-            batch_info['has_excel'] = 'excel' in title_lower
-            batch_info['is_note_conversion'] = '笔记转换' in title
+            for hash_content in hash_matches:
+                if hash_content:
+                    # 从###区域内提取8位数字
+                    date_candidates = re.findall(r'\b(20\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01]))\b', hash_content)
+                    for match in date_candidates:
+                        date_str = match[0]
+                        if len(date_str) == 8 and date_str.isdigit():
+                            dates.append(date_str)
 
-            # 提取批次号
-            batch_match = re.search(r'批次\s*(\d+)', title)
-            if batch_match:
-                batch_info['batch_num'] = int(batch_match.group(1))
-            else:
-                # 尝试其他格式
-                batch_match = re.search(r'batch\s*(\d+)', title_lower)
-                if batch_match:
-                    batch_info['batch_num'] = int(batch_match.group(1))
+            # 方法2：如果###中没有找到，从整个回答中提取
+            if not dates:
+                all_dates = re.findall(r'\b(20\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01]))\b', answer)
+                for match in all_dates:
+                    date_str = match[0]
+                    if len(date_str) == 8 and date_str.isdigit():
+                        dates.append(date_str)
 
-            # 提取页码范围（如果有）
-            page_match = re.search(r'\((\d+)-(\d+)\)', title)
-            if page_match:
-                batch_info['start_page'] = int(page_match.group(1))
-                batch_info['end_page'] = int(page_match.group(2))
+            # 去重
+            dates = list(set(dates))
 
         except Exception as e:
-            logger.debug(f"提取批次信息时出错: {e}")
+            logger.debug(f"从回答中提取日期时出错: {e}")
 
-        return batch_info
+        return dates
 
     @staticmethod
     def extract_source_metadata(source: Dict) -> Dict:
         """
-        从源文档中提取元数据（适配新格式）
-
-        Args:
-            source: 解析后的source字典（来自parse_search_result）
-
-        Returns:
-            元数据: {
-                'title': str,           # 文档标题
-                'page': int,            # 页码
-                'total_page': int,      # 总页数
-                'score': float,         # 相关性分数
-                'content': str,         # 内容片段
-                'is_sheet': bool,       # 是否是sheet
-                'batch_num': int,       # 批次号
-                'article_type': str,    # 文章类型
-                'refer_id': int,        # 引用ID
-                'publish_date': str,    # 发布日期
-                'file_type': str        # 文件类型
-            }
+        从源文档中提取元数据
         """
         metadata = {
             'title': source.get('title', ''),
@@ -475,16 +425,15 @@ class NotesKnowledgeBase:
             'total_page': source.get('total_page', 1),
             'score': source.get('score', 0.0),
             'content': source.get('content', ''),
-            'is_sheet': source.get('is_sheet', False),
-            'batch_num': source.get('batch_info', {}).get('batch_num', 0),
             'article_type': source.get('article_type', ''),
             'refer_id': source.get('refer_id', 0),
             'publish_date': source.get('publish_date', ''),
-            'file_type': source.get('file_type', ''),
-            'full_info': source  # 保留完整信息
+            'file_meta': source.get('file_meta', {}),
+            'extracted_date': source.get('extracted_date', ''),
+            'full_info': source
         }
 
-        # 计算页面比例（用于排序）
+        # 计算页面比例
         if metadata['total_page'] > 0:
             metadata['page_ratio'] = metadata['page'] / metadata['total_page']
         else:
@@ -506,92 +455,9 @@ class NotesKnowledgeBase:
         stats['cache_size'] = len(self.cache)
         return stats
 
-    @staticmethod
-    def extract_sheet_dates_from_answer(answer: str) -> List[str]:
-        """
-        从回答中提取工作表日期（Excel sheet名称）
-
-        新的严格查找逻辑：
-        1. 只从###框住的区域提取日期
-        2. 如果###框住的部分为空、没有8位数字、或没有找到###框住部分，直接返回空列表
-        3. 绝不从回答正文中提取日期，避免无关日期干扰
-
-        Returns:
-            日期字符串列表，如 ['20251208', '20251209']
-        """
-        dates = []
-
-        try:
-            # 首先，尝试从###框住的区域提取
-            hash_pattern = r'###(.*?)###'
-            hash_matches = re.findall(hash_pattern, answer, re.DOTALL)
-
-            if not hash_matches:
-                # 没有###框住的部分，直接返回空列表
-                logger.debug("未找到###框住的部分，返回空日期列表")
-                return dates
-
-            # 获取最后一个###框住的区域（通常是最新的结论）
-            last_hash_block = hash_matches[-1].strip() if hash_matches else ""
-
-            if not last_hash_block:
-                # ###框住的部分为空，直接返回空列表
-                logger.debug("###框住的部分为空，返回空日期列表")
-                return dates
-
-            logger.debug(f"找到###框住区域: {last_hash_block[:100]}...")
-
-            # 从###区域内提取所有可能的日期
-            date_candidates = []
-
-            # 模式1：直接查找8位数字日期（YYYYMMDD）
-            date_patterns = [
-                r'\b(\d{4})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\b',  # YYYYMMDD
-                r'\b(\d{4})年(\d{1,2})月(\d{1,2})日\b',  # YYYY年MM月DD日
-                r'(\d{8})',  # 直接8位数字
-                r'[\(（](\d{8})[\)）]',  # (20251208)或（20251208）
-                r'[\[【](\d{8})[\]】]',  # 【20251208】或[20251208]
-            ]
-
-            for pattern in date_patterns:
-                matches = re.findall(pattern, last_hash_block)
-                for match in matches:
-                    if isinstance(match, tuple):
-                        # 如果是分组匹配，拼接成完整日期
-                        date_str = ''.join(str(num) for num in match)
-                    else:
-                        date_str = match
-
-                    # 验证是否为有效日期
-                    if len(date_str) == 8 and date_str.isdigit():
-                        year = int(date_str[:4])
-                        month = int(date_str[4:6])
-                        day = int(date_str[6:8])
-
-                        # 基本验证（2024-2025年，月份1-12，日期1-31）
-                        if (2024 <= year <= 2025 and
-                                1 <= month <= 12 and
-                                1 <= day <= 31):
-                            date_candidates.append(date_str)
-
-            # 去重
-            if date_candidates:
-                dates = sorted(list(set(date_candidates)))
-                logger.debug(f"从###区域提取到日期: {dates}")
-            else:
-                # ###框住的部分没有有效日期，返回空列表
-                logger.debug("###框住的部分没有有效日期，返回空列表")
-
-            return dates
-
-        except Exception as e:
-            logger.debug(f"提取日期时出错: {e}")
-
-        return dates
-
 
 class ExamNotesSearcher:
-    """真题笔记检索器"""
+    """真题笔记检索器（适配单sheet单文件版本）"""
 
     def __init__(self, knowledge_base: NotesKnowledgeBase):
         self.kb = knowledge_base
@@ -687,164 +553,71 @@ class ExamNotesSearcher:
     @staticmethod
     def build_search_queries(exam_point: str, subject: str) -> List[str]:
         """
-        为知识点构建多个查询问题 - 优化版
+        为知识点构建查询问题 - 优化版（适用于单个sheet一个docx的情况）
 
-        优化要点：
-        1. 不限制首次出现，任何相关日期都返回
-        2. 只提及包含笔记的日期，不提及不符合的日期
-        3. 在回答最后用###框出所有符合的日期
+        现在每个文档的文件名就是日期，知识库应该能直接返回文档名称
         """
 
-        # 基础指令 - 强调日期收集和格式化要求
-        core_instruction = (
-            "请查找所有包含或关联该知识点的笔记日期，并遵守以下要求：\n"
-            "1. 不限于首次出现，任何相关日期都收集\n"
-            "2. 只返回包含或关联笔记的日期，不提及不符合的日期\n"
-            "3. 在回答最后用###号框出所有符合的日期\n\n"
-            "日期定位方法：找到相关内容后，向上查找包含'重要：以下笔记的记录日期【'的行，提取【】内的8位数字。"
-        )
-
-        # 格式要求模板
-        format_requirement = (
-            "请按以下格式组织回答：\n"
-            "1. 先分析内容\n"
-            "2. 然后总结所有相关日期\n"
-            "3. 最后用###号框出日期，例如：###20240501、20240627###\n\n"
-            "注意：只列出确实包含或关联该知识点的日期，不要列出没有相关内容的日期。"
-        )
-
-        # 合并指令
-        combined_instruction = f"{core_instruction}\n\n{format_requirement}"
-
+        # 直接明确的查询模板
         base_queries = [
-            # 方案1：全面收集日期，强调格式
-            f"关于'{exam_point}'的笔记内容。{combined_instruction}请分析并返回所有包含或关联该知识点的日期。",
+            # 直接要求返回文档名称（日期）
+            f"在我的笔记文档中查找关于'{exam_point}'的内容。"
+            f"请直接告诉我哪些文档（文档名称/日期）包含了这个知识点。"
+            f"文档名称格式为'YYYYMMDD.docx'。请列出所有相关文档的日期。",
 
-            # 方案2：强调不限于首次出现
-            f"查找'{exam_point}'相关的所有笔记。要求：不限于首次出现，所有包含或关联该知识点的日期都要收集。"
-            f"每个工作表的标题行为'重要：以下笔记的记录日期【YYYYMMDD】'。请在回答最后用###号框出所有日期。",
+            # 强调文档名就是日期
+            f"搜索'{exam_point}'相关内容。每个笔记文档的文件名就是记录日期，格式如20251208.docx。"
+            f"请找出所有包含该知识点的文档，并列出它们的文件名（只需要日期部分）。",
 
-            # 方案3：明确排除不符合的日期
-            f"搜索'{exam_point}'的知识点。重要要求："
-            f"1. 收集所有相关日期，不限出现顺序\n"
-            f"2. 只列出包含或关联该知识点的日期，不列出没有相关内容的日期\n"
-            f"3. 在结论中用###号框出所有日期，格式如###20240501、20240627###",
+            # 结合科目特点
+            f"查找考研{subject}知识点'{exam_point}'的相关笔记。"
+            f"每个笔记文件以日期命名（如20251208.docx）。请返回所有包含该知识点的文档日期。",
 
-            # 方案4：结合科目特点，强调完整性
-            f"考研{subject}知识点'{exam_point}'在哪些日期的工作表中有记录？"
-            f"请收集所有相关日期（不限于首次出现），"
-            f"在回答中只提及包含或关联该知识点的日期，并在最后用###号框出这些日期。",
+            # 简化版
+            f"哪些日期的笔记中提到了'{exam_point}'？请直接给出日期列表（格式如：20251208, 20251209）。"
         ]
 
-        # 针对不同科目的特定查询
-        if subject == '政治':
-            base_queries.extend([
-                f"政治理论'{exam_point}'在哪些工作表中出现？请收集所有相关日期（包括多次出现的日期），"
-                f"只返回确实包含或关联该理论的工作表日期，并在回答末尾用###号框出所有日期，例如###20240501、20240627###。",
+        # 科目特定的查询
+        subject_specific = {
+            '政治': [
+                f"政治理论'{exam_point}'在哪些日期的笔记中有记录？每个笔记文件以日期命名。请列出日期。",
+                f"查找关于'{exam_point}'的政治学习笔记。文档以日期命名，如20251208.docx。请返回相关日期。"
+            ],
+            '408': [
+                f"计算机408知识点'{exam_point}'在哪些日期的笔记中？文档文件名就是日期。请给出日期列表。",
+                f"搜索'{exam_point}'的计算机笔记。每个文档代表一天的笔记，文件名是日期。请列出相关日期。"
+            ],
+            '数学二': [
+                f"数学二考点'{exam_point}'在哪些日期的笔记中记录？文档以日期命名。请提供日期。",
+                f"查找'{exam_point}'的数学学习笔记。每个文档对应一天的笔记，文件名是日期。请返回日期。"
+            ]
+        }
 
-                f"查找关于'{exam_point}'的政治笔记。要求："
-                f"1. 找出所有包含或关联该知识点的日期\n"
-                f"2. 不提及没有该知识点的日期\n"
-                f"3. 在结论中明确用###框出所有日期\n"
-                f"日期定位：标题行为'重要：以下笔记的记录日期【YYYYMMDD】'",
-            ])
+        # 合并查询
+        all_queries = base_queries + subject_specific.get(subject, [])
 
-        elif subject == '408':
-            base_queries.extend([
-                f"计算机408知识点'{exam_point}'在哪些工作表中？请完整收集所有相关日期，"
-                f"不限出现次数。在回答中只列出包含或关联该知识点的日期，最后用###号框出所有日期。",
+        # 添加强调格式的查询
+        format_queries = [
+            f"请搜索'{exam_point}'并返回包含该知识点的笔记文档日期。"
+            f"要求：直接给出日期列表，每个日期格式为8位数字（如20251208），多个日期用逗号分隔。"
+            f"例如：20251208, 20251209",
 
-                f"搜索'{exam_point}'的算法/数据结构笔记。要求："
-                f"收集所有日期，不限于首次出现；"
-                f"只返回包含或关联该知识点的日期；"
-                f"在回答末尾用###框出所有日期，格式为###日期1、日期2、日期3###。",
-            ])
+            f"查找'{exam_point}'。"
+            f"每个笔记文档的文件名就是它的记录日期（如20251208.docx）。"
+            f"请列出所有相关文档的日期（只需8位数字）。",
 
-        elif subject == '数学二':
-            base_queries.extend([
-                f"数学二考点'{exam_point}'在哪些日期的工作表中出现？"
-                f"请收集所有相关日期（包括多次出现的），"
-                f"在回答中只提及包含或关联该考点的日期，并在最后用###号框出所有日期。",
-
-                f"查找'{exam_point}'的数学笔记。要求："
-                f"1. 找出所有相关日期，不限制出现次数\n"
-                f"2. 只列出包含或关联该知识点的日期\n"
-                f"3. 在结论部分用###号框出所有日期\n"
-                f"日期格式为8位数字，位于'重要：以下笔记的记录日期【'之后。",
-            ])
-
-        # 强化格式要求的查询
-        enhanced_queries = [
-            # 强调日期完整性
-            f"请查找'{exam_point}'相关内容，并严格遵守以下要求："
-            f"1. 收集所有相关日期，不限于首次出现\n"
-            f"2. 只提及包含或关联该知识点的日期，不提及不符合的日期\n"
-            f"3. 在回答最后用###号框出所有日期，格式为###YYYYMMDD、YYYYMMDD、YYYYMMDD###\n\n"
-            f"日期定位：向上查找'重要：以下笔记的记录日期【'，提取【】内的8位数字。",
-
-            # 强调排除不符合的日期
-            f"搜索'{exam_point}'。重要规则："
-            f"1. 返回所有包含或关联该知识点的日期\n"
-            f"2. 不返回或提及没有该知识点的日期\n"
-            f"3. 在回答末尾必须用###号框出所有日期\n\n"
-            f"笔记格式：标题行为'重要：以下笔记的记录日期【20251208】'。",
-
-            # 强调格式和完整性
-            f"查找'{exam_point}'并提取所有相关的工作表日期。要求："
-            f"1. 不限制首次出现，收集所有日期\n"
-            f"2. 只列出确实包含或关联该知识点的日期\n"
-            f"3. 在结论中明确用###框出所有日期\n\n"
-            f"日期提取规则：查找包含或关联'重要：以下笔记的记录日期【'的行，提取【】内的8位数字。",
-
-            # 提供示例格式
-            f"查找'{exam_point}'相关笔记，提取工作表日期。要求："
-            f"1. 收集所有相关日期，不限出现顺序\n"
-            f"2. 只返回包含或关联该知识点的日期\n"
-            f"3. 在回答最后必须包含或关联以下格式：'综上所述，符合关键词笔记的日期为###日期1、日期2、日期3###'\n\n"
-            f"日期位于标题行中，格式为'重要：以下笔记的记录日期【20251208】'。",
+            f"在我的笔记库中搜索'{exam_point}'。"
+            f"每个文件代表一天的笔记，文件名是日期（YYYYMMDD.docx）。"
+            f"请直接返回日期列表，如：20251208, 20251210"
         ]
 
-        # 提供更明确的格式模板
-        template_queries = [
-            # 模板1：明确的格式要求
-            f"搜索'{exam_point}'。请按以下模板回答：\n"
-            f"[内容分析...]\n"
-            f"综上所述，符合关键词笔记的日期为###20240501、20240627###\n\n"
-            f"要求：1. 收集所有相关日期 2. 只提及包含或关联关键词的日期 3. 必须使用###框出日期",
-
-            # 模板2：强调排除
-            f"查找'{exam_point}'。要求：\n"
-            f"1. 找出所有包含或关联该知识点的日期（不限首次）\n"
-            f"2. 在回答中绝对不提及没有该知识点的日期\n"
-            f"3. 在结尾必须包含：'###日期1、日期2###'格式\n\n"
-            f"日期定位：标题行包含'重要：以下笔记的记录日期【'",
-
-            # 模板3：简化的指令
-            f"找到'{exam_point}'的所有出现日期。\n"
-            f"要求：所有日期都收集，只列包含或关联关键词的，最后用###框起来。\n"
-            f"例如：###20240501、20240627###",
-        ]
-
-        # 合并所有查询
-        all_queries = base_queries + enhanced_queries + template_queries
-
-        return all_queries
+        return base_queries + format_queries
 
     def search_for_exam_point(self, exam_point: str, subject: str, max_queries: int = 3) -> List[Dict]:
         """
-        搜索单个真题知识点的相关笔记 - 增加日期提取
+        搜索单个真题知识点的相关笔记 - 优化版
 
-        Returns:
-            搜索结果列表: [{
-                'exam_point': 真题知识点,
-                'subject': 科目,
-                'query': 查询问题,
-                'answer': API回答,
-                'confidence': 置信度,
-                'sources': 源文档列表,
-                'sheet_dates': [],  # 新增：提取到的工作表日期
-                'date_extraction_method': str  # 新增：日期提取方式
-            }]
+        现在从源文档的元数据中直接提取日期，而不是从回答文本中提取
         """
         results = []
 
@@ -869,41 +642,35 @@ class ExamNotesSearcher:
                         source_meta = self.kb.extract_source_metadata(source)
                         sources_info.append(source_meta)
 
-                    # 提取工作表日期
-                    sheet_dates = []
-                    date_extraction_method = "unknown"
+                    # 直接从源文档中提取日期
+                    sheet_dates = self.kb.extract_dates_from_sources(parsed_result['sources'])
 
-                    # 方法1：从回答文本中提取
-                    print(parsed_result['answer'])
-                    dates_from_answer = self.kb.extract_sheet_dates_from_answer(parsed_result['answer'])
-                    if dates_from_answer:
-                        sheet_dates.extend(dates_from_answer)
-                        date_extraction_method = "from_answer"
-
-                    # 去重和排序
-                    sheet_dates = sorted(list(set(sheet_dates)))
+                    # 如果源文档中没有提取到日期，尝试从回答中提取
+                    if not sheet_dates:
+                        dates_from_answer = self.kb.extract_sheet_dates_from_answer(parsed_result['answer'])
+                        sheet_dates = dates_from_answer
 
                     result_entry = {
                         'exam_point': exam_point,
                         'subject': subject,
                         'query': query,
-                        'answer': parsed_result['answer'][:500],  # 截断
+                        'answer': parsed_result['answer'][:500],
                         'clean_answer': parsed_result.get('clean_answer', '')[:500],
                         'confidence': parsed_result['confidence'],
                         'sources': sources_info,
                         'full_answer': parsed_result['answer'],
-                        'sheet_dates': sheet_dates,  # 新增：工作表日期
-                        'date_extraction_method': date_extraction_method,  # 新增：提取方式
-                        'date_count': len(sheet_dates)  # 新增：日期数量
+                        'sheet_dates': sheet_dates,
+                        'date_count': len(sheet_dates),
+                        'date_extraction_method': 'from_sources' if sheet_dates else 'from_answer'
                     }
 
                     results.append(result_entry)
 
                     # 日志中显示日期信息
                     if sheet_dates:
-                        logger.debug(f"  找到 {len(sheet_dates)} 个相关工作表日期: {', '.join(sheet_dates)}")
+                        logger.debug(f"  找到 {len(sheet_dates)} 个相关文档日期: {', '.join(sheet_dates)}")
                     else:
-                        logger.debug(f"  未提取到工作表日期信息")
+                        logger.debug(f"  未提取到文档日期信息")
 
                 else:
                     logger.debug(f"  未找到相关信息")
@@ -1029,13 +796,17 @@ class ExamNotesSearcher:
                         '科目': result['subject'],
                         '查询问题': result['query'],
                         '回答摘要': result['answer'],
-                        '置信度': result['confidence']
+                        '置信度': result['confidence'],
+                        '找到日期数': result['date_count'],
+                        '日期列表': ', '.join(result['sheet_dates']) if result['sheet_dates'] else '无',
+                        '日期提取方式': result.get('date_extraction_method', '未知')
                     }
 
                     # 源文档信息
                     for i, source in enumerate(result['sources'][:3]):  # 最多3个源
                         row[f'源文档{i + 1}_标题'] = source.get('title', '')
                         row[f'源文档{i + 1}_分数'] = source.get('score', 0)
+                        row[f'源文档{i + 1}_提取日期'] = source.get('extracted_date', '无')
                         row[f'源文档{i + 1}_内容'] = source.get('content', '')[:100]  # 截断
 
                     all_data.append(row)
@@ -1103,6 +874,10 @@ def check_api_connection():
                 for i, source in enumerate(parsed['sources'][:2]):  # 显示前2个
                     meta = kb.extract_source_metadata(source)
                     print(f"  源{i + 1}: {meta['title']} (分数: {meta['score']:.2f})")
+
+                    # 显示提取的日期
+                    if meta['extracted_date']:
+                        print(f"     提取日期: {meta['extracted_date']}")
         else:
             print(f"✗ 未找到相关信息")
             print(f"错误信息: {parsed['answer']}")
@@ -1121,7 +896,7 @@ def check_api_connection():
 def run_comprehensive_test():
     """运行综合测试"""
     print("\n" + "=" * 60)
-    print("🧪 笔记知识库综合测试")
+    print("🧪 笔记知识库综合测试（单sheet单文件版本）")
     print("=" * 60)
 
     # 1. 初始化
@@ -1140,7 +915,7 @@ def run_comprehensive_test():
         analysis_df = searcher.analyze_results(political_results)
 
         print("\n📊 政治科目搜索结果分析:")
-        print(analysis_df[['exam_point', 'found_count', 'avg_confidence']].to_string(index=False))
+        print(analysis_df[['exam_point', 'found_count', 'date_count', 'date_list']].to_string(index=False))
 
         # 4. 导出结果
         output_file = searcher.export_results(political_results, "政治科目测试结果.xlsx")
@@ -1158,7 +933,7 @@ def run_comprehensive_test():
 
 def quick_test():
     """快速测试"""
-    print("🚀 快速测试模式")
+    print("🚀 快速测试模式（单sheet单文件版本）")
 
     # 初始化
     api_key = AK
@@ -1191,11 +966,18 @@ def quick_test():
             sources = []
             for source in parsed['sources'][:2]:  # 前2个源
                 meta = kb.extract_source_metadata(source)
-                if meta['title']:
-                    sources.append(f"{meta['title']}({meta['score']:.2f})")
+                source_info = f"{meta['title']}({meta['score']:.2f})"
+                if meta['extracted_date']:
+                    source_info += f" [日期:{meta['extracted_date']}]"
+                sources.append(source_info)
 
             if sources:
                 print(f"  相关源文档: {', '.join(sources)}")
+
+            # 从源文档中提取日期
+            dates = kb.extract_dates_from_sources(parsed['sources'])
+            if dates:
+                print(f"  提取到的日期: {', '.join(dates)}")
         else:
             print(f"✗ 未找到相关信息")
 
@@ -1220,7 +1002,7 @@ def quick_test():
 
 def check_date_extraction():
     """测试日期提取功能"""
-    print("📅 测试日期提取功能")
+    print("📅 测试日期提取功能（单sheet单文件版本）")
     print("=" * 60)
 
     # 初始化
@@ -1234,7 +1016,8 @@ def check_date_extraction():
     test_cases = [
         ("矛盾的普遍性和特殊性", "政治"),
         ("二叉树遍历", "408"),
-        ("定积分计算", "数学二")
+        ("定积分计算", "数学二"),
+        ("新质生产力", "政治")
     ]
 
     for exam_point, subject in test_cases:
@@ -1254,28 +1037,79 @@ def check_date_extraction():
                 else:
                     print(f"  ⚠️ 未提取到工作表日期")
 
-                # 显示回答中的日期线索
-                if result['answer']:
-                    # 查找可能的日期模式
-                    date_patterns = re.findall(r'\d{8}', result['answer'][:300])
-                    if date_patterns:
-                        print(f"  回答中的数字模式: {', '.join(date_patterns)}")
+                # 显示源文档信息
+                if result['sources']:
+                    print(f"  相关源文档数: {len(result['sources'])}")
+                    for i, source in enumerate(result['sources'][:2]):
+                        print(f"    源{i + 1}: {source.get('title', '无标题')}")
+                        if source.get('extracted_date'):
+                            print(f"      提取日期: {source.get('extracted_date')}")
 
         time.sleep(1)  # 避免API限流
 
     print(f"\n{'=' * 60}")
     print("📊 总结：")
-    print("修改后的查询会明确要求知识库提供工作表日期信息")
-    print("如果知识库按格式提供，我们就可以直接定位到具体的sheet")
+    print("现在每个Excel sheet单独保存为docx文件，文件名就是日期")
+    print("查询时会明确要求知识库返回文档名称（日期）")
+    print("日期提取优先级：1.从源文档标题中提取 2.从回答文本中提取")
+
+
+def custom_search_test():
+    """自定义搜索测试"""
+    print("🎯 自定义搜索测试（单sheet单文件版本）")
+
+    api_key = AK
+    search_topic_id = ST_ID
+
+    kb = NotesKnowledgeBase(api_key, search_topic_id)
+    searcher = ExamNotesSearcher(kb)
+
+    while True:
+        print("\n" + "-" * 60)
+        exam_point = input("请输入要搜索的知识点（输入 'quit' 退出）: ").strip()
+
+        if exam_point.lower() in ['quit', 'exit', 'q']:
+            break
+
+        if exam_point:
+            subject = input("请输入所属科目（政治/408/数学二）: ").strip()
+
+            if subject not in ['政治', '408', '数学二']:
+                print("⚠️ 科目无效，使用默认科目：政治")
+                subject = '政治'
+
+            print(f"\n搜索: {exam_point} ({subject})")
+            results = searcher.search_for_exam_point(exam_point, subject, max_queries=2)
+
+            if results:
+                print(f"找到 {len(results)} 个查询结果")
+
+                for i, result in enumerate(results):
+                    print(f"\n结果 {i + 1}:")
+                    print(f"  查询问题: {result['query'][:80]}...")
+                    print(f"  置信度: {result['confidence']:.3f}")
+
+                    if result['sheet_dates']:
+                        print(f"  找到日期: {', '.join(result['sheet_dates'])}")
+                        print(f"  提取方式: {result['date_extraction_method']}")
+                    else:
+                        print(f"  ⚠️ 未找到相关日期")
+
+                    # 显示部分回答内容
+                    if result['clean_answer']:
+                        print(f"  回答摘要: {result['clean_answer'][:200]}...")
+            else:
+                print("未找到相关信息")
 
 
 def main():
     """主函数"""
     print("""
     ════════════════════════════════════════════════════
-        考研笔记知识库检索测试系统 (日期增强版)
-        版本: 1.1
+        考研笔记知识库检索测试系统 (单sheet单文件版本)
+        版本: 2.0
         功能: 测试秘塔搜索API，提取相关笔记的工作表日期
+        说明: 每个Excel sheet单独保存为docx文件，文件名就是日期
     ════════════════════════════════════════════════════
     """)
 
@@ -1284,9 +1118,10 @@ def main():
     print("2. 🚀 快速功能测试")
     print("3. 📚 综合科目测试")
     print("4. 🎯 自定义查询测试")
-    print("5. 📅 测试日期提取功能 (新增)")
+    print("5. 📅 测试日期提取功能 (新版本)")
+    print("6. 🔍 自定义知识点搜索")
 
-    choice = input("\n请输入选项 (1-5): ").strip()
+    choice = input("\n请输入选项 (1-6): ").strip()
 
     if choice == '1':
         check_api_connection()
@@ -1322,9 +1157,18 @@ def main():
                         print(f"\n  相关源文档:")
                         for i, source in enumerate(parsed['sources'][:3]):
                             meta = kb.extract_source_metadata(source)
-                            print(f"  {i + 1}. {meta['title']} (相关性: {meta['score']:.2f})")
+                            source_desc = f"  {i + 1}. {meta['title']} (相关性: {meta['score']:.2f})"
+                            if meta['extracted_date']:
+                                source_desc += f" [日期: {meta['extracted_date']}]"
+                            print(source_desc)
+
                             if meta['content']:
                                 print(f"     内容: {meta['content'][:100]}...")
+
+                        # 提取日期
+                        dates = kb.extract_dates_from_sources(parsed['sources'])
+                        if dates:
+                            print(f"\n  提取到的日期: {', '.join(dates)}")
                 else:
                     print(f"✗ {parsed['answer']}")
 
@@ -1337,6 +1181,10 @@ def main():
 
     elif choice == '5':
         check_date_extraction()
+
+    elif choice == '6':
+        custom_search_test()
+
     else:
         print("无效选项")
 
