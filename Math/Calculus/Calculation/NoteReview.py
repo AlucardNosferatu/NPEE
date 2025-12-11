@@ -17,7 +17,7 @@ def remove_letters(text):
 
 def get_worksheet(sheet_name='', get_all=False):
     note_path = input(r'输入要复习的文件路径，默认为C:\Users\16413\Desktop\NPEE\统计\WWII\工作日志.xlsx')
-    if note_path is '':
+    if note_path == '':
         note_path = r'C:\Users\16413\Desktop\NPEE\统计\WWII\工作日志.xlsx'
     workbook: openpyxl.Workbook = openpyxl.load_workbook(filename=note_path)
     sheet_names = workbook.sheetnames
