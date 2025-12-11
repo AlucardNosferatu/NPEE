@@ -215,7 +215,8 @@ class NotesKnowledgeBase:
 
                 # 计算平均置信度
                 if parsed['sources']:
-                    scores = [s.get('score', 0) for s in parsed['sources']]
+                    source: list = parsed['sources']
+                    scores = [s.get('score', 0) for s in source]
                     parsed['confidence'] = sum(scores) / len(scores)
                 else:
                     parsed['confidence'] = 0.5 if parsed['has_answer'] else 0.0
@@ -559,6 +560,7 @@ class ExamNotesSearcher:
         """
 
         # 直接明确的查询模板
+        # noinspection SpellCheckingInspection
         base_queries = [
             # 直接要求返回文档名称（日期）
             f"在我的笔记文档中查找关于'{exam_point}'的内容。"
@@ -595,7 +597,7 @@ class ExamNotesSearcher:
 
         # 合并查询
         all_queries = base_queries + subject_specific.get(subject, [])
-
+        _ = all_queries
         # 添加强调格式的查询
         format_queries = [
             f"请搜索'{exam_point}'并返回包含该知识点的笔记文档日期。"

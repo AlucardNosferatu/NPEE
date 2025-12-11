@@ -6,11 +6,12 @@ import datetime
 import glob
 import json
 import os
+import pickle
 import time
 from collections import defaultdict, Counter
 from typing import Dict, List
 
-from DoN import ExamNotesSearcher, ST_ID, AK, NotesKnowledgeBase, logger
+from DateOfNote import ExamNotesSearcher, ST_ID, AK, NotesKnowledgeBase, logger
 
 """
 考点日期定位接口函数
@@ -753,7 +754,10 @@ def batch_process_questions(
             max_queries_per_keyword=max_queries_per_keyword,
             return_objects=False  # 不在每个结果中返回对象
         )
-
+        qd = question_data
+        with open("日期/{}-{}-{}.pkl".format(qd['year'], qd['subject'], qd['qid']), "wb") as f:
+            # 3. 调用dump，把字典写入文件
+            pickle.dump(result, f)
         questions_results.append(result)
 
         # 统计
@@ -865,9 +869,7 @@ def load_json_files(folder_path):
 
 if __name__ == '__main__':
     # 准备真题问题列表
-    q_list = load_json_files("真题")
-    while len(q_list) > 2:
-        q_list.pop()
+    q_list = load_json_files("真题/数二/2025")
     # 执行批量处理
     b_res = batch_process_questions(
         questions_list=q_list,
@@ -875,20 +877,3 @@ if __name__ == '__main__':
         progress_callback=progress_callback_,
         return_objects=True
     )
-
-    # 解析批量结果
-    print(f"批量处理完成: {b_res['successful_questions']}/{b_res['total_questions']} 成功")
-    print(f"总共找到 {b_res['summary']['total_unique_dates_found']} 个唯一日期")
-    print(f"平均置信度: {b_res['summary']['avg_confidence']}")
-
-    # 查看科目分布
-    print("科目分布:")
-    for sub, count in b_res['summary']['subject_distribution'].items():
-        print(f"  {sub}: {count} 个问题")
-
-    # 查看优先级分布
-    print("复习优先级分布:")
-    for priority_, count in b_res['summary']['priority_distribution'].items():
-        print(f"  {priority_}: {count} 个问题")
-
-    print(b_res['questions_results'])
