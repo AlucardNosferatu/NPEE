@@ -209,7 +209,7 @@ class ExcelToParagraphConverter:
             df = pd.read_excel(self.excel_path, sheet_name=sheet_name, header=None)
 
             # 添加sheet标题
-            title = doc.add_heading(f"📄 {sheet_name}", level=2)
+            title = doc.add_heading(f"重要：以下笔记的首次记录日期【{sheet_name}】", level=2)
             self.set_chinese_font(title)
 
             # 获取有意义的文本内容
@@ -308,7 +308,6 @@ class ExcelToParagraphConverter:
 
                 # 添加文档信息
                 info_para = doc.add_paragraph()
-                info_para.add_run(f"生成时间: {datetime.now().strftime('%Y年%m月%d日 %H:%M:%S')}\n")
                 info_para.add_run(f"源文件: {os.path.basename(self.excel_path)}\n")
                 info_para.add_run(f"本批次包含工作表: {start_idx+1}-{end_idx} ({len(batch_sheets)}个)\n")
                 info_para.add_run(f"格式: 表格内容已转换为普通段落，带智能缩进")
