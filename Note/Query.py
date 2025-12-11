@@ -257,7 +257,8 @@ class NotesKnowledgeBase:
 
                 # 如果有引用，计算平均置信度
                 if parsed['sources']:
-                    scores = [s.get('score', 0) for s in parsed['sources']]
+                    sources: list = parsed['sources']
+                    scores = [s.get('score', 0) for s in sources]
                     parsed['confidence'] = sum(scores) / len(scores)
                 else:
                     parsed['confidence'] = 0.5 if parsed['has_answer'] else 0.0
@@ -504,6 +505,94 @@ class NotesKnowledgeBase:
         stats['cache_size'] = len(self.cache)
         return stats
 
+    @staticmethod
+    def extract_sheet_dates_from_answer(answer: str) -> List[str]:
+        """
+        从回答中提取工作表日期（Excel sheet名称）
+
+        Returns:
+            日期字符串列表，如 ['20251208', '20251209']
+        """
+        dates = []
+
+        try:
+            # 模式1：直接查找8位数字日期（YYYYMMDD）
+            date_patterns = [
+                r'\b(\d{4})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\b',  # YYYYMMDD
+                r'\b(\d{4})年(\d{1,2})月(\d{1,2})日\b',  # YYYY年MM月DD日
+                r'工作表[：:]\s*(\d{8})',  # 工作表：20251208
+                r'日期[：:]\s*(\d{8})',  # 日期：20251208
+                r'(\d{8})\s*工作表',  # 20251208工作表
+                r'[\(（](\d{8})[\)）]',  # (20251208)或（20251208）
+            ]
+
+            for pattern in date_patterns:
+                matches = re.findall(pattern, answer)
+                for match in matches:
+                    if isinstance(match, tuple):
+                        # 如果是分组匹配，拼接成完整日期
+                        date_str = ''.join(str(num) for num in match)
+                    else:
+                        date_str = match
+
+                    # 验证是否为有效日期
+                    if len(date_str) == 8 and date_str.isdigit():
+                        year = int(date_str[:4])
+                        month = int(date_str[4:6])
+                        day = int(date_str[6:8])
+
+                        # 基本验证（2024-2025年，月份1-12，日期1-31）
+                        if (2024 <= year <= 2025 and
+                                1 <= month <= 12 and
+                                1 <= day <= 31):
+                            dates.append(date_str)
+
+            # 去重并排序
+            dates = sorted(list(set(dates)))
+
+        except Exception as e:
+            logger.debug(f"提取日期时出错: {e}")
+
+        return dates
+
+    @staticmethod
+    def extract_sheet_dates_from_sources(sources: List[Dict]) -> List[str]:
+        """
+        从源文档中提取工作表日期
+
+        分析源文档标题，提取可能的日期信息
+        """
+        dates = []
+
+        try:
+            for source in sources:
+                title = source.get('title', '')
+                _ = title
+                # 从标题中提取日期
+                # 示例标题："Excel 笔记转换 - 批次 22 (101-110)"
+                # 我们需要找到实际的工作表名称
+
+                # 尝试提取批次信息中的工作表范围
+                batch_info = source.get('batch_info', {})
+                if batch_info and batch_info.get('batch_num', 0) > 0:
+                    # 如果知道批次号，可以推导出大致的工作表范围
+                    # 这里可以根据你的批次命名规则调整
+                    batch_num = batch_info['batch_num']
+                    # 假设每个批次包含10个sheet
+                    start_idx = (batch_num - 1) * 10 + 1
+                    # 但这只是索引，不是实际日期
+                    _ = start_idx
+                # 直接在内容中搜索日期
+                content = source.get('content', '')
+                if content:
+                    content_dates = NotesKnowledgeBase.extract_sheet_dates_from_answer(content)
+                    dates.extend(content_dates)
+
+        except Exception as e:
+            logger.debug(f"从源文档提取日期时出错: {e}")
+
+        return sorted(list(set(dates)))
+
 
 class ExamNotesSearcher:
     """真题笔记检索器"""
@@ -602,44 +691,57 @@ class ExamNotesSearcher:
     @staticmethod
     def build_search_queries(exam_point: str, subject: str) -> List[str]:
         """
-        为知识点构建多个查询问题
+        为知识点构建多个查询问题 - 增加日期要求
 
-        Args:
-            exam_point: 真题知识点
-            subject: 科目
-
-        Returns:
-            查询问题列表
+        修改说明：在每个查询中加入对日期/工作表名称的需求
         """
-        queries = [f"关于{exam_point}的笔记内容", f"{exam_point}的相关知识点"]
+        # 基础查询 - 明确要求提供日期信息
+        base_queries = [
+            # 方案A：直接在查询中要求提供日期
+            f"关于{exam_point}的笔记内容，请提供相关的工作表名称（日期格式，如20251208）",
+            f"{exam_point}的相关知识点，请说明这些知识点出现在哪些工作表中",
 
-        # 基础查询
+            # 方案B：更明确的要求格式
+            f"查找与{exam_point}相关的笔记，并注明笔记所在的工作表名称（格式：YYYYMMDD）",
+            f"{exam_point}的考点在哪些日期的工作表中出现？请列出具体日期",
+        ]
+
+        queries = base_queries
 
         # 针对不同科目的特定查询
         if subject == '政治':
-            queries.append(f"{exam_point}的理论阐述")
-            queries.append(f"{exam_point}的实践意义")
-            queries.append(f"如何理解{exam_point}")
+            queries.extend([
+                f"{exam_point}的理论阐述，请提供相关笔记的工作表日期",
+                f"{exam_point}的实践意义，请注明来源工作表名称",
+                f"如何理解{exam_point}，并说明在哪些日期的工作表中有相关内容"
+            ])
 
         elif subject == '408':
-            queries.append(f"{exam_point}的算法实现")
-            queries.append(f"{exam_point}的应用场景")
-            queries.append(f"{exam_point}的关键概念")
+            queries.extend([
+                f"{exam_point}的算法实现，请提供相关笔记的工作表信息",
+                f"{exam_point}的应用场景，请注明来源工作表日期",
+                f"{exam_point}的关键概念，在哪些日期的工作表中有记录？"
+            ])
 
         elif subject == '数学二':
-            queries.append(f"{exam_point}的公式推导")
-            queries.append(f"{exam_point}的解题方法")
-            queries.append(f"{exam_point}的典型例题")
+            queries.extend([
+                f"{exam_point}的公式推导，请提供相关笔记的工作表名称",
+                f"{exam_point}的解题方法，请注明来源工作表的日期",
+                f"{exam_point}的典型例题，在哪些日期的工作表中有讲解？"
+            ])
 
-        # 考研特定查询
-        queries.append(f"考研{subject}中{exam_point}的考点")
-        queries.append(f"{exam_point}在考研中的重要性")
+        # 考研特定查询 - 强化日期要求
+        queries.extend([
+            f"考研{subject}中{exam_point}的考点，请列出相关笔记的工作表日期",
+            f"{exam_point}在考研中的重要性，并提供相关笔记的工作表信息",
+            f"搜索关于{exam_point}的复习笔记，要求返回工作表名称（格式：YYYYMMDD）"
+        ])
 
         return queries
 
     def search_for_exam_point(self, exam_point: str, subject: str, max_queries: int = 3) -> List[Dict]:
         """
-        搜索单个真题知识点的相关笔记
+        搜索单个真题知识点的相关笔记 - 增加日期提取
 
         Returns:
             搜索结果列表: [{
@@ -648,7 +750,9 @@ class ExamNotesSearcher:
                 'query': 查询问题,
                 'answer': API回答,
                 'confidence': 置信度,
-                'sources': 源文档列表
+                'sources': 源文档列表,
+                'sheet_dates': [],  # 新增：提取到的工作表日期
+                'date_extraction_method': str  # 新增：日期提取方式
             }]
         """
         results = []
@@ -674,24 +778,46 @@ class ExamNotesSearcher:
                         source_meta = self.kb.extract_source_metadata(source)
                         sources_info.append(source_meta)
 
+                    # 提取工作表日期
+                    sheet_dates = []
+                    date_extraction_method = "unknown"
+
+                    # 方法1：从回答文本中提取
+                    dates_from_answer = self.kb.extract_sheet_dates_from_answer(parsed_result['answer'])
+                    if dates_from_answer:
+                        sheet_dates.extend(dates_from_answer)
+                        date_extraction_method = "from_answer"
+
+                    # 方法2：从源文档内容中提取
+                    dates_from_sources = self.kb.extract_sheet_dates_from_sources(sources_info)
+                    if dates_from_sources:
+                        sheet_dates.extend(dates_from_sources)
+                        date_extraction_method = "from_sources"
+
+                    # 去重和排序
+                    sheet_dates = sorted(list(set(sheet_dates)))
+
                     result_entry = {
                         'exam_point': exam_point,
                         'subject': subject,
                         'query': query,
                         'answer': parsed_result['answer'][:500],  # 截断
+                        'clean_answer': parsed_result.get('clean_answer', '')[:500],
                         'confidence': parsed_result['confidence'],
                         'sources': sources_info,
-                        'full_answer': parsed_result['answer']
+                        'full_answer': parsed_result['answer'],
+                        'sheet_dates': sheet_dates,  # 新增：工作表日期
+                        'date_extraction_method': date_extraction_method,  # 新增：提取方式
+                        'date_count': len(sheet_dates)  # 新增：日期数量
                     }
 
                     results.append(result_entry)
 
-                    # 简单日志
-                    if sources_info:
-                        source_titles = [s['title'] for s in sources_info if s['title']]
-                        logger.debug(f"  找到 {len(source_titles)} 个相关源文档")
+                    # 日志中显示日期信息
+                    if sheet_dates:
+                        logger.debug(f"  找到 {len(sheet_dates)} 个相关工作表日期: {', '.join(sheet_dates)}")
                     else:
-                        logger.debug(f"  找到相关回答，但无具体源文档")
+                        logger.debug(f"  未提取到工作表日期信息")
 
                 else:
                     logger.debug(f"  未找到相关信息")
@@ -739,7 +865,7 @@ class ExamNotesSearcher:
     @staticmethod
     def analyze_results(search_results: Dict) -> pd.DataFrame:
         """
-        分析检索结果，生成统计表格
+        分析检索结果，生成统计表格 - 增加日期统计
 
         Returns:
             DataFrame包含以下列:
@@ -747,6 +873,8 @@ class ExamNotesSearcher:
             - subject: 科目
             - found_count: 找到的相关文档数
             - avg_confidence: 平均置信度
+            - date_count: 提取到的工作表日期数量
+            - date_list: 工作表日期列表
             - source_titles: 源文档标题列表
         """
         analysis_data = []
@@ -757,8 +885,13 @@ class ExamNotesSearcher:
 
             # 提取所有源文档
             all_sources = []
+            all_dates = []
+
             for result in results:
                 all_sources.extend(result['sources'])
+                # 收集所有日期
+                dates = result.get('sheet_dates', [])
+                all_dates.extend(dates)
 
             # 去重源文档（基于标题）
             unique_sources = {}
@@ -766,6 +899,9 @@ class ExamNotesSearcher:
                 title = source.get('title', '')
                 if title and title not in unique_sources:
                     unique_sources[title] = source
+
+            # 去重日期
+            unique_dates = sorted(list(set(all_dates)))
 
             # 计算置信度
             confidences = [r['confidence'] for r in results if r['confidence'] > 0]
@@ -779,6 +915,8 @@ class ExamNotesSearcher:
                 'subject': subject,
                 'found_count': len(unique_sources),
                 'avg_confidence': round(avg_confidence, 3),
+                'date_count': len(unique_dates),
+                'date_list': ', '.join(unique_dates),
                 'source_titles': list(unique_sources.keys()),
                 'total_searches': len(results)
             })
@@ -994,13 +1132,64 @@ def quick_test():
     return kb
 
 
+def check_date_extraction():
+    """测试日期提取功能"""
+    print("📅 测试日期提取功能")
+    print("=" * 60)
+
+    # 初始化
+    api_key = AK
+    search_topic_id = ST_ID
+
+    kb = NotesKnowledgeBase(api_key, search_topic_id)
+    searcher = ExamNotesSearcher(kb)
+
+    # 测试几个重点知识点
+    test_cases = [
+        ("矛盾的普遍性和特殊性", "政治"),
+        ("二叉树遍历", "408"),
+        ("定积分计算", "数学二")
+    ]
+
+    for exam_point, subject in test_cases:
+        print(f"\n🔍 测试: {exam_point} ({subject})")
+
+        # 搜索
+        results = searcher.search_for_exam_point(exam_point, subject, max_queries=2)
+
+        if results:
+            for result in results:
+                print(f"  查询: {result['query'][:50]}...")
+                print(f"  置信度: {result['confidence']:.3f}")
+
+                if result['sheet_dates']:
+                    print(f"  提取到的工作表日期: {', '.join(result['sheet_dates'])}")
+                    print(f"  提取方式: {result['date_extraction_method']}")
+                else:
+                    print(f"  ⚠️ 未提取到工作表日期")
+
+                # 显示回答中的日期线索
+                if result['answer']:
+                    # 查找可能的日期模式
+                    date_patterns = re.findall(r'\d{8}', result['answer'][:300])
+                    if date_patterns:
+                        print(f"  回答中的数字模式: {', '.join(date_patterns)}")
+
+        time.sleep(1)  # 避免API限流
+
+    print(f"\n{'=' * 60}")
+    print("📊 总结：")
+    print("修改后的查询会明确要求知识库提供工作表日期信息")
+    print("如果知识库按格式提供，我们就可以直接定位到具体的sheet")
+
+
 def main():
     """主函数"""
     print("""
     ════════════════════════════════════════════════════
-        考研笔记知识库检索测试系统
-        版本: 1.0
-        功能: 测试秘塔搜索API，建立真题到笔记的检索框架
+        考研笔记知识库检索测试系统 (日期增强版)
+        版本: 1.1
+        功能: 测试秘塔搜索API，提取相关笔记的工作表日期
     ════════════════════════════════════════════════════
     """)
 
@@ -1009,8 +1198,9 @@ def main():
     print("2. 🚀 快速功能测试")
     print("3. 📚 综合科目测试")
     print("4. 🎯 自定义查询测试")
+    print("5. 📅 测试日期提取功能 (新增)")
 
-    choice = input("\n请输入选项 (1-4): ").strip()
+    choice = input("\n请输入选项 (1-5): ").strip()
 
     if choice == '1':
         check_api_connection()
@@ -1058,7 +1248,8 @@ def main():
         print(f"  总查询数: {stats['total_queries']}")
         print(f"  成功数: {stats['successful_queries']}")
         print(f"  成功率: {stats['success_rate']:.1f}%")
-
+    elif choice == '5':
+        check_date_extraction()
     else:
         print("无效选项")
 
