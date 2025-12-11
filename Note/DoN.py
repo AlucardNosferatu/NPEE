@@ -511,9 +511,10 @@ class NotesKnowledgeBase:
         """
         从回答中提取工作表日期（Excel sheet名称）
 
-        新的查找逻辑：
-        1. 先找###框住的区域，找到的情况下，在###框住区域内部进行匹配
-        2. 如果没找到，从回答文本的最后往前找，第一个匹配的日期作为唯一的结果
+        新的严格查找逻辑：
+        1. 只从###框住的区域提取日期
+        2. 如果###框住的部分为空、没有8位数字、或没有找到###框住部分，直接返回空列表
+        3. 绝不从回答正文中提取日期，避免无关日期干扰
 
         Returns:
             日期字符串列表，如 ['20251208', '20251209']
@@ -525,113 +526,63 @@ class NotesKnowledgeBase:
             hash_pattern = r'###(.*?)###'
             hash_matches = re.findall(hash_pattern, answer, re.DOTALL)
 
-            if hash_matches:
-                # 获取最后一个###框住的区域（通常是最新的结论）
-                last_hash_block = hash_matches[-1].strip() if hash_matches else ""
+            if not hash_matches:
+                # 没有###框住的部分，直接返回空列表
+                logger.debug("未找到###框住的部分，返回空日期列表")
+                return dates
 
-                if last_hash_block:
-                    logger.debug(f"找到###框住区域: {last_hash_block[:100]}...")
+            # 获取最后一个###框住的区域（通常是最新的结论）
+            last_hash_block = hash_matches[-1].strip() if hash_matches else ""
 
-                    # 从###区域内提取所有可能的日期
-                    date_candidates = []
+            if not last_hash_block:
+                # ###框住的部分为空，直接返回空列表
+                logger.debug("###框住的部分为空，返回空日期列表")
+                return dates
 
-                    # 模式1：直接查找8位数字日期（YYYYMMDD）
-                    date_patterns = [
-                        r'\b(\d{4})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\b',  # YYYYMMDD
-                        r'\b(\d{4})年(\d{1,2})月(\d{1,2})日\b',  # YYYY年MM月DD日
-                        r'(\d{8})',  # 直接8位数字
-                        r'[\(（](\d{8})[\)）]',  # (20251208)或（20251208）
-                    ]
+            logger.debug(f"找到###框住区域: {last_hash_block[:100]}...")
 
-                    for pattern in date_patterns:
-                        matches = re.findall(pattern, last_hash_block)
-                        for match in matches:
-                            if isinstance(match, tuple):
-                                # 如果是分组匹配，拼接成完整日期
-                                date_str = ''.join(str(num) for num in match)
-                            else:
-                                date_str = match
+            # 从###区域内提取所有可能的日期
+            date_candidates = []
 
-                            # 验证是否为有效日期
-                            if len(date_str) == 8 and date_str.isdigit():
-                                year = int(date_str[:4])
-                                month = int(date_str[4:6])
-                                day = int(date_str[6:8])
+            # 模式1：直接查找8位数字日期（YYYYMMDD）
+            date_patterns = [
+                r'\b(\d{4})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\b',  # YYYYMMDD
+                r'\b(\d{4})年(\d{1,2})月(\d{1,2})日\b',  # YYYY年MM月DD日
+                r'(\d{8})',  # 直接8位数字
+                r'[\(（](\d{8})[\)）]',  # (20251208)或（20251208）
+                r'[\[【](\d{8})[\]】]',  # 【20251208】或[20251208]
+            ]
 
-                                # 基本验证（2024-2025年，月份1-12，日期1-31）
-                                if (2024 <= year <= 2025 and
-                                        1 <= month <= 12 and
-                                        1 <= day <= 31):
-                                    date_candidates.append(date_str)
+            for pattern in date_patterns:
+                matches = re.findall(pattern, last_hash_block)
+                for match in matches:
+                    if isinstance(match, tuple):
+                        # 如果是分组匹配，拼接成完整日期
+                        date_str = ''.join(str(num) for num in match)
+                    else:
+                        date_str = match
 
-                    # 去重
-                    if date_candidates:
-                        dates = sorted(list(set(date_candidates)))
-                        logger.debug(f"从###区域提取到日期: {dates}")
-                        return dates
+                    # 验证是否为有效日期
+                    if len(date_str) == 8 and date_str.isdigit():
+                        year = int(date_str[:4])
+                        month = int(date_str[4:6])
+                        day = int(date_str[6:8])
 
-            # 如果没有从###区域提取到日期，从整个回答文本中提取
-            if not dates:
-                # 先查找所有可能的日期模式
-                all_date_patterns = [
-                    r'\b(\d{4})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\b',  # YYYYMMDD
-                    r'\b(\d{4})年(\d{1,2})月(\d{1,2})日\b',  # YYYY年MM月DD日
-                    r'工作表[：:]\s*(\d{8})',  # 工作表：20251208
-                    r'日期[：:]\s*(\d{8})',  # 日期：20251208
-                    r'(\d{8})\s*工作表',  # 20251208工作表
-                    r'[\(（](\d{8})[\)）]',  # (20251208)或（20251208）
-                    r'###.*?(\d{8}).*?###',  # ###包含的日期
-                ]
+                        # 基本验证（2024-2025年，月份1-12，日期1-31）
+                        if (2024 <= year <= 2025 and
+                                1 <= month <= 12 and
+                                1 <= day <= 31):
+                            date_candidates.append(date_str)
 
-                all_dates = []
+            # 去重
+            if date_candidates:
+                dates = sorted(list(set(date_candidates)))
+                logger.debug(f"从###区域提取到日期: {dates}")
+            else:
+                # ###框住的部分没有有效日期，返回空列表
+                logger.debug("###框住的部分没有有效日期，返回空列表")
 
-                for pattern in all_date_patterns:
-                    matches = re.findall(pattern, answer)
-                    for match in matches:
-                        if isinstance(match, tuple):
-                            # 如果是分组匹配，拼接成完整日期
-                            date_str = ''.join(str(num) for num in match)
-                        else:
-                            date_str = match
-
-                        # 验证是否为有效日期
-                        if len(date_str) == 8 and date_str.isdigit():
-                            year = int(date_str[:4])
-                            month = int(date_str[4:6])
-                            day = int(date_str[6:8])
-
-                            # 基本验证（2024-2025年，月份1-12，日期1-31）
-                            if (2024 <= year <= 2025 and
-                                    1 <= month <= 12 and
-                                    1 <= day <= 31):
-                                all_dates.append({
-                                    'date': date_str,
-                                    'pattern': pattern
-                                })
-
-                if all_dates:
-                    # 从后往前找第一个匹配的日期
-                    # 方法：记录每个日期在原文中的位置，取位置最靠后的那个
-
-                    # 先收集所有匹配的位置
-                    date_positions = []
-                    for date_info in all_dates:
-                        date_str = date_info['date']
-                        # 查找该日期在原文中的位置（取最后一个出现的位置）
-                        pos = answer.rfind(date_str)
-                        if pos != -1:
-                            date_positions.append({
-                                'date': date_str,
-                                'position': pos
-                            })
-
-                    # 按位置从后往前排序（位置值越大，说明越靠后）
-                    if date_positions:
-                        date_positions.sort(key=lambda x: x['position'], reverse=True)
-                        # 取位置最靠后的（第一个）
-                        most_recent_date = date_positions[0]['date']
-                        dates = [most_recent_date]
-                        logger.debug(f"从文本末尾找到最近日期: {most_recent_date}")
+            return dates
 
         except Exception as e:
             logger.debug(f"提取日期时出错: {e}")
@@ -746,9 +697,9 @@ class ExamNotesSearcher:
 
         # 基础指令 - 强调日期收集和格式化要求
         core_instruction = (
-            "请查找所有包含该知识点的笔记日期，并遵守以下要求：\n"
+            "请查找所有包含或关联该知识点的笔记日期，并遵守以下要求：\n"
             "1. 不限于首次出现，任何相关日期都收集\n"
-            "2. 只返回包含笔记的日期，不提及不符合的日期\n"
+            "2. 只返回包含或关联笔记的日期，不提及不符合的日期\n"
             "3. 在回答最后用###号框出所有符合的日期\n\n"
             "日期定位方法：找到相关内容后，向上查找包含'重要：以下笔记的记录日期【'的行，提取【】内的8位数字。"
         )
@@ -759,7 +710,7 @@ class ExamNotesSearcher:
             "1. 先分析内容\n"
             "2. 然后总结所有相关日期\n"
             "3. 最后用###号框出日期，例如：###20240501、20240627###\n\n"
-            "注意：只列出确实包含该知识点的日期，不要列出没有相关内容的日期。"
+            "注意：只列出确实包含或关联该知识点的日期，不要列出没有相关内容的日期。"
         )
 
         # 合并指令
@@ -767,32 +718,32 @@ class ExamNotesSearcher:
 
         base_queries = [
             # 方案1：全面收集日期，强调格式
-            f"关于'{exam_point}'的笔记内容。{combined_instruction}请分析并返回所有包含该知识点的日期。",
+            f"关于'{exam_point}'的笔记内容。{combined_instruction}请分析并返回所有包含或关联该知识点的日期。",
 
             # 方案2：强调不限于首次出现
-            f"查找'{exam_point}'相关的所有笔记。要求：不限于首次出现，所有包含该知识点的日期都要收集。"
+            f"查找'{exam_point}'相关的所有笔记。要求：不限于首次出现，所有包含或关联该知识点的日期都要收集。"
             f"每个工作表的标题行为'重要：以下笔记的记录日期【YYYYMMDD】'。请在回答最后用###号框出所有日期。",
 
             # 方案3：明确排除不符合的日期
             f"搜索'{exam_point}'的知识点。重要要求："
             f"1. 收集所有相关日期，不限出现顺序\n"
-            f"2. 只列出包含该知识点的日期，不列出没有相关内容的日期\n"
+            f"2. 只列出包含或关联该知识点的日期，不列出没有相关内容的日期\n"
             f"3. 在结论中用###号框出所有日期，格式如###20240501、20240627###",
 
             # 方案4：结合科目特点，强调完整性
             f"考研{subject}知识点'{exam_point}'在哪些日期的工作表中有记录？"
             f"请收集所有相关日期（不限于首次出现），"
-            f"在回答中只提及包含该知识点的日期，并在最后用###号框出这些日期。",
+            f"在回答中只提及包含或关联该知识点的日期，并在最后用###号框出这些日期。",
         ]
 
         # 针对不同科目的特定查询
         if subject == '政治':
             base_queries.extend([
                 f"政治理论'{exam_point}'在哪些工作表中出现？请收集所有相关日期（包括多次出现的日期），"
-                f"只返回确实包含该理论的工作表日期，并在回答末尾用###号框出所有日期，例如###20240501、20240627###。",
+                f"只返回确实包含或关联该理论的工作表日期，并在回答末尾用###号框出所有日期，例如###20240501、20240627###。",
 
                 f"查找关于'{exam_point}'的政治笔记。要求："
-                f"1. 找出所有包含该知识点的日期\n"
+                f"1. 找出所有包含或关联该知识点的日期\n"
                 f"2. 不提及没有该知识点的日期\n"
                 f"3. 在结论中明确用###框出所有日期\n"
                 f"日期定位：标题行为'重要：以下笔记的记录日期【YYYYMMDD】'",
@@ -801,11 +752,11 @@ class ExamNotesSearcher:
         elif subject == '408':
             base_queries.extend([
                 f"计算机408知识点'{exam_point}'在哪些工作表中？请完整收集所有相关日期，"
-                f"不限出现次数。在回答中只列出包含该知识点的日期，最后用###号框出所有日期。",
+                f"不限出现次数。在回答中只列出包含或关联该知识点的日期，最后用###号框出所有日期。",
 
                 f"搜索'{exam_point}'的算法/数据结构笔记。要求："
                 f"收集所有日期，不限于首次出现；"
-                f"只返回包含该知识点的日期；"
+                f"只返回包含或关联该知识点的日期；"
                 f"在回答末尾用###框出所有日期，格式为###日期1、日期2、日期3###。",
             ])
 
@@ -813,11 +764,11 @@ class ExamNotesSearcher:
             base_queries.extend([
                 f"数学二考点'{exam_point}'在哪些日期的工作表中出现？"
                 f"请收集所有相关日期（包括多次出现的），"
-                f"在回答中只提及包含该考点的日期，并在最后用###号框出所有日期。",
+                f"在回答中只提及包含或关联该考点的日期，并在最后用###号框出所有日期。",
 
                 f"查找'{exam_point}'的数学笔记。要求："
                 f"1. 找出所有相关日期，不限制出现次数\n"
-                f"2. 只列出包含该知识点的日期\n"
+                f"2. 只列出包含或关联该知识点的日期\n"
                 f"3. 在结论部分用###号框出所有日期\n"
                 f"日期格式为8位数字，位于'重要：以下笔记的记录日期【'之后。",
             ])
@@ -827,13 +778,13 @@ class ExamNotesSearcher:
             # 强调日期完整性
             f"请查找'{exam_point}'相关内容，并严格遵守以下要求："
             f"1. 收集所有相关日期，不限于首次出现\n"
-            f"2. 只提及包含该知识点的日期，不提及不符合的日期\n"
+            f"2. 只提及包含或关联该知识点的日期，不提及不符合的日期\n"
             f"3. 在回答最后用###号框出所有日期，格式为###YYYYMMDD、YYYYMMDD、YYYYMMDD###\n\n"
             f"日期定位：向上查找'重要：以下笔记的记录日期【'，提取【】内的8位数字。",
 
             # 强调排除不符合的日期
             f"搜索'{exam_point}'。重要规则："
-            f"1. 返回所有包含该知识点的日期\n"
+            f"1. 返回所有包含或关联该知识点的日期\n"
             f"2. 不返回或提及没有该知识点的日期\n"
             f"3. 在回答末尾必须用###号框出所有日期\n\n"
             f"笔记格式：标题行为'重要：以下笔记的记录日期【20251208】'。",
@@ -841,15 +792,15 @@ class ExamNotesSearcher:
             # 强调格式和完整性
             f"查找'{exam_point}'并提取所有相关的工作表日期。要求："
             f"1. 不限制首次出现，收集所有日期\n"
-            f"2. 只列出确实包含该知识点的日期\n"
+            f"2. 只列出确实包含或关联该知识点的日期\n"
             f"3. 在结论中明确用###框出所有日期\n\n"
-            f"日期提取规则：查找包含'重要：以下笔记的记录日期【'的行，提取【】内的8位数字。",
+            f"日期提取规则：查找包含或关联'重要：以下笔记的记录日期【'的行，提取【】内的8位数字。",
 
             # 提供示例格式
             f"查找'{exam_point}'相关笔记，提取工作表日期。要求："
             f"1. 收集所有相关日期，不限出现顺序\n"
-            f"2. 只返回包含该知识点的日期\n"
-            f"3. 在回答最后必须包含以下格式：'综上所述，符合关键词笔记的日期为###日期1、日期2、日期3###'\n\n"
+            f"2. 只返回包含或关联该知识点的日期\n"
+            f"3. 在回答最后必须包含或关联以下格式：'综上所述，符合关键词笔记的日期为###日期1、日期2、日期3###'\n\n"
             f"日期位于标题行中，格式为'重要：以下笔记的记录日期【20251208】'。",
         ]
 
@@ -859,18 +810,18 @@ class ExamNotesSearcher:
             f"搜索'{exam_point}'。请按以下模板回答：\n"
             f"[内容分析...]\n"
             f"综上所述，符合关键词笔记的日期为###20240501、20240627###\n\n"
-            f"要求：1. 收集所有相关日期 2. 只提及包含的日期 3. 必须使用###框出日期",
+            f"要求：1. 收集所有相关日期 2. 只提及包含或关联关键词的日期 3. 必须使用###框出日期",
 
             # 模板2：强调排除
             f"查找'{exam_point}'。要求：\n"
-            f"1. 找出所有包含该知识点的日期（不限首次）\n"
+            f"1. 找出所有包含或关联该知识点的日期（不限首次）\n"
             f"2. 在回答中绝对不提及没有该知识点的日期\n"
             f"3. 在结尾必须包含：'###日期1、日期2###'格式\n\n"
             f"日期定位：标题行包含'重要：以下笔记的记录日期【'",
 
             # 模板3：简化的指令
             f"找到'{exam_point}'的所有出现日期。\n"
-            f"要求：所有日期都收集，只列包含的，最后用###框起来。\n"
+            f"要求：所有日期都收集，只列包含或关联关键词的，最后用###框起来。\n"
             f"例如：###20240501、20240627###",
         ]
 
@@ -923,6 +874,7 @@ class ExamNotesSearcher:
                     date_extraction_method = "unknown"
 
                     # 方法1：从回答文本中提取
+                    print(parsed_result['answer'])
                     dates_from_answer = self.kb.extract_sheet_dates_from_answer(parsed_result['answer'])
                     if dates_from_answer:
                         sheet_dates.extend(dates_from_answer)
