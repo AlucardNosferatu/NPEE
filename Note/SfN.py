@@ -3,6 +3,9 @@
 功能：为真题检索引擎提供考点对应笔记日期的定位服务
 """
 import datetime
+import glob
+import json
+import os
 import time
 from collections import defaultdict, Counter
 from typing import Dict, List
@@ -819,21 +822,56 @@ def progress_callback_(current, total, message):
     print(f"[{current}/{total}] {message}")
 
 
+def load_json_files(folder_path):
+    """
+    从指定文件夹加载所有JSON文件并转换为字典列表
+
+    Args:
+        folder_path (str): JSON文件所在的文件夹路径
+
+    Returns:
+        list: 包含所有JSON文件内容的字典列表
+    """
+    json_dicts = []
+
+    # 确保文件夹存在
+    if not os.path.exists(folder_path):
+        print(f"错误：文件夹 '{folder_path}' 不存在")
+        return json_dicts
+
+    # 使用glob查找所有.json文件（包括子目录中的文件）
+    json_files = glob.glob(os.path.join(folder_path, "**", "*.json"), recursive=True)
+
+    if not json_files:
+        print(f"警告：在 '{folder_path}' 中未找到任何JSON文件")
+        return json_dicts
+
+    print(f"找到 {len(json_files)} 个JSON文件")
+
+    for file_path in json_files:
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+                json_dicts.append(data)
+                print(f"成功加载: {os.path.basename(file_path)}")
+        except json.JSONDecodeError as e:
+            print(f"错误：文件 '{os.path.basename(file_path)}' JSON格式错误: {e}")
+        except Exception as e:
+            print(f"错误：读取文件 '{os.path.basename(file_path)}' 时发生错误: {e}")
+
+    print(f"总共加载了 {len(json_dicts)} 个JSON文件")
+    return json_dicts
+
+
 if __name__ == '__main__':
     # 准备真题问题列表
-    q_list = [
-        {
-            "year": 2024,
-            "subject": "数学二",
-            "qid": 16,
-            "keywords": ["向量组", "线性相关", "线性无关"]
-        }
-    ]
-
+    q_list = load_json_files("真题")
+    while len(q_list) > 2:
+        q_list.pop()
     # 执行批量处理
     b_res = batch_process_questions(
         questions_list=q_list,
-        max_queries_per_keyword=2,
+        max_queries_per_keyword=1,
         progress_callback=progress_callback_,
         return_objects=True
     )
@@ -853,4 +891,4 @@ if __name__ == '__main__':
     for priority_, count in b_res['summary']['priority_distribution'].items():
         print(f"  {priority_}: {count} 个问题")
 
-    print(b_res['questions_results'][0])
+    print(b_res['questions_results'])
