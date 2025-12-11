@@ -1,6 +1,6 @@
 """
-Excel批量转换为docx脚本（动态检测行数）
-功能：将Excel每个sheet的内容转换为普通段落，每10个sheet合并到一个docx文件
+Excel批量转换为docx脚本（每个sheet单独输出）
+功能：将Excel每个sheet的内容转换为普通段落，每个sheet输出一个独立的docx文件
 动态检测每个sheet的实际非空行数
 """
 
@@ -18,21 +18,27 @@ import warnings
 warnings.filterwarnings('ignore')
 
 class ExcelToParagraphConverter:
-    """Excel转段落式docx转换器（动态检测行数）"""
+    """Excel转段落式docx转换器（每个sheet单独输出）"""
 
-    def __init__(self, excel_path, output_dir="每10个sheet一组"):
+    def __init__(self, excel_path, output_dir=None):
         """
         初始化转换器
 
         Args:
             excel_path: Excel文件路径
-            output_dir: 输出目录
+            output_dir: 输出目录（默认：Excel文件名_单个sheet输出）
         """
         self.excel_path = excel_path
-        self.output_dir = output_dir
+
+        # 设置默认输出目录
+        if output_dir is None:
+            file_name = os.path.splitext(os.path.basename(excel_path))[0]
+            self.output_dir = f"{file_name}_单个sheet输出"
+        else:
+            self.output_dir = output_dir
 
         # 创建输出目录
-        os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(self.output_dir, exist_ok=True)
 
     def detect_actual_data_range(self, df):
         """
@@ -200,17 +206,36 @@ class ExcelToParagraphConverter:
 
         return paragraph
 
-    def process_sheet(self, doc, sheet_name, sheet_index, total_sheets):
-        """处理单个sheet，添加到文档中"""
+    def process_single_sheet(self, sheet_name, sheet_index, total_sheets):
+        """处理单个sheet，返回Document对象"""
         print(f"  正在处理: {sheet_name} (第{sheet_index+1}/{total_sheets}个)")
+
+        # 创建新文档
+        doc = Document()
+
+        # 设置文档默认字体
+        style = doc.styles['Normal']
+        font = style.font
+        font.name = '宋体'
+        font._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
+        font.size = Pt(10.5)
 
         try:
             # 读取sheet，不设header，保留所有数据
             df = pd.read_excel(self.excel_path, sheet_name=sheet_name, header=None)
 
-            # 添加sheet标题
+            # 添加sheet标题 - 简化版本，只保留日期信息
             title = doc.add_heading(f"重要：以下笔记的记录日期【{sheet_name}】", level=2)
             self.set_chinese_font(title)
+
+            # 添加文档信息
+            info_para = doc.add_paragraph()
+            info_para.add_run(f"源文件: {os.path.basename(self.excel_path)}\n")
+            info_para.add_run(f"工作表名称: {sheet_name}\n")
+            info_para.add_run(f"提取时间: {datetime.now().strftime('%Y年%m月%d日 %H:%M:%S')}")
+            self.set_chinese_font(info_para)
+
+            doc.add_paragraph()  # 空行
 
             # 获取有意义的文本内容
             content_lines = self.extract_meaningful_content(df)
@@ -219,11 +244,13 @@ class ExcelToParagraphConverter:
                 # 如果没有提取到内容，尝试原始方法
                 empty_para = doc.add_paragraph("（此工作表内容为空或格式特殊）")
                 self.set_chinese_font(empty_para)
-                return
+                return doc
 
             # 统计信息
             stats_para = doc.add_paragraph(f"📊 提取到 {len(content_lines)} 条有效内容")
             self.set_chinese_font(stats_para)
+
+            doc.add_paragraph()  # 空行
 
             # 添加内容，智能设置缩进
             for line in content_lines:
@@ -262,12 +289,24 @@ class ExcelToParagraphConverter:
             error_para = doc.add_paragraph(f"❌ 处理错误: {error_msg}")
             self.set_chinese_font(error_para)
 
-    def convert_with_batch(self, batch_size=10):
-        """
-        按批次转换Excel文件
+        return doc
 
-        Args:
-            batch_size: 每个docx文件包含的sheet数量
+    def sanitize_filename(self, filename):
+        """清理文件名，移除Windows不允许的字符"""
+        # Windows不允许的字符：\/:*?"<>|
+        invalid_chars = r'[\/:*?"<>|]'
+        # 替换为下划线
+        sanitized = re.sub(invalid_chars, '_', filename)
+        # 移除开头和结尾的空格和点
+        sanitized = sanitized.strip(' .')
+        # 限制文件名长度
+        if len(sanitized) > 150:
+            sanitized = sanitized[:150]
+        return sanitized
+
+    def convert_all_sheets(self):
+        """
+        转换所有sheet，每个sheet输出一个独立的docx文件
         """
         print(f"正在读取Excel文件: {self.excel_path}")
 
@@ -278,77 +317,33 @@ class ExcelToParagraphConverter:
             total_sheets = len(all_sheets)
 
             print(f"找到 {total_sheets} 个工作表")
-            print(f"将按每 {batch_size} 个sheet分组生成docx文件")
-
-            # 计算需要多少个批次
-            num_batches = math.ceil(total_sheets / batch_size)
-            print(f"需要生成 {num_batches} 个docx文件")
+            print(f"每个sheet将单独输出为一个docx文件")
 
             generated_files = []
 
-            # 分批处理
-            for batch_idx in range(num_batches):
-                start_idx = batch_idx * batch_size
-                end_idx = min((batch_idx + 1) * batch_size, total_sheets)
-                batch_sheets = all_sheets[start_idx:end_idx]
-
-                # 创建新文档
-                doc = Document()
-
-                # 设置文档默认字体
-                style = doc.styles['Normal']
-                font = style.font
-                font.name = '宋体'
-                font._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
-                font.size = Pt(10.5)
-
-                # 添加文档标题
-                doc_title = doc.add_heading(f'Excel笔记转换 - 批次 {batch_idx+1}', 0)
-                self.set_chinese_font(doc_title)
-
-                # 添加文档信息
-                info_para = doc.add_paragraph()
-                info_para.add_run(f"源文件: {os.path.basename(self.excel_path)}\n")
-                info_para.add_run(f"本批次包含工作表: {start_idx+1}-{end_idx} ({len(batch_sheets)}个)\n")
-                info_para.add_run(f"格式: 表格内容已转换为普通段落，带智能缩进")
-                self.set_chinese_font(info_para)
-
-                doc.add_page_break()
-
+            # 处理每个sheet
+            for sheet_idx, sheet_name in enumerate(all_sheets):
                 print(f"\n{'='*60}")
-                print(f"📁 正在处理批次 {batch_idx+1}/{num_batches}")
-                print(f"📄 包含工作表: {', '.join(batch_sheets[:3])}" +
-                      (f" 等{len(batch_sheets)}个" if len(batch_sheets) > 3 else ""))
+                print(f"📄 处理工作表: {sheet_name} ({sheet_idx+1}/{total_sheets})")
                 print(f"{'='*60}")
 
-                # 处理本批次中的每个sheet
-                for sheet_idx, sheet_name in enumerate(batch_sheets):
-                    self.process_sheet(doc, sheet_name, sheet_idx, len(batch_sheets))
+                # 处理单个sheet
+                doc = self.process_single_sheet(sheet_name, sheet_idx, total_sheets)
 
-                    # 如果不是最后一个sheet，添加分页符
-                    if sheet_idx < len(batch_sheets) - 1:
-                        doc.add_page_break()
-
-                # 保存文档
-                batch_num = batch_idx + 1
-                output_filename = f"Excel笔记_批次{batch_num:02d}_({start_idx+1}-{end_idx}).docx"
+                # 清理sheet名称作为文件名
+                sanitized_name = self.sanitize_filename(sheet_name)
+                output_filename = f"{sanitized_name}.docx"
                 output_path = os.path.join(self.output_dir, output_filename)
 
+                # 保存文档
                 doc.save(output_path)
                 generated_files.append(output_path)
 
-                file_size = os.path.getsize(output_path) / 1024 / 1024  # MB
-                print(f"\n✓ 批次 {batch_idx+1} 完成!")
-                print(f"  文件名: {output_filename}")
-                print(f"  文件大小: {file_size:.2f} MB")
-
-                # 给个进度提示
-                if batch_idx < num_batches - 1:
-                    remaining = num_batches - batch_idx - 1
-                    print(f"  剩余 {remaining} 个批次\n")
+                file_size = os.path.getsize(output_path) / 1024  # KB
+                print(f"✓ 保存完成: {output_filename} ({file_size:.1f} KB)")
 
             # 生成汇总报告
-            summary_path = self.create_summary_report(all_sheets, generated_files, batch_size)
+            summary_path = self.create_summary_report(all_sheets, generated_files)
             if summary_path:
                 generated_files.append(summary_path)
 
@@ -356,15 +351,7 @@ class ExcelToParagraphConverter:
             print(f"\n{'='*60}")
             print("🎉 转换完成！")
             print(f"📁 输出目录: {os.path.abspath(self.output_dir)}")
-            print(f"📄 生成文件:")
-            for file in generated_files:
-                filename = os.path.basename(file)
-                file_size = os.path.getsize(file) / 1024  # KB
-                if file_size > 1024:
-                    file_size_str = f"{file_size/1024:.1f} MB"
-                else:
-                    file_size_str = f"{file_size:.1f} KB"
-                print(f"  • {filename} ({file_size_str})")
+            print(f"📄 生成文件数: {len(generated_files)}")
             print(f"{'='*60}")
 
             return generated_files
@@ -375,7 +362,7 @@ class ExcelToParagraphConverter:
             traceback.print_exc()
             return []
 
-    def create_summary_report(self, all_sheets, generated_files, batch_size):
+    def create_summary_report(self, all_sheets, generated_files):
         """创建汇总报告"""
         try:
             doc = Document()
@@ -387,14 +374,13 @@ class ExcelToParagraphConverter:
             # 基本信息
             doc.add_paragraph(f"源文件: {os.path.basename(self.excel_path)}")
             doc.add_paragraph(f"总工作表数: {len(all_sheets)}")
-            doc.add_paragraph(f"批次大小: 每{batch_size}个sheet一组")
             doc.add_paragraph(f"生成时间: {datetime.now().strftime('%Y年%m月%d日 %H:%M:%S')}")
-            doc.add_paragraph(f"生成文件数: {len(generated_files)}")
+            doc.add_paragraph(f"生成docx文件数: {len(generated_files)}")
 
             doc.add_page_break()
 
-            # 工作表列表
-            doc.add_heading('工作表列表', 1)
+            # 工作表与文件对应表
+            doc.add_heading('工作表与输出文件对应表', 1)
 
             table = doc.add_table(rows=len(all_sheets)+1, cols=3)
             table.style = 'Table Grid'
@@ -403,7 +389,7 @@ class ExcelToParagraphConverter:
             header_cells = table.rows[0].cells
             header_cells[0].text = "序号"
             header_cells[1].text = "工作表名称"
-            header_cells[2].text = "所属批次"
+            header_cells[2].text = "输出文件名"
 
             # 数据行
             for idx, sheet_name in enumerate(all_sheets, 1):
@@ -411,18 +397,19 @@ class ExcelToParagraphConverter:
                 row_cells[0].text = str(idx)
                 row_cells[1].text = sheet_name
 
-                # 计算所属批次
-                batch_num = ((idx - 1) // batch_size) + 1
-                row_cells[2].text = f"批次{batch_num}"
+                # 查找对应的输出文件
+                sanitized_name = self.sanitize_filename(sheet_name)
+                expected_filename = f"{sanitized_name}.docx"
+                row_cells[2].text = expected_filename
 
-            # 批次详情
+            # 文件列表详情
             doc.add_page_break()
-            doc.add_heading('批次详情', 1)
+            doc.add_heading('生成文件列表', 1)
 
             for i, file_path in enumerate(generated_files):
-                if "批次" in os.path.basename(file_path):
-                    filename = os.path.basename(file_path)
-                    file_size = os.path.getsize(file_path) / 1024
+                filename = os.path.basename(file_path)
+                if filename != "转换汇总报告.docx":  # 跳过汇总报告本身
+                    file_size = os.path.getsize(file_path) / 1024  # KB
 
                     if file_size > 1024:
                         size_str = f"{file_size/1024:.1f} MB"
@@ -446,10 +433,10 @@ def main():
     """主函数"""
     print("""
     ═══════════════════════════════════════════════════
-        Excel批量转docx工具（智能检测行数版本）
+        Excel批量转docx工具（每个sheet单独输出版本）
         功能：将Excel每个sheet转换为普通段落
-              每10个sheet合并到一个docx文件
-              动态检测每个sheet的实际行数
+              每个sheet输出一个独立的docx文件
+              文件名以sheet名称命名
     ═══════════════════════════════════════════════════
     """)
 
@@ -465,22 +452,18 @@ def main():
         print("❌ 请提供Excel文件 (.xlsx 或 .xls)")
         return
 
-    # 设置批次大小
-    batch_size_input = input("每多少个sheet合并为一个docx文件? (默认10): ").strip()
-    batch_size = int(batch_size_input) if batch_size_input.isdigit() else 10
-
     # 设置输出目录
     file_name = os.path.splitext(os.path.basename(excel_path))[0]
-    output_dir = f"{file_name}_每{batch_size}个一组"
+    output_dir = f"{file_name}_单个sheet输出"
 
     print(f"\n📊 开始处理: {os.path.basename(excel_path)}")
     print(f"📂 输出到: {output_dir}")
-    print(f"📦 每个docx包含: {batch_size}个sheet")
+    print(f"📦 每个sheet将生成一个独立的docx文件")
     print("-" * 60)
 
     # 创建转换器并执行
     converter = ExcelToParagraphConverter(excel_path, output_dir)
-    converter.convert_with_batch(batch_size)
+    converter.convert_all_sheets()
 
 if __name__ == "__main__":
     try:
