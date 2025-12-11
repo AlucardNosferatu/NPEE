@@ -209,7 +209,7 @@ class ExcelToParagraphConverter:
             df = pd.read_excel(self.excel_path, sheet_name=sheet_name, header=None)
 
             # 添加sheet标题
-            title = doc.add_heading(f"重要：以下笔记的首次记录日期【{sheet_name}】", level=2)
+            title = doc.add_heading(f"重要：以下笔记的记录日期【{sheet_name}】", level=2)
             self.set_chinese_font(title)
 
             # 获取有意义的文本内容
