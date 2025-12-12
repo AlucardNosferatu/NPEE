@@ -754,12 +754,14 @@ def batch_process_questions(
             max_queries_per_keyword=max_queries_per_keyword,
             return_objects=False  # 不在每个结果中返回对象
         )
-        qd = question_data
-        with open("日期/{}-{}-{}.pkl".format(qd['year'], qd['subject'], qd['qid']), "wb") as f:
-            # 3. 调用dump，把字典写入文件
-            pickle.dump(result, f)
-        questions_results.append(result)
-
+        try:
+            qd = question_data
+            with open("日期/{}-{}-{}.pkl".format(qd['year'], qd['subject'], qd['qid']), "wb") as f:
+                # 3. 调用dump，把字典写入文件
+                pickle.dump(result, f)
+            questions_results.append(result)
+        except Exception as e:
+            print(repr(e))
         # 统计
         if result["status"] in ["complete", "partial"]:
             successful_count += 1
@@ -856,6 +858,11 @@ def load_json_files(folder_path):
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
                 data = json.load(file)
+                assert 'year' in data.keys()
+                assert 'subject' in data.keys()
+                assert 'qid' in data.keys()
+                assert 'keywords' in data.keys()
+                assert len(data['keywords']) > 0
                 json_dicts.append(data)
                 print(f"成功加载: {os.path.basename(file_path)}")
         except json.JSONDecodeError as e:
