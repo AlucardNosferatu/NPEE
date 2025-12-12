@@ -869,7 +869,7 @@ def load_json_files(folder_path):
 
 if __name__ == '__main__':
     # 准备真题问题列表
-    q_list = load_json_files("真题/数二")
+    q_list = load_json_files("真题")
     # 执行批量处理
     b_res = batch_process_questions(
         questions_list=q_list,
