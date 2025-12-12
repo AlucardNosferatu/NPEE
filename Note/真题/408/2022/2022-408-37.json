@@ -1,1 +1,15 @@
-{}
+{
+    "year": 2022,
+    "subject": "408",
+    "qid": 37,
+    "keywords": [
+        "SDN网络体系结构",
+        "SDN控制器与交换机接口",
+        "南向接口(Southbound Interface)",
+        "北向接口(Northbound Interface)",
+        "OpenFlow协议",
+        "流表下发机制",
+        "控制平面与数据平面通信",
+        "软件定义网络核心组件"
+    ]
+}
