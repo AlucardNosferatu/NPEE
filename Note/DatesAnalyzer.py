@@ -267,35 +267,35 @@ class IncrementalDateAnalyzer:
         Returns:
             排序后的(日期, 统计信息)列表
         """
+
         if force_recalculate or not self._sorted_dates:
             # 计算所有日期的得分
             scored_dates = []
             for date, stats in self.date_stats.items():
                 score = self._calculate_date_score(date, stats)
                 scored_dates.append((date, stats, score))
-
             # 按得分排序
             scored_dates.sort(key=lambda x: x[2], reverse=True)
-            self._sorted_dates = scored_dates
-
+            pretty_format = []
+            for date, stats, score in scored_dates:
+                date_info = (date, {
+                    'score': score,
+                    'frequency': stats['frequency'],
+                    'question_count': len(stats['question_ids']),
+                    'keyword_count': len(stats['keywords']),
+                    'subject_count': len(stats['subjects']),
+                    'avg_confidence': stats['confidence_sum'] / max(1, stats['confidence_count']),
+                    'subjects': list(stats['subjects']),
+                    'top_keywords': self._get_top_keywords(stats['keyword_details'], 5),
+                    'last_updated': stats['last_updated']
+                })
+                pretty_format.append(date_info)
+                self._sorted_dates = pretty_format
         # 截取前N个
         result = self._sorted_dates
         if top_n is not None:
             result = result[:top_n]
-
-        pretty_format = [(date, {
-            'score': score,
-            'frequency': stats['frequency'],
-            'question_count': len(stats['question_ids']),
-            'keyword_count': len(stats['keywords']),
-            'subject_count': len(stats['subjects']),
-            'avg_confidence': stats['confidence_sum'] / max(1, stats['confidence_count']),
-            'subjects': list(stats['subjects']),
-            'top_keywords': self._get_top_keywords(stats['keyword_details'], 5),
-            'last_updated': stats['last_updated']
-        }) for date, stats, score in result]
-        # 转换为更友好的格式
-        return pretty_format
+        return result
 
     @staticmethod
     def _get_top_keywords(keyword_details: Dict[str, int], top_n: int):
