@@ -839,14 +839,16 @@ def load_json_files(folder_path):
         list: 包含所有JSON文件内容的字典列表
     """
     json_dicts = []
+    if folder_path.endswith('.json'):
+        json_files = [folder_path]
+    else:
+        # 确保文件夹存在
+        if not os.path.exists(folder_path):
+            print(f"错误：文件夹 '{folder_path}' 不存在")
+            return json_dicts
 
-    # 确保文件夹存在
-    if not os.path.exists(folder_path):
-        print(f"错误：文件夹 '{folder_path}' 不存在")
-        return json_dicts
-
-    # 使用glob查找所有.json文件（包括子目录中的文件）
-    json_files = glob.glob(os.path.join(folder_path, "**", "*.json"), recursive=True)
+        # 使用glob查找所有.json文件（包括子目录中的文件）
+        json_files = glob.glob(os.path.join(folder_path, "**", "*.json"), recursive=True)
 
     if not json_files:
         print(f"警告：在 '{folder_path}' 中未找到任何JSON文件")
@@ -876,7 +878,7 @@ def load_json_files(folder_path):
 
 if __name__ == '__main__':
     # 准备真题问题列表
-    q_list = load_json_files("真题")
+    q_list = load_json_files("真题/408/2025/2025-408-9.json")
     # 执行批量处理
     b_res = batch_process_questions(
         questions_list=q_list,

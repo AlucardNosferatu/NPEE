@@ -283,8 +283,7 @@ class IncrementalDateAnalyzer:
         if top_n is not None:
             result = result[:top_n]
 
-        # 转换为更友好的格式
-        return [(date, {
+        pretty_format = [(date, {
             'score': score,
             'frequency': stats['frequency'],
             'question_count': len(stats['question_ids']),
@@ -295,6 +294,8 @@ class IncrementalDateAnalyzer:
             'top_keywords': self._get_top_keywords(stats['keyword_details'], 5),
             'last_updated': stats['last_updated']
         }) for date, stats, score in result]
+        # 转换为更友好的格式
+        return pretty_format
 
     @staticmethod
     def _get_top_keywords(keyword_details: Dict[str, int], top_n: int):
