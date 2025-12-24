@@ -1,0 +1,32 @@
+# ==============================================
+# Bochs 软盘主扇区（MBR）调试配置（x86专用）
+# 功能：加载你的练习代码作为软盘主扇区，启用图形化调试器
+# ==============================================
+
+# 1. 内存配置（实模式足够用，不用改）
+megs: 32  # 分配32MB内存，远超实模式需求
+
+# 2. BIOS配置（用Bochs内置BIOS，不用额外下载）
+romimage: file=$BXSHARE/BIOS-bochs-latest  # 系统BIOS（自动定位安装目录）
+vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest.bin  # 显卡BIOS（支持显示输出）
+
+# 3. 软盘配置（关键：加载你的练习代码作为主扇区）
+# 注意：1_44=1.44MB软盘，你的代码会被识别为软盘第1扇区（MBR，0面0道1扇区）
+floppya: 1_44=C:\WWIII\mbr.img, status=inserted  # 必须改：替换成你的镜像绝对路径
+# 示例路径格式：
+# 桌面路径：C:\Users\你的用户名\Desktop\你的代码.img
+# 文件夹路径：E:\x86汇编\练习1\boot.img
+
+# 4. 启动顺序（从软盘启动，对应主扇区引导）
+boot: a  # "a" 代表软盘A驱，和QEMU的 -fda 启动逻辑一致
+
+# 5. 调试器配置（强制启用图形调试面板，不用额外设置）
+debug: action=ignore, pci=ignore  # 开启调试模式
+debugger_log: bochs_debug.log  # 调试日志（可选，出错时查看）
+
+# 6. 显示配置（适配调试时的显示输出）
+display_library: win32,options="gui_debug"  # 图形显示库（默认，支持调试面板悬浮）
+vga: extension=vbe, update_freq=30  # 基础VGA支持，不影响调试
+
+# 7. 其他冗余配置（禁用，避免干扰调试）
+ata0: enabled=0  # 禁用硬盘（只用水盘）
