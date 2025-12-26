@@ -24,7 +24,7 @@ start:
     mov es, ax
     mov bx, 0x8000 ; MLP代码加载到0x0000:0x8000（物理地址0x8000）
     mov ah, 0x02
-    mov al, 0x02   ; 读2个扇区（适配你的MLP代码长度）
+    mov al, 0x03   ; 读2个扇区（适配你的MLP代码长度）
     mov ch, 0x00   ; 磁道0
     mov cl, 0x02   ; 扇区2（MBR是扇区1）
     mov dh, 0x00   ; 磁头0
@@ -32,7 +32,7 @@ start:
     int 0x13       ; BIOS中断，读扇区到内存
 
     ; 跳转到MLP代码执行（0x8000+0x8e=0x808e）
-    jmp 0x0000:0x808e
+    jmp 0x0000:0x8096
 
 ; 强制填充到512字节，结尾必须是0x55AA（修正你原代码的字节序错误）
 times 510 - ($ - $$) db 0
