@@ -1,0 +1,99 @@
+// 树状数组（Fenwick树）：用于高效计算前缀和的数组结构，支持单点更新和前缀查询，时间复杂度O(logn)
+template <typename T>
+class FenwickTree {
+private:
+    vector<T> tree;  // 树状数组，大小比原始数组大1（下标从1开始）
+    int size;        // 数组大小（不包括tree[0]）
+
+    // 内部函数：计算lowbit，获取最低位的1
+    // 原理：x & (-x)，用于快速定位需要更新的位置
+    int lowbit(int x) const { return x & (-x); }
+
+public:
+    // 构造函数：初始化树状数组大小为n+1，所有元素为0
+    // 原理：树状数组通常下标从1开始，方便计算
+    FenwickTree(int n) : tree(n + 1, 0), size(n) {}
+
+    // 单点更新：将位置i的值增加delta
+    // 原理：从i开始，每次加上lowbit(i)，更新所有受影响的前缀和
+    void update(int i, T delta);
+
+    // 前缀查询：计算前缀和[1, i]
+    // 原理：从i开始，每次减去lowbit(i)，累加所有分段的前缀和
+    T query(int i) const;
+
+    // 区间查询：计算区间和[left, right]
+    // 原理：利用前缀和相减，query(right) - query(left-1)
+    T rangeQuery(int left, int right) const;
+
+    // 单点查询：获取位置i的值
+    // 原理：两次前缀和查询相减，即query(i) - query(i-1)
+    T get(int i) const;
+
+    // 单点设置：将位置i的值设置为value（覆盖旧值）
+    // 原理：先获取旧值，然后更新差值（value - 旧值）
+    void set(int i, T value);
+
+    // 构建树状数组：从原始数组初始化（批量构建）
+    // 原理：1. 先通过前缀和计算tree数组；2. 或使用O(n)构建算法（每个节点累加直接子节点）
+    void build(const vector<T>& arr);
+
+    // 获取树状数组当前大小
+    // 原理：返回size成员变量
+    int getSize() const { return size; }
+
+    // 清空树状数组：将所有元素重置为0
+    // 原理：重置tree数组为全0
+    void clear();
+
+    // 查找前缀和大于等于target的最小索引（二分查找）
+    // 原理：利用树状数组的二分特性，从高位到低位逐步确定位置
+    int findPrefix(T target) const;
+};
+
+// ========================================
+// 扩展：支持区间更新和单点查询的差分树状数组
+// ========================================
+template <typename T>
+class DifferenceFenwickTree {
+private:
+    FenwickTree<T> diffTree;  // 差分数组的树状数组
+
+public:
+    // 构造函数：初始化大小为n+1
+    DifferenceFenwickTree(int n) : diffTree(n) {}
+
+    // 区间更新：将区间[left, right]所有值增加delta
+    // 原理：利用差分数组性质，在left处加delta，在right+1处减delta
+    void rangeUpdate(int left, int right, T delta);
+
+    // 单点查询：获取位置i的值
+    // 原理：差分数组的前缀和等于原数组在i处的值
+    T pointQuery(int i) const;
+};
+
+// ========================================
+// 扩展：支持区间更新和区间查询的树状数组
+// ========================================
+template <typename T>
+class RangeUpdateRangeQueryFenwickTree {
+private:
+    FenwickTree<T> tree1;  // 维护∑d[i]
+    FenwickTree<T> tree2;  // 维护∑(i-1)*d[i]
+
+public:
+    // 构造函数：初始化两个树状数组
+    RangeUpdateRangeQueryFenwickTree(int n) : tree1(n), tree2(n) {}
+
+    // 区间更新：将区间[left, right]所有值增加delta
+    // 原理：使用两个树状数组维护差分数组d[i]和(i-1)*d[i]
+    void rangeUpdate(int left, int right, T delta);
+
+    // 前缀查询：计算前缀和[1, i]
+    // 原理：sum = i*query_tree1(i) - query_tree2(i)
+    T prefixQuery(int i) const;
+
+    // 区间查询：计算区间和[left, right]
+    // 原理：利用前缀和相减，prefixQuery(right) - prefixQuery(left-1)
+    T rangeQuery(int left, int right) const;
+};

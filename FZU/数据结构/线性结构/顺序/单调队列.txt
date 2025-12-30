@@ -1,0 +1,147 @@
+// 单调队列：使用双端队列维护滑动窗口中的最值，保证队首始终为当前窗口的最大值/最小值
+template <typename T>
+class MonotonicQueue {
+private:
+    deque<T> data;          // 存储元素的deque（通常存储索引，此处简化为存储值）
+    deque<int> indices;     // 存储元素对应的索引，用于判断窗口范围（可选）
+    bool decreasing;        // true为单调递减队列（求最大值），false为单调递增队列（求最小值）
+    int windowSize;         // 窗口大小，0表示无固定窗口（需要手动出队）
+
+public:
+    // 构造函数：指定队列类型（递减/递增）和窗口大小
+    // 原理：递减队列用于求滑动窗口最大值，递增队列用于求最小值，窗口大小用于自动出队
+    MonotonicQueue(bool isDecreasing = true, int winSize = 0) 
+        : decreasing(isDecreasing), windowSize(winSize) {}
+
+    // 入队操作：将新元素加入队列，并维护单调性
+    // 原理：1. 从队尾开始，移除所有破坏单调性的元素（递减队列：移除<=新元素的；递增队列：移除>=新元素的）
+    //       2. 将新元素加入队尾
+    //       3. 如果存储索引，同时维护索引队列
+    void push(const T& value, int index = -1);
+
+    // 出队操作：从队首移除元素（通常用于滑动窗口左移）
+    // 原理：1. 如果使用索引队列，判断队首索引是否超出窗口范围，超出则移除
+    //       2. 否则，手动指定要移除的值，如果该值等于队首元素，则出队
+    void pop(const T& value = T());
+
+    // 获取队首元素：返回当前窗口的最大值（递减队列）或最小值（递增队列）
+    // 原理：直接返回data队首元素（队列非空时有效）
+    T front() const;
+
+    // 获取队列大小
+    int size() const { return data.size(); }
+
+    // 判断队列是否为空
+    bool empty() const { return data.empty(); }
+
+    // 清空队列
+    void clear() { data.clear(); indices.clear(); }
+
+    // 获取整个队列（调试用）
+    const deque<T>& getQueue() const { return data; }
+};
+
+// ========================================
+// 扩展：带索引的单调队列（更实用的滑动窗口实现）
+// ========================================
+template <typename T>
+class IndexedMonotonicQueue {
+private:
+    deque<pair<int, T>> dq;  // 存储（索引，值）对
+    bool decreasing;          // 单调递减队列用于最大值，递增用于最小值
+
+public:
+    IndexedMonotonicQueue(bool isDecreasing = true) : decreasing(isDecreasing) {}
+
+    // 入队操作：新元素（index, value）
+    // 原理：1. 从队尾移除所有破坏单调性的元素（根据decreasing标志）
+    //       2. 将新元素加入队尾
+    void push(int index, const T& value);
+
+    // 出队操作：移除所有索引小于等于给定索引的元素（滑动窗口左移时调用）
+    // 原理：从队首移除所有索引<=left的元素，保持窗口范围
+    void popUntil(int left);
+
+    // 获取队首元素（当前窗口最值）
+    T front() const;
+
+    // 获取队首索引
+    int frontIndex() const;
+
+    bool empty() const { return dq.empty(); }
+    int size() const { return dq.size(); }
+    void clear() { dq.clear(); }
+};
+
+// ========================================
+// 扩展：固定窗口大小的单调队列封装（简化接口）
+// ========================================
+template <typename T>
+class FixedWindowMaxMin {
+private:
+    IndexedMonotonicQueue<T> maxQueue;  // 最大值队列
+    IndexedMonotonicQueue<T> minQueue;  // 最小值队列
+    int windowSize;
+    int currentIndex;
+
+public:
+    // 构造函数：指定窗口大小
+    FixedWindowMaxMin(int winSize) 
+        : maxQueue(true), minQueue(false), windowSize(winSize), currentIndex(0) {}
+
+    // 添加新元素：自动维护窗口大小并更新队列
+    // 原理：1. 分别向最大队列和最小队列添加元素（带索引）
+    //       2. 移除超出窗口范围的元素（索引<=currentIndex-windowSize）
+    //       3. 索引自增
+    void add(const T& value);
+
+    // 获取当前窗口最大值
+    T getMax() const;
+
+    // 获取当前窗口最小值
+    T getMin() const;
+
+    // 判断窗口是否已满（已有windowSize个元素）
+    bool isWindowFull() const { return currentIndex >= windowSize; }
+
+    // 重置窗口
+    void reset();
+};
+
+// ========================================
+// 扩展：多维单调队列（如二维滑动窗口最值，通常结合多个一维单调队列实现）
+// ========================================
+// 原理：先对每一行使用单调队列得到行方向上的最值，再对结果矩阵的每一列使用单调队列
+// 此处仅提供概念说明，不展开实现
+
+// ========================================
+// 扩展：支持获取队列中第K大/第K小的单调队列（使用multiset辅助）
+// ========================================
+template <typename T>
+class KthElementQueue {
+private:
+    deque<T> window;        // 滑动窗口
+    multiset<T> leftSet;    // 存储较小的K-1个元素
+    multiset<T> rightSet;   // 存储较大的元素
+    int k;                  // 第K大/第K小
+
+public:
+    KthElementQueue(int kth) : k(kth) {}
+
+    // 添加元素到窗口，并更新两个multiset
+    void add(const T& value);
+
+    // 移除窗口最左边的元素，并更新两个multiset
+    void remove();
+
+    // 获取第K小的元素（假设k从1开始）
+    // 原理：leftSet保持K-1个最小元素，rightSet的begin()就是第K小
+    T getKthMin() const;
+
+    // 获取第K大的元素
+    // 原理：rightSet保持K-1个最大元素，leftSet的rbegin()就是第K大
+    T getKthMax() const;
+
+    int size() const { return window.size(); }
+    bool full() const { return window.size() >= k; }
+};

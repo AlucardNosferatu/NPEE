@@ -5,8 +5,9 @@
 all: mbr.img mbr_lk.img clean_mlp clean_lk
 
 
-mbr_lk.img: lk_mbr.bin bzImage_unpacked
-	copy /b lk_mbr.bin + bzImage_unpacked mbr_lk.img
+mbr_lk.img: lk_mbr.bin grldr
+	copy /b lk_mbr.bin + grldr mbr_lk.img
+	powershell ".\hdd_img.ps1 -InputFile mbr_lk.img"
 
 lk_mbr.bin: lk_mbr.asm
 	nasm lk_mbr.asm -f bin -o lk_mbr.bin

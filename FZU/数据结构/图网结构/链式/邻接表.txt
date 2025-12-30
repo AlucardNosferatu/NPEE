@@ -1,0 +1,120 @@
+// 邻接表：使用vector数组存储每个顶点的邻接链表，适用于稀疏图，节省空间，便于遍历邻接顶点
+struct Edge {
+    int to;          // 边的终点顶点编号
+    int weight;      // 边的权值，默认为1（无权图）
+    Edge* next;      // 指向下一条邻接边的指针
+
+    // 构造函数：快速创建边节点
+    // 原理：初始化边的基本信息，next指针初始化为nullptr
+    Edge(int t, int w = 1) : to(t), weight(w), next(nullptr) {}
+};
+
+// ========================================
+// 核心操作封装（邻接表类）
+// ========================================
+template <typename T>
+class AdjacencyList {
+private:
+    vector<Edge*> adjacencyList;  // 邻接表数组，每个元素是一个边链表的头指针
+    vector<T> vertexData;         // 顶点数据数组，可存储顶点额外信息
+    int numVertices;              // 顶点数量
+    bool directed;                // 是否为有向图
+    int numEdges;                 // 当前边的数量，便于统计
+
+public:
+    // 构造函数：初始化n个顶点的邻接表，所有链表头指针初始化为nullptr
+    // 原理：创建大小为n的vector，每个元素为nullptr，表示没有邻接边
+    AdjacencyList(int n, bool isDirected = false) 
+        : adjacencyList(n, nullptr), vertexData(n), numVertices(n), directed(isDirected), numEdges(0) {}
+
+    // 添加边：在顶点u和v之间添加一条边，可指定权值
+    // 原理：1. 创建Edge节点(终点v，权值weight)；2. 将新边插入u的链表头部；3. 若是无向图，同时创建反向边插入v的链表头部
+    void addEdge(int u, int v, int weight = 1);
+
+    // 删除边：移除顶点u到v的边（单向删除）
+    // 原理：1. 遍历u的链表，找到指向v的边节点；2. 调整指针移除该节点；3. 若是无向图，需同步删除v到u的边
+    void removeEdge(int u, int v);
+
+    // 判断边是否存在：检查顶点u到v是否有边
+    // 原理：遍历u的链表，查找终点为v的边节点
+    bool hasEdge(int u, int v) const;
+
+    // 获取边权值：返回u到v的边权值，无边则返回特定值（如-1）
+    // 原理：遍历u的链表，找到终点为v的边节点并返回其权值
+    int getEdgeWeight(int u, int v) const;
+
+    // 设置边权值：修改已存在边的权值
+    // 原理：遍历u的链表，找到终点为v的边节点并更新其权值
+    void setEdgeWeight(int u, int v, int newWeight);
+
+    // 获取邻接顶点：返回顶点v的所有邻接顶点（出边邻居）
+    // 原理：遍历v的链表，收集所有边的终点
+    vector<int> getAdjacentVertices(int v) const;
+
+    // 获取顶点入度：返回顶点v的入度（有向图）或度数（无向图）
+    // 原理：有向图：遍历所有顶点的链表，统计终点为v的边数；无向图：返回v的链表长度
+    int getInDegree(int v) const;
+
+    // 获取顶点出度：返回顶点v的出度（有向图）或度数（无向图）
+    // 原理：遍历v的链表，统计边节点数量
+    int getOutDegree(int v) const;
+
+    // 获取顶点总数
+    // 原理：返回numVertices成员变量
+    int getNumVertices() const { return numVertices; }
+
+    // 获取边总数
+    // 原理：返回numEdges成员变量
+    int getNumEdges() const { return numEdges; }
+
+    // 判断是否为有向图
+    // 原理：返回directed成员变量
+    bool isDirected() const { return directed; }
+
+    // 设置顶点数据：为顶点v设置额外数据
+    // 原理：在vertexData数组中设置对应位置的数据
+    void setVertexData(int v, const T& data);
+
+    // 获取顶点数据：返回顶点v的数据
+    // 原理：从vertexData数组中获取对应位置的数据
+    T getVertexData(int v) const;
+
+    // 清空图：移除所有边，但不删除顶点
+    // 原理：遍历所有顶点的链表，递归删除所有边节点，重置链表头指针
+    void clearEdges();
+
+    // 打印邻接表（调试用）
+    // 原理：遍历每个顶点，打印其链表中的所有边
+    void printList() const;
+
+    // 获取邻接表的只读引用（用于遍历等操作）
+    // 原理：返回adjacencyList的const引用
+    const vector<Edge*>& getList() const { return adjacencyList; }
+};
+
+// ========================================
+// 扩展：使用vector<pair<int, int>>代替链表的邻接表实现（更简洁）
+// ========================================
+class SimpleAdjacencyList {
+private:
+    vector<vector<pair<int, int>>> adj;  // 邻接表，adj[u]存储所有(u,v,weight)对
+    bool directed;
+    int numVertices;
+    int numEdges;
+
+public:
+    // 构造函数：初始化n个空向量
+    SimpleAdjacencyList(int n, bool isDirected = false) 
+        : adj(n), directed(isDirected), numVertices(n), numEdges(0) {}
+
+    // 添加边：使用vector的push_back代替链表操作
+    // 原理：adj[u].push_back({v, weight})；若是无向图则同时adj[v].push_back({u, weight})
+    void addEdge(int u, int v, int weight = 1);
+
+    // 删除边：遍历vector找到并删除目标边
+    // 原理：遍历adj[u]找到v并删除；无向图需同步处理adj[v]
+    void removeEdge(int u, int v);
+
+    // 其他操作类似，实现更简洁
+    // 省略其他方法声明...
+};
