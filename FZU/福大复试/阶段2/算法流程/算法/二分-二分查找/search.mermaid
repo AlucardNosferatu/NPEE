@@ -1,0 +1,45 @@
+graph TD
+    %% 有序数组二分查找目标值：在有序数组中找到目标值的索引
+    %% 输入参数：nums - 有序整数数组（升序），target - 要查找的目标值
+    %% 输出参数：目标值在数组中的索引（如果找到），否则返回-1
+    %% 核心思想：通过不断将搜索区间减半来快速定位目标值
+    %% 虚拟入口节点
+    Start[开始] -->|INIT| STATE_0[STATE_0：初始状态断言]
+    
+    %% 初始化后流程
+    STATE_0 -->|UPDATE_SEARCH_CONDITION| STATE_1[STATE_1：搜索条件更新后断言]
+    
+    %% 主循环控制：检查是否继续搜索
+    STATE_1 -->|CHECK_SEARCH_CONTINUE| CHECK_SEARCH_CONTINUE_Branch{CHECK_SEARCH_CONTINUE 分支}
+    
+    %% 分支：继续搜索或结束
+    CHECK_SEARCH_CONTINUE_Branch -->|继续搜索| STATE_2[STATE_2：计算中点后断言]
+    CHECK_SEARCH_CONTINUE_Branch -->|结束搜索| FINAL_STATE[FINAL_STATE：最终状态断言]
+    
+    %% 计算中点后的比较流程
+    STATE_2 -->|COMPARE_WITH_TARGET| COMPARE_WITH_TARGET_Branch{COMPARE_WITH_TARGET 分支}
+    
+    %% 比较结果分支
+    COMPARE_WITH_TARGET_Branch -->|等于目标| FOUND_RESULT_ACTION[FOUND_RESULT]
+    COMPARE_WITH_TARGET_Branch -->|小于目标| ADJUST_LEFT_ACTION[ADJUST_LEFT]
+    COMPARE_WITH_TARGET_Branch -->|大于目标| ADJUST_RIGHT_ACTION[ADJUST_RIGHT]
+    
+    %% 找到结果的流程
+    FOUND_RESULT_ACTION -->|FOUND_RESULT| FINAL_STATE
+    
+    %% 调整左边界的流程
+    ADJUST_LEFT_ACTION -->|ADJUST_LEFT| STATE_3[STATE_3：调整左边界后断言]
+    
+    %% 调整右边界的流程
+    ADJUST_RIGHT_ACTION -->|ADJUST_RIGHT| STATE_4[STATE_4：调整右边界后断言]
+    
+    %% 循环回到搜索条件更新
+    STATE_3 -->|UPDATE_SEARCH_CONDITION| STATE_1
+    STATE_4 -->|UPDATE_SEARCH_CONDITION| STATE_1
+    
+    %% 最终状态无出箭头（流程图终点）
+    
+    %% 注释说明
+    %% 算法整体流程：初始化→更新搜索条件→检查是否继续→计算中点并比较→根据比较结果调整边界或找到结果
+    %% 循环逻辑：当继续搜索时，通过调整边界后回到更新搜索条件状态，形成循环
+    %% 终点：最终状态断言节点是流程图的终点，不体现RETURN_RESULT动作

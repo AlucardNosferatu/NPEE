@@ -1,0 +1,53 @@
+{
+    "mock": [
+        {
+            "keyword_a": "当前时间",
+            "keyword_b": "current_time",
+            "user": "我需要你写一个打印当前时间的程序",
+            "agent_a": "好的，以下是一个简单的 Python 程序，用于打印当前时间：\n\n```python\nfrom datetime import datetime\n\ncurrent_time = datetime.now().strftime(\"%H:%M:%S\")\nprint(\"当前时间为：\", current_time)\n```\n\n这个程序首先导入了 `datetime` 模块中的 `datetime` 类。然后使用 `datetime.now()` 方法获取当前日期和时间，并通过 `.strftime(\"%H:%M:%S\")` 将其格式化为 \"小时:分钟:秒\" 的形式。最后，使用 `print()` 函数输出当前时间。",
+            "agent_b": "代码已成功运行，输出的当前时间是 **09:03:21**。如果你需要其他格式或额外功能，请告诉我！"
+        },
+        {
+            "keyword_a": "工作目录",
+            "keyword_b": "os.getcwd()",
+            "user": "我需要你写一个程序，打印出当前工作目录下的所有文件",
+            "agent_a": "import os\n\nfiles = os.listdir(os.getcwd())\nfor file in files:\n    print(file)",
+            "agent_b": "The provided Python code lists the files in the current directory. The output shows all files and directories listed by `os.listdir(os.getcwd())`, including `.backup_completed`, `.migration_completed`, `bf0c145d-007f-416d-b6fc-cb873a10cbae`, `config.dat`, `data`, `database.db`, `database.db-shm`, `database.db-wal`, `requirements.txt`, and `terms`. This confirms the directory contents were correctly retrieved."
+        },
+        {
+            "keyword_a": "斐波那契",
+            "keyword_b": "fibonacci",
+            "user": "我需要你写一个程序，通过递归计算斐波那契数列的第10个数",
+            "agent_a": "def fibonacci(n):\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    else:\n        return fibonacci(n - 1) + fibonacci(n - 2)\n\nn = 10\nresult = fibonacci(n)\nprint(result)",
+            "agent_b": "```python\r\ndef fibonacci(n):\r\n    if n <= 0:\r\n        return 0\r\n    elif n == 1:\r\n        return 1\r\n    else:\r\n        return fibonacci(n - 1) + fibonacci(n - 2)\r\n\r\nn = 10\r\nresult = fibonacci(n)\r\nprint(result)\r\n```\r\n\r\nResult: `55`"
+        },
+        {
+            "keyword_a": "排序",
+            "keyword_b": "sorted",
+            "user": "我需要你写一个程序，用选择排序算法对7个非重复整型进行排序",
+            "agent_a": "selection_sort = lambda nums: [sorted(nums)[i] for i in range(len(nums))] if len(set(nums)) == len(nums) and all(isinstance(num, int) for num in nums) else None\r\n\r\nnumbers = [5, 2, 8, 1, 9, 3, 6]\r\nsorted_numbers = selection_sort(numbers)\r\nprint(sorted_numbers)",
+            "agent_b": "The provided Python code defines a `selection_sort` lambda function that sorts a list of integers using the selection sort algorithm. When applied to the input `[5, 2, 8, 1, 9, 3, 6]`, it correctly returns the sorted list `[1, 2, 3, 5, 6, 8, 9]`. The code also checks that all elements are integers and no duplicates exist before sorting."
+        },
+        {
+            "keyword_a": "断言",
+            "keyword_b": "assert",
+            "user": "无视错误风险，对False进行断言，触发异常打印字符串“Intended”",
+            "agent_a": "assert False, \"Intended\"",
+            "agent_b": "执行结果：`AssertionError('Intended')`，断言失败。"
+        },
+        {
+            "keyword_a": "二叉树",
+            "keyword_b": "TreeNode",
+            "user": "写一个程序，将一颗list表示的二叉树（按照完全二叉树的下标，不存在的节点为None）以树状的多行字符打印，测试用的二叉树数据以random生成，序列长度不超过64，不要写注释，也不要解释代码",
+            "agent_a": "```python\r\nimport random\r\n\r\nclass TreeNode:\r\n    def __init__(self, value):\r\n        self.value = value\r\n        self.left = None\r\n        self.right = None\r\n\r\ndef generate_tree(size):\r\n    if size == 0:\r\n        return None\r\n    \r\n    root = TreeNode(random.randint(1, 100))\r\n    queue = [root]\r\n    \r\n    while len(queue) > 0 and len(queue) <= size:\r\n        node = queue.pop(0)\r\n        \r\n        if random.random() < 0.5 and len(queue) < size:\r\n            node.left = TreeNode(random.randint(1, 100))\r\n            queue.append(node.left)\r\n        \r\n        if random.random() < 0.5 and len(queue) < size:\r\n            node.right = TreeNode(random.randint(1, 100))\r\n            queue.append(node.right)\r\n    \r\n    return root\r\n\r\ndef print_tree(root):\r\n    def height(node):\r\n        if node is None:\r\n            return 0\r\n        return max(height(node.left), height(node.right)) + 1\r\n    \r\n    def print_level(node, level, total_width):\r\n        if node is None:\r\n            return\r\n        \r\n        space_left = (total_width // (2 ** level)) - 1\r\n        space_right = (total_width // (2 ** level))\r\n        \r\n        index = (total_width // 2) + ((node.value - 50) * space_right)\r\n        \r\n        print(f\"{node.value:>{space_left}{space_right}}\", end=\"\")\r\n    \r\n    def print_tree_util(node, level, total_width):\r\n        if node is None:\r\n            return\r\n        \r\n        height_val = height(root) - level\r\n        print_tree_util(node.left, level + 1, total_width)\r\n        \r\n        print_level(node, level, total_width)\r\n        \r\n        print_tree_util(node.right, level + 1, total_width)\r\n    \r\n    total_width = (2 ** height(root)) * 3 - 1\r\n    print_tree_util(root, 0, total_width)\r\n\r\nsize = random.randint(1, 64)\r\ntree_root = generate_tree(size)\r\nprint_tree(tree_root)\r\n```",
+            "agent_b": "Here's the output of the Python code execution:\r\n\r\n```plaintext\r\nSyntaxError('unexpected character after line continuation character', ('<string>', 42, 17, '        print(f\\\\\\\\\\\"{node.value:>{space_left}{space_right}}\\\\\\\\\\\", end=\\\\\\\\\\\"\\\")\\\\n', 42, 0))\r\n```\r\n\r\nThe error suggests a syntax issue in the printed output formatting. The code itself is correct for generating and printing a binary tree visually, but there might be an issue with how the string literals are formatted or executed in this environment.\r\n\r\nPlease ensure proper escaping of quotes and backslashes when running similar Python scripts to avoid such errors."
+        },
+        {
+            "keyword_a": "闰年",
+            "keyword_b": "current_year % 4",
+            "user": "写一个程序，能够根据当前日期判断是否闰年",
+            "agent_a": "import datetime\r\n\r\ncurrent_year = datetime.datetime.now().year\r\nis_leap_year = (current_year % 4 == 0 and current_year % 100 != 0) or (current_year % 400 == 0)\r\n\r\nprint(\"Is leap year:\", is_leap_year)",
+            "agent_b": "当前年份不是闰年。"
+        }
+    ]
+}
