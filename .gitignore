@@ -21,3 +21,6 @@ Note/工作日志_单个sheet输出/
 *.so
 obj/
 bin/
+Debug/
+*.ilk
+*.obj
