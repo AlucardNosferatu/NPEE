@@ -1,0 +1,67 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34525.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DijkstraAlgorithm", "DijkstraAlgorithm\DijkstraAlgorithm.csproj", "{AF716463-E03D-4DD5-8B1D-39E682534928}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DijkstraMap", "DijkstraMap\DijkstraMap.csproj", "{3A2D5EB4-E38B-4235-81DF-7D69B71CA0BE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FloydWarshall", "FloydWarshall\FloydWarshall.csproj", "{27DF3821-3992-4CF2-957E-F6B58281A6BB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sweep", "Sweep\Sweep.csproj", "{7374E2EF-9460-4B40-A062-5EB426E31C2D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TriangularGrid", "TriangularGrid\TriangularGrid.csproj", "{E53ED5E9-05CB-4CE6-ACA9-306E3DC4FACD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HexagonalGrid", "HexagonalGrid\HexagonalGrid.csproj", "{7A50D515-971D-4074-ACE9-0EC6D6EA0B68}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimplifiedGrid", "SimplifiedGrid\SimplifiedGrid.csproj", "{A5D243BC-2202-4748-BF80-254AE5EC5529}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toposort", "Toposort\Toposort.csproj", "{E44806AE-A456-45D4-A5E1-F1D8949801A0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AF716463-E03D-4DD5-8B1D-39E682534928}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF716463-E03D-4DD5-8B1D-39E682534928}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF716463-E03D-4DD5-8B1D-39E682534928}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF716463-E03D-4DD5-8B1D-39E682534928}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A2D5EB4-E38B-4235-81DF-7D69B71CA0BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A2D5EB4-E38B-4235-81DF-7D69B71CA0BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A2D5EB4-E38B-4235-81DF-7D69B71CA0BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A2D5EB4-E38B-4235-81DF-7D69B71CA0BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27DF3821-3992-4CF2-957E-F6B58281A6BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27DF3821-3992-4CF2-957E-F6B58281A6BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27DF3821-3992-4CF2-957E-F6B58281A6BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27DF3821-3992-4CF2-957E-F6B58281A6BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7374E2EF-9460-4B40-A062-5EB426E31C2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7374E2EF-9460-4B40-A062-5EB426E31C2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7374E2EF-9460-4B40-A062-5EB426E31C2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7374E2EF-9460-4B40-A062-5EB426E31C2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E53ED5E9-05CB-4CE6-ACA9-306E3DC4FACD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E53ED5E9-05CB-4CE6-ACA9-306E3DC4FACD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E53ED5E9-05CB-4CE6-ACA9-306E3DC4FACD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E53ED5E9-05CB-4CE6-ACA9-306E3DC4FACD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A50D515-971D-4074-ACE9-0EC6D6EA0B68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A50D515-971D-4074-ACE9-0EC6D6EA0B68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A50D515-971D-4074-ACE9-0EC6D6EA0B68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A50D515-971D-4074-ACE9-0EC6D6EA0B68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5D243BC-2202-4748-BF80-254AE5EC5529}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5D243BC-2202-4748-BF80-254AE5EC5529}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5D243BC-2202-4748-BF80-254AE5EC5529}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5D243BC-2202-4748-BF80-254AE5EC5529}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E44806AE-A456-45D4-A5E1-F1D8949801A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E44806AE-A456-45D4-A5E1-F1D8949801A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E44806AE-A456-45D4-A5E1-F1D8949801A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E44806AE-A456-45D4-A5E1-F1D8949801A0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1034D812-3883-45D3-88F2-F146CED92B6B}
+	EndGlobalSection
+EndGlobal

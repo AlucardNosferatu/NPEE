@@ -1,0 +1,324 @@
+# 5.2 不变量检查（考场优化版）
+
+## 一、核心理念
+
+在只能看到**RE**（断言触发）和**WA**（结果错误）的环境中，通过精心设计的断言检查算法关键性质。核心思想：**将算法正确性的数学条件转化为可执行的断言，通过RE触发来定位逻辑错误**。
+
+## 二、考场环境下不变量检查原则
+
+### 1. 最小化原则
+- 只检查**最核心**的不变量
+- 每个算法最多3-5个关键检查点
+- 断言要简单、直接、计算量小
+
+### 2. 可区分原则
+- 确保检查的RE能与低级错误（越界、空指针）的RE区分
+- 通过检查内容的**独特性**来识别
+
+### 3. 条件化原则
+```cpp
+// 考场标准模式
+#define DEBUG 1  // 提交前改为0
+
+#if DEBUG
+assert(核心不变量检查);
+#endif
+```
+
+## 三、关键算法的不变量检查（简化版）
+
+### 1. 排序算法
+```cpp
+// 插入排序 - 核心不变量：已处理部分有序
+void insertion_sort(vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 1; i < n; i++) {
+        // 检查点1：已排序部分的有序性
+        #if DEBUG
+        for (int j = 1; j < i; j++) {
+            assert(arr[j-1] <= arr[j]);
+        }
+        #endif
+        
+        int key = arr[i];
+        int j = i-1;
+        while (j >= 0 && arr[j] > key) {
+            arr[j+1] = arr[j];
+            j--;
+        }
+        arr[j+1] = key;
+    }
+    
+    // 检查点2：最终结果有序性
+    #if DEBUG
+    for (int i = 1; i < n; i++) {
+        assert(arr[i-1] <= arr[i]);
+    }
+    #endif
+}
+```
+
+### 2. 二分查找
+```cpp
+// 二分查找 - 核心不变量：搜索区间有效性
+int binary_search(const vector<int>& arr, int target) {
+    int left = 0, right = arr.size()-1;
+    
+    while (left <= right) {
+        int mid = left + (right-left)/2;
+        
+        // 检查点：搜索区间必须包含目标值（如果存在）
+        #if DEBUG
+        bool target_exists = false;
+        for (int x : arr) if (x == target) target_exists = true;
+        
+        if (target_exists) {
+            // 如果目标存在，检查当前区间是否可能包含
+            bool in_left = false, in_right = false;
+            for (int i = 0; i < left; i++) if (arr[i] == target) in_left = true;
+            for (int i = right+1; i < arr.size(); i++) if (arr[i] == target) in_right = true;
+            assert(!in_left && !in_right);
+        }
+        #endif
+        
+        if (arr[mid] == target) return mid;
+        else if (arr[mid] < target) left = mid+1;
+        else right = mid-1;
+    }
+    
+    return -1;
+}
+```
+
+### 3. 动态规划（背包问题）
+```cpp
+// 0-1背包 - 核心不变量：状态转移合理性
+int knapsack(const vector<int>& weights, const vector<int>& values, int W) {
+    int n = weights.size();
+    vector<int> dp(W+1, 0);
+    
+    for (int i = 0; i < n; i++) {
+        for (int w = W; w >= weights[i]; w--) {
+            dp[w] = max(dp[w], dp[w-weights[i]] + values[i]);
+            
+            // 检查点：dp值单调非减且不过界
+            #if DEBUG
+            assert(dp[w] >= 0);  // 非负
+            assert(dp[w] <= dp[W]);  // 不超过总容量
+            if (w > 0) assert(dp[w] >= dp[w-1]);  // 单调性
+            #endif
+        }
+    }
+    
+    return dp[W];
+}
+```
+
+### 4. 图遍历（BFS）
+```cpp
+// BFS - 核心不变量：访问状态的合理性
+void bfs(int start, const vector<vector<int>>& graph) {
+    int n = graph.size();
+    vector<bool> visited(n, false);
+    queue<int> q;
+    
+    visited[start] = true;
+    q.push(start);
+    
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        
+        // 检查点1：出队节点必须已访问
+        #if DEBUG
+        assert(visited[u]);
+        #endif
+        
+        for (int v : graph[u]) {
+            // 检查点2：邻居节点编号合法
+            #if DEBUG
+            assert(v >= 0 && v < n);
+            #endif
+            
+            if (!visited[v]) {
+                visited[v] = true;
+                q.push(v);
+                
+                // 检查点3：新访问的节点未被重复标记
+                #if DEBUG
+                int visited_count = 0;
+                for (bool vis : visited) if (vis) visited_count++;
+                assert(visited_count <= n);
+                #endif
+            }
+        }
+    }
+}
+```
+
+## 四、考场实施流程
+
+### 阶段1：考前准备（记忆模板）
+```
+1. 记住常用算法的不变量形式：
+   排序算法 → 有序性检查
+   查找算法 → 搜索区间检查
+   DP算法 → 状态转移检查
+   图算法 → 访问状态检查
+
+2. 编写简化检查函数：
+   bool is_sorted(arr) {...}
+   bool in_range(idx, n) {...}
+   bool monotonic(dp) {...}
+```
+
+### 阶段2：考场编码
+```
+步骤1：先实现基础算法，不加断言
+步骤2：添加1-2个最核心的不变量检查
+步骤3：用DEBUG宏控制检查
+步骤4：提交测试
+```
+
+### 阶段3：错误诊断
+```
+情况1：RE → 不变量被违反，检查算法逻辑
+情况2：WA → 不变量通过，检查边界条件或实现细节
+情况3：AC → 直接通过（理想情况）
+```
+
+### 阶段4：最终提交
+```cpp
+// 提交前必须修改这一行
+#define DEBUG 0  // 禁用所有断言
+```
+
+## 五、高效检查技巧
+
+### 1. 选择关键检查点
+```cpp
+// 正确：检查最可能出错的关键性质
+assert(is_sorted(processed_part));
+
+// 避免：检查过于细节或计算量大的性质
+// assert(每个元素都满足复杂条件...);
+```
+
+### 2. 使用辅助函数简化
+```cpp
+// 考前预写，考场直接使用
+bool check_binary_search_invariant(const vector<int>& arr, int l, int r, int target) {
+    // 检查目标值是否在[l, r]区间内（如果存在）
+    for (int i = 0; i < l; i++) if (arr[i] == target) return false;
+    for (int i = r+1; i < arr.size(); i++) if (arr[i] == target) return false;
+    return true;
+}
+```
+
+### 3. 分层检查策略
+```cpp
+// 第一层：基础检查（始终开启）
+assert(n >= 0 && n < MAXN);
+
+// 第二层：核心不变量（DEBUG开启）
+#if DEBUG
+assert(算法特定不变量);
+#endif
+
+// 第三层：完整检查（时间充足时开启）
+#if DEBUG && FULL_CHECK
+assert(所有不变量);
+#endif
+```
+
+## 六、常见算法的不变量速查表
+
+### 排序算法
+```
+插入/选择排序: arr[0..i-1]已排序
+快速排序: 分区后pivot左侧≤pivot≤右侧
+归并排序: 合并后两个有序子序列变为一个有序序列
+```
+
+### 查找算法
+```
+二分查找: 目标值在[l, r]区间内（如果存在）
+线性查找: 目标值不在已检查部分
+```
+
+### 动态规划
+```
+状态定义: dp[i]表示特定意义
+状态转移: dp[i]由dp[j]正确推导 (j < i)
+边界条件: dp[0]等初始值正确
+```
+
+### 图算法
+```
+BFS/DFS: visited集合只增不减
+最短路径: 已确定距离的节点不再更新
+拓扑排序: 输出序列满足所有依赖
+```
+
+## 七、考场注意事项
+
+### 1. 断言要具体
+```cpp
+// 好：具体描述违反了什么
+assert(idx >= 0 && idx < n && "Index out of range");
+
+// 避免：过于笼统
+assert(some_condition);  // 不知道违反了什么
+```
+
+### 2. 控制检查频率
+```cpp
+// 循环内检查示例 - 控制频率
+for (int i = 0; i < n; i++) {
+    #if DEBUG
+    if (i % 100 == 0) {  // 每100次检查一次
+        assert(invariant_holds());
+    }
+    #endif
+    // ... 算法逻辑
+}
+```
+
+### 3. 避免副作用
+```cpp
+// 错误：断言改变了程序状态
+assert(++counter < limit);  // 副作用！
+
+// 正确：纯检查
+int new_counter = counter + 1;
+assert(new_counter < limit);
+counter++;
+```
+
+## 八、总结：考场行动指南
+
+### 考前准备（必须记忆）
+1. **核心不变量模板**：每种算法记1-2个最关键的不变量
+2. **辅助函数框架**：准备好is_sorted、in_range等检查函数
+3. **DEBUG宏模式**：养成用#if DEBUG控制检查的习惯
+
+### 考场策略
+1. **第一步**：先写无断言的正确算法
+2. **第二步**：添加核心不变量检查（不超过3个）
+3. **第三步**：用DEBUG=1提交，根据RE/WA判断错误类型
+4. **第四步**：修复错误后，DEBUG=0提交最终版
+
+### 检查优先级
+```
+高优先级：数组边界、索引合法性
+中优先级：算法特定不变量（有序性、区间包含性）
+低优先级：全局性质、最终结果验证
+```
+
+### 时间分配建议
+```
+0-60%时间：实现基础算法
+60-80%时间：添加调试检查和测试
+80-100%时间：修复错误和最终提交
+```
+
+通过这种系统化的不变量检查方法，你可以在无法看到具体错误信息的考场环境中，有效利用RE触发来定位和修复算法逻辑错误，显著提高解题成功率。

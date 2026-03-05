@@ -1,0 +1,266 @@
+# 2.2 自定义断言宏（考场优化版）
+
+## 一、核心理念
+
+在考场环境下，自定义断言宏的核心是**通过统一的控制开关管理断言，在关键位置添加检查，通过RE触发判断错误**。由于看不到任何输出信息，所有调试信息只能通过RE发生来推断。
+
+## 二、考场专用断言宏设计
+
+### 1. 最简断言宏（必须记忆）
+```cpp
+// 考场最简断言系统
+#define DEBUG_ASSERTS 0  // 0=禁用，1=启用
+
+#if DEBUG_ASSERTS
+    #define MY_ASSERT(cond) if (!(cond)) { int* p=0; *p=0; }
+    #define CHECK_POINT(num, cond) if (CHECK_NUM == num && !(cond)) { int x=1/0; }
+#else
+    #define MY_ASSERT(cond)
+    #define CHECK_POINT(num, cond)
+#endif
+
+// 使用示例
+int main() {
+    vector<int> arr = read_input();
+    
+    MY_ASSERT(!arr.empty());  // 如果DEBUG_ASSERTS=1且arr为空，触发RE
+    MY_ASSERT(arr.size() < 1000000);
+    
+    return 0;
+}
+```
+
+### 2. 分层检查点系统
+```cpp
+// 通过单个宏控制所有检查点
+#define CHECK_NUM 0  // 0=无检查，1-10=各个检查点
+
+// 检查点1：输入验证
+#if CHECK_NUM == 1
+    #define CHECK_1(cond) if (!(cond)) { int* p=0; *p=0; }
+#else
+    #define CHECK_1(cond)
+#endif
+
+// 检查点2：数组边界
+#if CHECK_NUM == 2
+    #define CHECK_2(cond) if (!(cond)) { int x=1/0; }
+#else
+    #define CHECK_2(cond)
+#endif
+
+// 使用示例
+void process(vector<int>& arr, int idx) {
+    CHECK_1(!arr.empty());        // 启用CHECK_NUM=1时检查
+    CHECK_2(idx >= 0 && idx < arr.size());  // CHECK_NUM=2时检查
+}
+```
+
+## 三、考场实施策略
+
+### 1. 考前准备：记忆断言模式
+```
+必须记忆的断言模式：
+1. 基础断言：MY_ASSERT(条件)
+2. 检查点断言：CHECK_POINT(编号, 条件)
+3. 启用开关：DEBUG_ASSERTS 或 CHECK_NUM
+```
+
+### 2. 使用流程
+```cpp
+// 步骤1：设置调试开关
+#define DEBUG_ASSERTS 1
+
+// 步骤2：在怀疑点添加断言
+MY_ASSERT(index >= 0 && index < size);
+
+// 步骤3：提交测试，观察RE/WA
+// 步骤4：修复问题后，设置DEBUG_ASSERTS=0提交
+```
+
+### 3. 草稿纸记录模板
+```
+断言调试记录：
+DEBUG_ASSERTS=1 → [RE/WA]
+1. 检查点：数组越界 → RE（发现错误）
+2. 检查点：除零检查 → WA（可能正确）
+3. 修复错误后：DEBUG_ASSERTS=0 → AC
+```
+
+## 四、实用断言模式
+
+### 1. 常见检查断言
+```cpp
+// 数组/容器边界检查
+#define CHECK_BOUNDS(arr, idx) \
+    MY_ASSERT((idx) >= 0 && (idx) < (arr).size())
+
+// 非空检查
+#define CHECK_NOT_EMPTY(cont) \
+    MY_ASSERT(!(cont).empty())
+
+// 非空指针检查
+#define CHECK_NOT_NULL(ptr) \
+    MY_ASSERT((ptr) != nullptr)
+
+// 范围检查
+#define CHECK_RANGE(val, min, max) \
+    MY_ASSERT((val) >= (min) && (val) <= (max))
+```
+
+### 2. 算法专用断言
+```cpp
+// 循环不变量检查
+#define CHECK_LOOP_INVARIANT(cond) \
+    MY_ASSERT(cond)  // 在循环关键位置使用
+
+// 递归深度检查
+static int recursion_depth = 0;
+#define CHECK_RECURSION_DEPTH(max) \
+    recursion_depth++; \
+    MY_ASSERT(recursion_depth < (max)); \
+    recursion_depth--
+```
+
+## 五、考前记忆要点
+
+### 必须记忆的断言宏：
+```cpp
+// 1. 基础断言模板
+#define DEBUG_ASSERTS 0
+#if DEBUG_ASSERTS
+    #define MY_ASSERT(cond) if (!(cond)) { int* p=0; *p=0; }
+#else
+    #define MY_ASSERT(cond)
+#endif
+
+// 2. 检查点模板
+#define CHECK_NUM 0
+#define CHECK_POINT(n, cond) if (CHECK_NUM == n && !(cond)) { int x=1/0; }
+```
+
+### 考场检查清单：
+```
+提交前必须：
+[ ] 1. DEBUG_ASSERTS=0
+[ ] 2. CHECK_NUM=0
+[ ] 3. 移除所有调试输出
+[ ] 4. 确认代码逻辑正确
+```
+
+## 六、示例：使用自定义断言调试
+
+### 问题代码：
+```cpp
+int binary_search(const vector<int>& arr, int target) {
+    int left = 0, right = arr.size();  // 错误：应为arr.size()-1
+    
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (arr[mid] == target) return mid;
+        else if (arr[mid] < target) left = mid + 1;
+        else right = mid - 1;
+    }
+    return -1;
+}
+```
+
+### 调试过程：
+```cpp
+#define DEBUG_ASSERTS 1
+
+int binary_search(const vector<int>& arr, int target) {
+    // 添加边界检查
+    MY_ASSERT(!arr.empty());
+    
+    int left = 0, right = arr.size();
+    
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        
+        // 检查mid索引合法性
+        MY_ASSERT(mid >= 0 && mid < arr.size());
+        
+        if (arr[mid] == target) return mid;
+        else if (arr[mid] < target) left = mid + 1;
+        else right = mid - 1;
+    }
+    return -1;
+}
+
+// 启用断言后提交 → RE
+// 发现mid可能等于arr.size()，修复right初始值
+// DEBUG_ASSERTS=0，重新提交 → AC
+```
+
+## 七、考场时间管理
+
+### 断言调试时间分配：
+```
+总时间：120分钟
+设置和修改断言：2-3分钟
+启用断言测试：每次提交2-3分钟
+修复错误：3-5分钟
+最终检查：1-2分钟
+总计：10-15分钟
+```
+
+### 快速操作流程：
+```
+1. 编码时：DEBUG_ASSERTS=1
+2. 添加1-2个关键断言
+3. 提交测试，记录结果
+4. 修复发现的问题
+5. DEBUG_ASSERTS=0，提交最终版本
+```
+
+## 八、常见错误与避免
+
+### 错误1：断言条件复杂
+```cpp
+// 错误：复杂条件难以定位问题
+MY_ASSERT(i >= 0 && i < n && arr[i] > 0 && arr[i] < 100);
+
+// 正确：分解为多个简单断言
+MY_ASSERT(i >= 0 && i < n);
+MY_ASSERT(arr[i] > 0);
+MY_ASSERT(arr[i] < 100);
+```
+
+### 错误2：断言有副作用
+```cpp
+// 错误：断言改变程序状态
+MY_ASSERT(++counter < limit);
+
+// 正确：纯检查
+int new_counter = counter + 1;
+MY_ASSERT(new_counter < limit);
+```
+
+### 错误3：忘记禁用断言
+```cpp
+// 错误：提交时DEBUG_ASSERTS=1
+#define DEBUG_ASSERTS 1  // 忘记改为0
+
+// 正确：提交前必须设为0
+#define DEBUG_ASSERTS 0
+```
+
+## 九、总结
+
+### 核心原则：
+**简单统一，一次控制，提交清零**
+
+### 实施步骤：
+1. **使用统一开关**：DEBUG_ASSERTS控制所有断言
+2. **添加关键检查**：在怀疑点添加简单断言
+3. **单点验证**：通过RE触发判断问题
+4. **提交清理**：确保DEBUG_ASSERTS=0
+
+### 必须遵守的规则：
+1. **断言条件简单明确**
+2. **断言无副作用**
+3. **提交前禁用所有断言**
+4. **保持断言系统简单易用**
+
+通过简单的自定义断言系统，可以在考场环境下有效定位错误，同时确保最终代码干净正确。

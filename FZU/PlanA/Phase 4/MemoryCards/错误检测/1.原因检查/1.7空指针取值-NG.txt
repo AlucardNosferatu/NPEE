@@ -1,0 +1,260 @@
+# 1.7 空指针取值（考场优化版）
+
+## 一、考场适用性评估：⚠️ **有限可行**
+
+空指针检查在考场环境中**有限适用**，因为：
+1. **算法题特点**：通常使用STL容器而非裸指针
+2. **但仍可能出现**：链表、树等数据结构可能使用指针
+3. **检查简单**：可用assert快速检查
+
+## 二、考场可能遇到的指针场景
+
+### 场景1：链表节点操作
+```cpp
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int x) : val(x), next(nullptr) {}
+};
+
+// 遍历链表时的空指针检查
+ListNode* current = head;
+while (current) {  // 正确：检查current不为空
+    // 处理current->val
+    current = current->next;  // 可能为nullptr
+}
+```
+
+### 场景2：树节点操作
+```cpp
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+};
+
+// 访问子树前检查
+void traverse(TreeNode* root) {
+    if (!root) return;  // 空树
+    
+    // 访问左子树前检查（虽然递归调用会检查，但显式检查更安全）
+    if (root->left) {
+        traverse(root->left);
+    }
+}
+```
+
+## 三、考场检查策略
+
+### 检查1：关键指针解引用前检查
+```cpp
+#define CHECK_PTR(ptr) assert((ptr) != nullptr)
+
+// 使用示例
+ListNode* node = get_node();
+CHECK_PTR(node);      // 检查非空
+int value = node->val; // 安全访问
+```
+
+### 检查2：函数返回指针检查
+```cpp
+// 假设函数可能返回空指针
+ListNode* find_node(ListNode* head, int target) {
+    while (head) {
+        if (head->val == target) return head;
+        head = head->next;
+    }
+    return nullptr;
+}
+
+// 调用处检查
+ListNode* found = find_node(head, target);
+#if DEBUG
+CHECK_PTR(found);  // 调试时检查
+#endif
+if (found) {
+    // 安全处理
+}
+```
+
+## 四、考场专用检查宏
+
+```cpp
+// 指针安全检查宏（考前记忆）
+#define CHECK_PTR(ptr) assert((ptr) != nullptr)
+#define SAFE_ACCESS(ptr, member, default_val) \
+    ((ptr) ? (ptr)->member : (default_val))
+
+// 使用示例
+TreeNode* node = /* ... */;
+CHECK_PTR(node);  // 触发RE如果为空
+int val = node->val;
+
+// 或使用安全访问
+int val = SAFE_ACCESS(node, val, -1);  // 如果node为空，返回-1
+```
+
+## 五、考场最佳实践
+
+### 实践1：优先使用值语义
+```cpp
+// 避免：使用指针
+struct Node {
+    int val;
+    Node* next;  // 仍需指针
+};
+
+// 使用：智能指针（如果允许）
+#include <memory>
+struct ListNode {
+    int val;
+    unique_ptr<ListNode> next;  // 自动管理内存
+    ListNode(int x) : val(x), next(nullptr) {}
+};
+```
+
+### 实践2：使用引用而非指针
+```cpp
+// 如果参数不能为空，使用引用
+void process_node(ListNode& node) {  // 调用者必须传递有效对象
+    int val = node.val;  // 安全，不可能为空
+}
+
+// 而不是
+void process_node(ListNode* node) {  // 可能为空
+    if (!node) return;
+    // ...
+}
+```
+
+### 实践3：初始化所有指针
+```cpp
+// 声明时立即初始化
+ListNode* head = nullptr;  // 明确初始化为空
+
+// 而不是
+ListNode* head;  // 未初始化，值不确定
+```
+
+## 六、常见错误示例与修正
+
+### 错误1：未检查函数返回值
+```cpp
+// 错误
+ListNode* node = find_node(head, target);
+int val = node->val;  // 如果未找到，node为空
+
+// 修正
+ListNode* node = find_node(head, target);
+CHECK_PTR(node);  // 检查非空
+int val = node->val;
+```
+
+### 错误2：循环条件错误
+```cpp
+// 错误
+while (current->next) {  // 如果current为空，解引用出错
+    // ...
+}
+
+// 修正
+while (current && current->next) {  // 先检查current
+    // ...
+}
+```
+
+### 错误3：访问可能为空的成员
+```cpp
+// 错误
+if (root->left->val > 0) {  // 如果root->left为空
+    // ...
+}
+
+// 修正
+if (root->left && root->left->val > 0) {
+    // ...
+}
+```
+
+## 七、考场调试策略
+
+### 策略1：在关键操作前添加检查
+```cpp
+ListNode* reverse_list(ListNode* head) {
+    // 入口检查
+    #if DEBUG
+    // 可以检查，但不是必须（空链表是合法的）
+    #endif
+    
+    ListNode* prev = nullptr;
+    ListNode* current = head;
+    
+    while (current) {
+        ListNode* next = current->next;
+        #if DEBUG
+        CHECK_PTR(current);  // 冗余但安全
+        #endif
+        
+        current->next = prev;
+        prev = current;
+        current = next;
+    }
+    
+    return prev;
+}
+```
+
+### 策略2：使用防御性编程
+```cpp
+// 编写安全的辅助函数
+ListNode* safe_next(ListNode* node) {
+    return node ? node->next : nullptr;
+}
+
+int safe_value(ListNode* node, int default_val = 0) {
+    return node ? node->val : default_val;
+}
+
+// 使用
+ListNode* current = head;
+while (current) {
+    int val = safe_value(current);
+    ListNode* next = safe_next(current);
+    current = next;
+}
+```
+
+## 八、总结：考场指针检查要点
+
+### ✅ 建议检查的：
+1. **关键指针解引用**：如`node->val`、`node->next`前
+2. **函数返回的指针**：特别是可能返回`nullptr`的函数
+3. **链表/树遍历**：在循环中检查当前节点非空
+
+### ⚠️ 适度检查的：
+1. **空链表/空树**：有时是合法输入
+2. **递归基线条件**：通常用`if (!node) return;`处理
+
+### ❌ 不需要检查的：
+1. **STL容器访问**：使用`at()`或先检查索引
+2. **智能指针**：`unique_ptr`、`shared_ptr`可安全使用
+3. **值语义对象**：引用、直接对象无需检查
+
+### 📋 考前准备：
+1. **记忆核心检查宏**：`CHECK_PTR`
+2. **练习安全访问模式**
+3. **熟悉常见数据结构操作**
+
+### 🎯 考场策略：
+1. **简单数据结构**：可能不需要详细指针检查
+2. **复杂指针操作**：在关键点添加检查
+3. **调试时**：开启检查定位空指针问题
+4. **提交时**：关闭检查确保性能
+
+### ⚠️ 特别注意：
+- 算法题中空指针通常来自链表、树等数据结构
+- 循环条件要同时检查当前节点和其成员
+- 优先使用值语义和STL容器，避免裸指针
+
+在考场环境中，指针检查主要用于调试阶段发现空指针解引用错误。由于算法题中指针使用有限，检查应集中在确实使用指针的数据结构操作上。

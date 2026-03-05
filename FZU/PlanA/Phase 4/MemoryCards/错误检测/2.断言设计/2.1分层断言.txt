@@ -1,0 +1,255 @@
+# 2.1 分层断言系统（考场优化版）
+
+## 一、核心理念
+
+在考场环境下，分层断言系统的核心是**按照代码执行阶段分层添加断言，通过控制不同层次的断言来逐步定位问题**。由于看不到任何输出信息，必须通过RE触发来判断各层是否出现问题。
+
+## 二、考场简化版分层系统
+
+### 1. 分层控制宏（必须记忆）
+```cpp
+// 分层断言控制
+#define ASSERT_LAYER 0  // 0=无，1=输入层，2=处理层，3=输出层
+
+#if ASSERT_LAYER >= 1
+    #define INPUT_ASSERT(cond) if (!(cond)) { int* p=0; *p=0; }
+#else
+    #define INPUT_ASSERT(cond)
+#endif
+
+#if ASSERT_LAYER >= 2
+    #define PROCESS_ASSERT(cond) if (!(cond)) { int x=1/0; }
+#else
+    #define PROCESS_ASSERT(cond)
+#endif
+
+#if ASSERT_LAYER >= 3
+    #define OUTPUT_ASSERT(cond) if (!(cond)) { vector<int> v; v.at(1000000)=0; }
+#else
+    #define OUTPUT_ASSERT(cond)
+#endif
+```
+
+### 2. 三层检查系统
+```cpp
+// 第一层：输入验证
+void check_input(int n, const vector<int>& arr) {
+    INPUT_ASSERT(n >= 1 && n <= 100000);
+    INPUT_ASSERT(arr.size() == static_cast<size_t>(n));
+    for (int x : arr) {
+        INPUT_ASSERT(x >= -1e9 && x <= 1e9);
+    }
+}
+
+// 第二层：处理过程
+void process_data(const vector<int>& arr) {
+    for (int i = 0; i < arr.size(); i++) {
+        PROCESS_ASSERT(i >= 0 && i < arr.size());
+        PROCESS_ASSERT(arr[i] != 0);  // 假设不允许零值
+        // 处理逻辑...
+    }
+}
+
+// 第三层：输出验证
+void check_output(int result) {
+    OUTPUT_ASSERT(result >= 0 && result <= 1e9);
+    OUTPUT_ASSERT(result % 2 == 0 || result % 2 == 1);  // 简单合理性检查
+}
+```
+
+## 三、考场实施流程
+
+### 步骤1：分层测试
+```
+1. 设置 ASSERT_LAYER=1 → 提交（测试输入层）
+   - 如果 RE → 输入有问题
+   - 如果 WA → 输入可能正确，继续下一层
+
+2. 设置 ASSERT_LAYER=2 → 提交（测试处理层）
+   - 如果 RE → 处理过程有问题
+   - 如果 WA → 处理可能正确，继续下一层
+
+3. 设置 ASSERT_LAYER=3 → 提交（测试输出层）
+   - 如果 RE → 输出有问题
+   - 如果 WA → 所有层断言通过，错误可能在别处
+```
+
+### 步骤2：修复与验证
+```
+1. 根据RE的层，修复对应问题
+2. 修复后重新测试该层
+3. 如果所有层都通过但仍有WA，检查算法逻辑
+```
+
+### 步骤3：最终提交
+```
+设置 ASSERT_LAYER=0
+提交最终代码
+```
+
+## 四、草稿纸记录模板
+
+### 分层测试记录表：
+```
+题目：__________
+分层测试记录：
+
+输入层 (ASSERT_LAYER=1)：
+  结果：__________
+  分析：__________
+
+处理层 (ASSERT_LAYER=2)：
+  结果：__________
+  分析：__________
+
+输出层 (ASSERT_LAYER=3)：
+  结果：__________
+  分析：__________
+
+修复记录：
+[时间] 修复了__________问题
+最终结果：__________
+```
+
+## 五、考前记忆要点
+
+### 必须记忆的分层结构：
+```
+输入层：检查输入合法性
+处理层：检查算法核心过程
+输出层：检查输出合理性
+```
+
+### 必须记忆的控制宏：
+```cpp
+#define ASSERT_LAYER 0
+#if ASSERT_LAYER >= 1
+    // 输入层断言
+#endif
+#if ASSERT_LAYER >= 2
+    // 处理层断言
+#endif
+#if ASSERT_LAYER >= 3
+    // 输出层断言
+#endif
+```
+
+## 六、示例：调试排序问题
+
+### 初始代码（有错误）：
+```cpp
+vector<int> sort_array(vector<int> arr) {
+    // 选择排序
+    for (int i = 0; i < arr.size(); i++) {
+        int min_idx = i;
+        for (int j = i; j < arr.size(); j++) {  // 错误：应该是j=i+1
+            if (arr[j] < arr[min_idx]) {
+                min_idx = j;
+            }
+        }
+        swap(arr[i], arr[min_idx]);
+    }
+    return arr;
+}
+```
+
+### 分层调试过程：
+```
+1. ASSERT_LAYER=1（输入层）：
+   INPUT_ASSERT(arr.size() <= 100000);
+   结果：WA → 输入没问题
+
+2. ASSERT_LAYER=2（处理层）：
+   在循环内添加：
+   PROCESS_ASSERT(i >= 0 && i < arr.size());
+   PROCESS_ASSERT(min_idx >= i && min_idx < arr.size());
+   结果：WA → 处理层断言通过，继续
+
+3. 检查算法逻辑，发现内循环起点错误
+   修复：for (int j = i+1; j < arr.size(); j++)
+
+4. ASSERT_LAYER=0 → 提交 → AC
+```
+
+## 七、考场时间管理
+
+### 分层测试时间分配：
+```
+总时间：120分钟
+每层测试：5-7分钟
+  设置和修改：1分钟
+  提交等待：2-3分钟
+  分析记录：1-2分钟
+修复时间：5-10分钟
+总计：20-35分钟
+```
+
+### 快速决策：
+```
+如果时间不足：
+1. 只测试最可能出错的层（通常是处理层）
+2. 快速修复后提交
+```
+
+## 八、常见错误与避免
+
+### 错误1：断言过多影响判断
+```cpp
+// 错误：一层中断言太多，无法知道哪个失败
+#if ASSERT_LAYER >= 2
+    PROCESS_ASSERT(cond1);
+    PROCESS_ASSERT(cond2);
+    PROCESS_ASSERT(cond3);
+#endif
+
+// 正确：一层中只放1-2个关键断言
+#if ASSERT_LAYER >= 2
+    PROCESS_ASSERT(最关键的条件);
+#endif
+```
+
+### 错误2：层间依赖混乱
+```cpp
+// 错误：处理层断言依赖输入层未检查的数据
+#if ASSERT_LAYER >= 2
+    // arr可能未经验证
+    PROCESS_ASSERT(arr[i] > 0);
+#endif
+
+// 正确：确保前置条件已检查
+#if ASSERT_LAYER >= 1
+    INPUT_ASSERT(!arr.empty());
+#endif
+#if ASSERT_LAYER >= 2
+    // 现在可以安全使用arr
+    PROCESS_ASSERT(arr[0] > 0);
+#endif
+```
+
+### 错误3：忘记重置层数
+```cpp
+// 错误：提交时ASSERT_LAYER仍为3
+#define ASSERT_LAYER 3  // 忘记改为0
+
+// 正确：提交前必须设为0
+#define ASSERT_LAYER 0
+```
+
+## 九、总结
+
+### 核心原则：
+**分层测试，逐层排除，最终清零**
+
+### 实施步骤：
+1. **设置分层宏**：ASSERT_LAYER控制不同层断言
+2. **逐层测试**：从输入层到输出层，观察RE触发
+3. **修复问题**：根据RE层修复对应问题
+4. **最终提交**：ASSERT_LAYER=0，确保无断言
+
+### 检查优先级：
+1. **输入层**：数据范围、格式合法性
+2. **处理层**：算法核心逻辑、循环边界
+3. **输出层**：结果范围、格式正确性
+
+### 最后提醒：
+考场中，分层断言系统是**系统化排除错误的有效方法**。通过分阶段检查，可以快速定位问题所在层次，提高调试效率。

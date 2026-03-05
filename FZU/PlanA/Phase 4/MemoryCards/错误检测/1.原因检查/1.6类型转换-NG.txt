@@ -1,0 +1,290 @@
+# 1.6 类型转换（考场优化版）
+
+## 一、考场适用性评估：⚠️ **有限可行**
+
+类型转换检查在考场环境中**有限适用**，因为：
+1. **算法题特点**：类型转换问题相对较少，但可能出现在边界情况
+2. **简单检查可行**：可用assert检查关键转换
+3. **常见于数学运算**：整数溢出、有符号/无符号转换
+
+## 二、考场常见类型转换问题
+
+### 问题1：整数溢出
+```cpp
+// 常见错误：乘法溢出
+int a = 1000000, b = 1000;
+long long result = (long long)a * b;  // 正确：先提升类型
+```
+
+### 问题2：有符号/无符号比较
+```cpp
+vector<int> vec(10);
+for (int i = 0; i < vec.size(); i++) {  // 混合类型比较
+    // 一般安全，但有警告
+}
+```
+
+### 问题3：浮点转整数截断
+```cpp
+double d = 3.7;
+int i = (int)d;  // 截断为3，可能非预期
+```
+
+## 三、考场检查策略
+
+### 检查1：整数运算溢出检查
+```cpp
+#define CHECK_MUL_OVERFLOW(a, b, type) \
+    assert((type)(a) * (b) / (b) == (a) && "Multiplication overflow")
+
+// 简化：检查乘法是否可能溢出
+template<typename T>
+bool safe_multiply(T a, T b, T& result) {
+    if (a > 0 && b > 0) {
+        if (a > numeric_limits<T>::max() / b) return false;
+    }
+    // 其他情况类似...
+    result = a * b;
+    return true;
+}
+```
+
+### 检查2：类型转换范围检查
+```cpp
+#define CHECK_FIT_IN_TYPE(value, type) \
+    assert((value) >= numeric_limits<type>::min() && \
+           (value) <= numeric_limits<type>::max())
+
+// 使用示例
+long long big = 1000000000000LL;
+CHECK_FIT_IN_TYPE(big, int);  // 触发RE：超出int范围
+```
+
+### 检查3：有符号/无符号转换
+```cpp
+#define CHECK_NON_NEGATIVE(value) assert((value) >= 0)
+
+// 转换为size_t前检查
+int n = -5;
+CHECK_NON_NEGATIVE(n);  // 触发RE：负数
+size_t size_n = n;
+```
+
+## 四、考场专用检查宏
+
+```cpp
+// 类型安全检查宏（考前记忆）
+#define CHECK_RANGE(val, min_val, max_val) \
+    assert((val) >= (min_val) && (val) <= (max_val))
+
+#define CHECK_NO_OVERFLOW(a, b, op) \
+    assert(不会溢出 && "Arithmetic overflow")  // 具体检查略
+
+#define CHECK_FIT(val, type) \
+    CHECK_RANGE(val, numeric_limits<type>::min(), numeric_limits<type>::max())
+
+// 使用示例
+int a = 1000000, b = 1000;
+CHECK_FIT((long long)a * b, int);  // 检查乘法结果能否放入int
+```
+
+## 五、常见场景解决方案
+
+### 场景1：安全整数运算
+```cpp
+// 安全加法
+int safe_add(int a, int b) {
+    long long result = (long long)a + b;
+    CHECK_FIT(result, int);
+    return (int)result;
+}
+
+// 安全乘法
+int safe_multiply(int a, int b) {
+    long long result = (long long)a * b;
+    CHECK_FIT(result, int);
+    return (int)result;
+}
+
+// 考场使用
+int sum = safe_add(a, b);
+int product = safe_multiply(a, b);
+```
+
+### 场景2：容器索引处理
+```cpp
+// 安全索引转换
+size_t safe_index(int idx, size_t size) {
+    CHECK_NON_NEGATIVE(idx);  // 索引不能为负
+    size_t uidx = (size_t)idx;
+    assert(uidx < size);      // 检查边界
+    return uidx;
+}
+
+// 使用
+int idx = 5;
+size_t safe_idx = safe_index(idx, vec.size());
+int value = vec[safe_idx];
+```
+
+### 场景3：浮点转整数
+```cpp
+// 安全浮点转整数
+int safe_double_to_int(double d) {
+    // 检查是否在整数范围内
+    CHECK_FIT(d, int);
+    
+    // 检查是否为整数（如果需要）
+    // assert(floor(d) == d && "Not an integer value");
+    
+    return (int)d;
+}
+```
+
+## 六、考场最佳实践
+
+### 实践1：使用更宽的类型
+```cpp
+// 进行中间计算时使用更宽的类型
+int a = 1000000, b = 1000;
+// 错误：int result = a * b;  // 溢出
+// 正确：
+long long result = (long long)a * b;  // 先提升类型
+CHECK_FIT(result, int);  // 如果结果需要存回int
+```
+
+### 实践2：避免混合符号运算
+```cpp
+// 统一使用size_t处理容器
+vector<int> vec(100);
+for (size_t i = 0; i < vec.size(); i++) {  // 统一使用size_t
+    // 安全
+}
+
+// 如果需要与有符号数运算，显式转换
+int offset = 5;
+size_t idx = 10;
+if (offset >= 0 && (size_t)offset < idx) {  // 安全转换
+    // ...
+}
+```
+
+### 实践3：使用标准函数
+```cpp
+#include <cfenv>
+#include <cmath>
+
+// 使用标准数学函数，注意错误处理
+double d = sqrt(-1);  // 返回NaN
+assert(!isnan(d) && "sqrt of negative number");
+```
+
+## 七、考场调试策略
+
+### 策略1：关键运算前检查
+```cpp
+int compute_result(int a, int b, int c) {
+    // 检查输入范围
+    CHECK_RANGE(a, 0, 10000);
+    CHECK_RANGE(b, 0, 10000);
+    
+    // 中间计算使用更宽类型
+    long long temp = (long long)a * b;
+    CHECK_FIT(temp, int);  // 检查乘法是否安全
+    
+    // 继续计算
+    long long result = temp + c;
+    CHECK_FIT(result, int);
+    
+    return (int)result;
+}
+```
+
+### 策略2：使用安全包装函数
+```cpp
+// 编写安全运算函数
+int safe_op(int a, int b, char op) {
+    switch (op) {
+        case '+': return safe_add(a, b);
+        case '-': return safe_subtract(a, b);
+        case '*': return safe_multiply(a, b);
+        case '/': 
+            assert(b != 0);
+            return a / b;
+        default: assert(false && "Unknown operator");
+    }
+    return 0;
+}
+```
+
+## 八、常见错误示例与修正
+
+### 错误1：乘法溢出
+```cpp
+// 错误
+int a = 1000000, b = 1000;
+int result = a * b;  // 溢出
+
+// 修正
+long long result = (long long)a * b;
+```
+
+### 错误2：有符号负数转无符号
+```cpp
+// 错误
+int idx = -1;
+size_t uidx = idx;  // 巨大正数
+
+// 修正
+assert(idx >= 0);
+size_t uidx = (size_t)idx;
+```
+
+### 错误3：浮点精度损失
+```cpp
+// 错误
+double d = 0.1 + 0.2;
+if (d == 0.3) {  // 可能不成立
+    // ...
+}
+
+// 修正
+const double EPS = 1e-9;
+if (fabs(d - 0.3) < EPS) {
+    // ...
+}
+```
+
+## 九、总结：考场类型转换检查要点
+
+### ✅ 建议检查的：
+1. **整数运算溢出**：特别是乘法、加法
+2. **类型转换范围**：确保值在目标类型范围内
+3. **有符号转无符号**：确保非负
+
+### ⚠️ 适度检查的：
+1. **浮点转换**：检查范围，接受精度损失
+2. **混合类型运算**：确保理解隐式转换规则
+
+### ❌ 不需要检查的：
+1. **简单转换**：如int到long long（不会丢失信息）
+2. **明确的转换**：如已知范围内的转换
+
+### 📋 考前准备：
+1. **记忆核心检查宏**
+2. **练习安全运算模式**
+3. **熟悉常见类型转换陷阱**
+
+### 🎯 考场策略：
+1. **简单运算**：可能不需要详细检查
+2. **复杂计算**：在关键步骤添加检查
+3. **边界情况**：特别注意极值运算
+4. **调试时**：开启检查定位转换问题
+5. **提交时**：关闭检查确保性能
+
+### ⚠️ 特别注意：
+- 整数运算是主要风险点，特别是乘法
+- 有符号/无符号转换可能产生意外结果
+- 浮点运算有精度问题，避免直接相等比较
+
+在考场环境中，类型转换检查主要用于预防整数溢出和边界条件错误。由于算法题中类型转换相对简单，检查应集中在确实可能出错的运算上。

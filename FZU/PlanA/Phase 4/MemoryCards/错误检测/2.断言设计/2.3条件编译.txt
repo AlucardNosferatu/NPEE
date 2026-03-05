@@ -1,0 +1,263 @@
+# 2.3 条件编译（考场优化版）
+
+## 一、核心理念
+
+在考场环境下，条件编译的核心是**通过简单的宏开关控制调试代码的启用/禁用**，确保调试代码不会影响最终提交的正确性。由于看不到任何输出，所有调试信息只能通过断言触发RE来传递。
+
+## 二、考场专用条件编译系统
+
+### 1. 单点调试宏（最简方案）
+```cpp
+// 考场最简条件编译
+#define DEBUG 0  // 0=提交版本，1=调试版本
+
+#if DEBUG
+    // 调试时代码：启用断言
+    #define MY_ASSERT(cond) assert(cond)
+    #define CHECK_POINT(n, cond) if (DEBUG_CHECK == n) assert(cond)
+#else
+    // 提交版本：所有断言为空
+    #define MY_ASSERT(cond)
+    #define CHECK_POINT(n, cond)
+#endif
+
+// 使用示例
+int main() {
+    vector<int> arr = {1, 2, 3};
+    
+    #if DEBUG
+    // 调试专用代码
+    MY_ASSERT(!arr.empty());
+    #endif
+    
+    // 主逻辑...
+    return 0;
+}
+```
+
+### 2. 分层检查宏（推荐方案）
+```cpp
+// 考场分层调试控制
+#define DEBUG_LEVEL 0  // 0=无，1=基础检查，2=完整检查
+
+// 基础检查（数组边界、空容器等）
+#if DEBUG_LEVEL >= 1
+    #define BASIC_CHECK(cond) if (!(cond)) { int* p=0; *p=0; }  // 触发RE
+#else
+    #define BASIC_CHECK(cond)
+#endif
+
+// 详细检查（算法不变量等）
+#if DEBUG_LEVEL >= 2
+    #define DETAILED_CHECK(cond) if (!(cond)) { int x=1/0; }  // 另一种RE
+#else
+    #define DETAILED_CHECK(cond)
+#endif
+
+// 使用示例
+void algorithm(vector<int>& arr) {
+    BASIC_CHECK(!arr.empty());          // 级别1检查
+    DETAILED_CHECK(arr.size() <= 1000); // 级别2检查
+}
+```
+
+## 三、考场实施策略
+
+### 1. 考前准备：记忆宏模板
+```
+必须记忆的宏定义：
+#define DEBUG 0  // 提交前改为0
+
+#if DEBUG
+    #define MY_ASSERT(cond) assert(cond)
+#else
+    #define MY_ASSERT(cond)
+#endif
+```
+
+### 2. 考场使用流程
+```cpp
+// 步骤1：开始时设置DEBUG=1
+#define DEBUG 1
+
+// 步骤2：在怀疑点添加检查
+MY_ASSERT(index >= 0 && index < size);
+
+// 步骤3：调试完成后，提交前改为DEBUG=0
+#define DEBUG 0  // 重要！必须修改
+```
+
+### 3. 草稿纸记录
+```
+题目：__________
+宏设置记录：
+[时间] DEBUG=1，添加检查点1 → 提交 → RE
+[时间] 修复问题，DEBUG=1，添加检查点2 → 提交 → WA
+[时间] DEBUG=0 → 提交 → AC
+```
+
+## 四、实用宏设计
+
+### 1. 检查点编号系统
+```cpp
+// 通过编号控制各个检查点
+#define CHECK_NUM 0  // 0=无，1=检查点1，2=检查点2...
+
+#if CHECK_NUM == 1
+    // 检查点1代码
+    assert(condition1);
+#endif
+
+#if CHECK_NUM == 2
+    // 检查点2代码
+    assert(condition2);
+#endif
+```
+
+### 2. 快速切换宏
+```cpp
+// 在代码开头统一控制
+// 提交前确保所有都是0
+#define CHECK_BOUNDARY 0  // 边界检查
+#define CHECK_INPUT    0  // 输入验证
+#define CHECK_OUTPUT   0  // 输出验证
+#define CHECK_ALGO     0  // 算法检查
+
+// 使用
+#if CHECK_BOUNDARY
+    assert(index >= 0 && index < n);
+#endif
+```
+
+## 五、常见错误与避免
+
+### 错误1：忘记修改DEBUG宏
+```cpp
+// 错误：提交时DEBUG=1
+#define DEBUG 1  // 忘记改为0
+
+// 正确：提交前修改
+#define DEBUG 0  // 必须为0
+```
+
+### 错误2：调试代码影响逻辑
+```cpp
+// 错误：调试代码改变变量值
+#if DEBUG
+    int debug_counter = 0;  // 在提交版本中不存在
+#endif
+
+// 正确：调试代码不影响逻辑
+int counter = 0;
+#if DEBUG
+    // 仅检查，不修改
+    assert(counter >= 0);
+#endif
+```
+
+### 错误3：复杂的条件编译
+```cpp
+// 避免：嵌套复杂的条件编译
+#if DEBUG
+    #ifdef CHECK_A
+        #ifndef CHECK_B
+            // 太复杂，容易出错
+        #endif
+    #endif
+#endif
+
+// 推荐：简单直接的宏
+#if DEBUG && CHECK_A
+    // 清晰明了
+#endif
+```
+
+## 六、考前记忆要点
+
+### 必须记忆的宏模板：
+```cpp
+// 模板1：最简单的调试控制
+#define DEBUG 0  // 提交前改为0
+
+// 模板2：分层检查
+#define CHECK_LEVEL 0  // 0=无，1=基础，2=完整
+```
+
+### 考场检查清单：
+```
+提交前必须检查：
+[ ] 1. 所有DEBUG宏设置为0
+[ ] 2. 所有检查宏设置为0或注释掉
+[ ] 3. 没有未使用的变量
+[ ] 4. 没有调试输出语句
+```
+
+## 七、示例：使用条件编译调试
+
+### 问题代码：
+```cpp
+int find_max(const vector<int>& arr) {
+    int max_val = arr[0];  // 如果arr为空会崩溃
+    for (int i = 1; i < arr.size(); i++) {
+        if (arr[i] > max_val) max_val = arr[i];
+    }
+    return max_val;
+}
+```
+
+### 调试过程：
+```cpp
+#define DEBUG 1  // 调试模式
+
+int find_max(const vector<int>& arr) {
+    #if DEBUG
+    assert(!arr.empty());  // 检查空数组
+    #endif
+    
+    int max_val = arr[0];
+    for (int i = 1; i < arr.size(); i++) {
+        if (arr[i] > max_val) max_val = arr[i];
+    }
+    return max_val;
+}
+
+// 调试完成后
+#define DEBUG 0  // 提交版本
+```
+
+## 八、考场时间管理
+
+### 条件编译使用时间：
+```
+总时间：120分钟
+设置和修改宏：1-2分钟
+调试时启用/禁用：每次提交前检查1分钟
+```
+
+### 快速操作指南：
+```
+1. 编码时：DEBUG=1
+2. 添加断言调试
+3. 提交测试前：DEBUG=0
+4. 如果还需要调试：改回DEBUG=1
+5. 最终提交：确保DEBUG=0
+```
+
+## 九、总结
+
+### 核心原则：
+**简单至上，一次控制，提交清零**
+
+### 实施步骤：
+1. **编码时**：使用简单的DEBUG宏控制所有调试代码
+2. **调试时**：DEBUG=1，添加断言检查
+3. **提交前**：DEBUG=0，确保无调试代码
+4. **最终检查**：确认所有宏都处于禁用状态
+
+### 必须遵守的规则：
+1. **调试代码必须用条件编译包裹**
+2. **提交前必须禁用所有调试**
+3. **保持宏定义简单直观**
+4. **避免调试代码影响程序逻辑**
+
+通过简单的条件编译，可以在考场环境下有效管理调试代码，确保最终提交的代码干净、正确。

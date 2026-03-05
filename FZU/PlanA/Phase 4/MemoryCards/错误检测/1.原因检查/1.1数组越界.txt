@@ -1,0 +1,348 @@
+# 1.1 数组越界（考场优化版）
+
+## 一、考场适用性评估：✅ **高度可行且最重要**
+
+数组越界检查在考场环境中**非常适用且最关键**，因为：
+1. **算法题最常见错误**：超过50%的RE由数组越界引起
+2. **简单可检测**：可用assert快速检查索引
+3. **直接影响RE**：越界访问直接导致运行时错误
+
+## 二、考场核心原则：所有数组访问检查边界
+
+### 绝对禁止的代码模式 ❌
+```cpp
+int arr[10];
+arr[10] = 5;  // ❌ 越界访问
+```
+
+## 三、考场检查策略
+
+### 检查1：数组索引边界检查
+```cpp
+#define CHECK_INDEX(arr, idx) \
+    assert((idx) >= 0 && (idx) < (arr).size())
+
+// 使用示例
+vector<int> vec(10);
+int i = 5;
+CHECK_INDEX(vec, i);   // 安全
+vec[i] = 42;
+
+int j = 10;
+CHECK_INDEX(vec, j);   // 触发RE：索引越界
+```
+
+### 检查2：空容器检查
+```cpp
+#define CHECK_NOT_EMPTY(container) assert(!(container).empty())
+
+// 使用示例
+vector<int> vec;
+CHECK_NOT_EMPTY(vec);  // 触发RE：容器为空
+int val = vec[0];      // 安全（已检查）
+```
+
+### 检查3：多维数组检查
+```cpp
+// 二维vector检查
+#define CHECK_INDEX_2D(mat, i, j) \
+    assert((i) >= 0 && (i) < (mat).size() && \
+           (j) >= 0 && (j) < (mat)[0].size())
+
+// 使用示例
+vector<vector<int>> mat(5, vector<int>(10));
+CHECK_INDEX_2D(mat, 2, 5);  // 安全
+mat[2][5] = 1;
+
+CHECK_INDEX_2D(mat, 5, 2);  // 触发RE：行越界
+```
+
+## 四、考场专用安全宏
+
+```cpp
+// 数组越界安全检查宏（考前必须记忆）
+#define CHECK_IDX(container, idx) \
+    assert((idx) >= 0 && (idx) < (container).size())
+    
+#define CHECK_NOT_EMPTY(container) \
+    assert(!(container).empty())
+    
+#define CHECK_RANGE(container, l, r) \
+    assert((l) >= 0 && (l) <= (r) && (r) < (container).size())
+
+// 使用示例
+vector<int> vec(100);
+CHECK_IDX(vec, 50);        // 检查单个索引
+CHECK_RANGE(vec, 10, 30);  // 检查范围[10,30]
+```
+
+## 五、常见场景解决方案
+
+### 场景1：循环遍历
+```cpp
+// 正确循环模式
+vector<int> vec(100);
+
+// 模式1：标准循环（带检查）
+for (int i = 0; i < vec.size(); i++) {
+    CHECK_IDX(vec, i);  // 可选，但循环条件已保证
+    vec[i] = i;
+}
+
+// 模式2：范围for（最安全）
+for (int& val : vec) {
+    val = 42;  // 自动边界安全
+}
+
+// 模式3：使用迭代器
+for (auto it = vec.begin(); it != vec.end(); ++it) {
+    *it = 42;  // 自动边界安全
+}
+```
+
+### 场景2：访问前后元素
+```cpp
+// 访问i-1或i+1时特别注意
+vector<int> vec(100);
+int i = 50;
+
+// 安全访问vec[i-1]
+if (i > 0) {
+    CHECK_IDX(vec, i-1);  // 检查前一个元素
+    int prev = vec[i-1];
+}
+
+// 安全访问vec[i+1]
+if (i + 1 < vec.size()) {
+    CHECK_IDX(vec, i+1);  // 检查后一个元素
+    int next = vec[i+1];
+}
+```
+
+### 场景3：二分查找边界
+```cpp
+int binary_search(const vector<int>& vec, int target) {
+    if (vec.empty()) return -1;  // 空数组处理
+    
+    int left = 0, right = vec.size() - 1;
+    
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        CHECK_IDX(vec, mid);  // 检查mid索引
+        
+        if (vec[mid] == target) return mid;
+        else if (vec[mid] < target) left = mid + 1;
+        else right = mid - 1;
+    }
+    
+    return -1;
+}
+```
+
+### 场景4：滑动窗口边界
+```cpp
+void sliding_window(const vector<int>& nums, int k) {
+    int n = nums.size();
+    if (n < k) return;  // 窗口大于数组
+    
+    for (int i = 0; i <= n - k; i++) {
+        // 检查窗口[i, i+k-1]的边界
+        CHECK_IDX(nums, i);
+        CHECK_IDX(nums, i + k - 1);
+        
+        // 处理窗口
+        process_window(nums, i, i + k - 1);
+    }
+}
+```
+
+## 六、考场最佳实践
+
+### 实践1：入口处检查输入规模
+```cpp
+void solve() {
+    int n;
+    cin >> n;
+    
+    #if DEBUG
+    // 检查输入规模是否合理
+    assert(n >= 0 && n <= MAX_N);
+    #endif
+    
+    vector<int> arr(n);
+    
+    // 如果是空数组，特殊处理
+    if (n == 0) {
+        // 处理空数组情况
+        return;
+    }
+}
+```
+
+### 实践2：使用安全访问函数
+```cpp
+template<typename T>
+T& safe_at(vector<T>& vec, int idx) {
+    CHECK_IDX(vec, idx);
+    return vec[idx];
+}
+
+template<typename T>
+const T& safe_at(const vector<T>& vec, int idx) {
+    CHECK_IDX(vec, idx);
+    return vec[idx];
+}
+
+// 使用
+int val = safe_at(vec, i);  // 自动检查边界
+safe_at(vec, i) = 10;       // 自动检查边界
+```
+
+### 实践3：使用reserve避免重新分配
+```cpp
+// 如果知道数组大小，使用reserve
+vector<int> result;
+result.reserve(n);  // 预分配空间
+
+for (int i = 0; i < n; i++) {
+    // 不用担心push_back导致重新分配
+    result.push_back(calculate(i));
+}
+```
+
+## 七、考场调试策略
+
+### 策略1：关键访问点添加检查
+```cpp
+void process_array(vector<int>& arr) {
+    // 入口检查
+    CHECK_NOT_EMPTY(arr);
+    
+    // 中间关键访问
+    int mid = arr.size() / 2;
+    CHECK_IDX(arr, mid);
+    int mid_val = arr[mid];
+    
+    // 循环中检查（调试时开启）
+    for (int i = 0; i < arr.size(); i++) {
+        #if DEBUG
+        CHECK_IDX(arr, i);  // 每次循环检查
+        #endif
+        
+        arr[i] = process(arr[i]);
+    }
+}
+```
+
+### 策略2：使用范围检查包装器
+```cpp
+// 安全数组包装类（简单版本）
+class SafeVector {
+    vector<int> data;
+public:
+    SafeVector(int n) : data(n) {}
+    
+    int& operator[](int idx) {
+        CHECK_IDX(data, idx);
+        return data[idx];
+    }
+    
+    const int& operator[](int idx) const {
+        CHECK_IDX(data, idx);
+        return data[idx];
+    }
+    
+    size_t size() const { return data.size(); }
+};
+
+// 使用
+SafeVector arr(100);
+arr[50] = 42;    // 安全
+// arr[100] = 1;  // 触发RE
+```
+
+## 八、常见错误示例与修正
+
+### 错误1：循环条件错误
+```cpp
+// 错误
+for (int i = 0; i <= vec.size(); i++) {
+    vec[i] = i;  // 最后一次循环越界
+}
+
+// 修正
+for (int i = 0; i < vec.size(); i++) {
+    vec[i] = i;
+}
+```
+
+### 错误2：访问size()-1
+```cpp
+// 错误
+vector<int> vec;
+int last = vec[vec.size() - 1];  // vec.size()-1 = -1，然后转换为大整数
+
+// 修正
+if (!vec.empty()) {
+    int last = vec[vec.size() - 1];
+}
+```
+
+### 错误3：多维数组越界
+```cpp
+// 错误
+vector<vector<int>> mat(5, vector<int>(10));
+mat[5][0] = 1;  // 第一维越界
+mat[0][10] = 1; // 第二维越界
+
+// 修正
+CHECK_INDEX_2D(mat, 5, 0);  // 会触发RE
+CHECK_INDEX_2D(mat, 0, 10); // 会触发RE
+```
+
+## 九、总结：考场数组越界防范清单
+
+### ✅ 必须遵守的规则：
+1. **所有数组访问前检查索引**：使用`CHECK_IDX`
+2. **空容器特殊处理**：使用`CHECK_NOT_EMPTY`或显式检查
+3. **循环使用正确终止条件**：使用`<`而不是`<=`
+
+### 📋 考前记忆代码模式：
+```cpp
+// 数组访问模板
+CHECK_IDX(arr, index);
+value = arr[index];
+
+// 空检查模板
+if (!arr.empty()) {
+    // 安全访问
+}
+
+// 循环模板
+for (int i = 0; i < arr.size(); i++) {
+    CHECK_IDX(arr, i);  // 调试时
+    // 处理arr[i]
+}
+```
+
+### 🎯 考场策略：
+1. **编码时**：在每次数组访问前添加检查宏
+2. **调试时**：开启所有检查，通过RE定位越界错误
+3. **提交时**：关闭检查宏，保留安全代码结构
+
+### ⚠️ 特别注意：
+- 负数索引会转换为大整数，导致越界
+- `vec.size()`返回`size_t`，与有符号数比较需小心
+- 二维数组需要检查两个维度的索引
+- 循环中的`i-1`、`i+1`需要额外边界检查
+
+### 📊 常见越界场景快速检查：
+```
+1. 循环终止条件: 使用 < 而不是 <=
+2. 空容器访问: 先检查 !empty()
+3. 下标计算: 检查 i±1 的有效性
+4. 二分查找: 确保 mid 在有效范围内
+5. 滑动窗口: 检查窗口右边界
+```
+
+在考场环境中，数组越界是最常见且最容易预防的错误。通过系统化的检查习惯，可以几乎完全消除这类错误，确保程序稳定运行。

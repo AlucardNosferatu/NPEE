@@ -1,0 +1,329 @@
+# 1.5 栈溢出（考场优化版）
+
+## 一、考场适用性评估：✅ **高度可行且重要**
+
+栈溢出检查在考场环境中**非常适用且关键**，因为：
+1. **算法题常见陷阱**：大数组导致栈溢出是常见错误
+2. **简单可检测**：可用assert检查数组大小
+3. **直接影响RE**：栈溢出直接导致运行时错误
+
+## 二、考场核心原则：避免大数组声明
+
+### 绝对禁止的代码模式 ❌
+```cpp
+void solve() {
+    int arr[1000000];  // ❌ 绝对禁止：~4MB栈空间
+    double matrix[1000][1000];  // ❌ 绝对禁止：~8MB栈空间
+}
+```
+
+### 必须使用的安全模式 ✅
+```cpp
+void solve() {
+    vector<int> arr(1000000);  // ✅ 堆上分配
+    // 或
+    unique_ptr<int[]> arr(new int[1000000]);  // ✅ 堆上分配
+}
+```
+
+## 三、考场检查策略
+
+### 检查1：栈数组大小检查
+```cpp
+#define CHECK_STACK_ARRAY_SIZE(type, count) \
+    assert((count) * sizeof(type) <= 256 * 1024)  // 限制256KB
+
+// 使用示例
+void safe_function() {
+    const int N = 10000;
+    CHECK_STACK_ARRAY_SIZE(int, N);  // 检查~40KB
+    int arr[N];  // 安全
+    
+    const int M = 100000;
+    CHECK_STACK_ARRAY_SIZE(int, M);  // 触发RE：~400KB > 256KB
+}
+```
+
+### 检查2：递归深度检查
+```cpp
+#define CHECK_RECURSION_DEPTH(depth) \
+    assert((depth) <= 1000)  // 限制递归深度
+
+// 使用示例
+void dfs(int depth) {
+    CHECK_RECURSION_DEPTH(depth);  // 检查递归深度
+    
+    // 递归逻辑
+    if (depth < 1000) {
+        dfs(depth + 1);
+    }
+}
+```
+
+## 四、考场专用安全宏
+
+```cpp
+// 栈安全检查宏（考前记忆）
+#define MAX_STACK_KB 256  // 最大栈使用256KB
+#define CHECK_STACK(size_bytes) \
+    assert((size_bytes) <= MAX_STACK_KB * 1024)
+
+// 安全栈数组声明（小数组）
+#define SAFE_STACK_ARRAY(type, name, size) \
+    type name[size]; \
+    CHECK_STACK(sizeof(name))
+
+// 安全堆数组声明（大数组）
+#define SAFE_HEAP_ARRAY(type, name, size) \
+    vector<type> name(size)
+
+// 使用示例
+void process() {
+    SAFE_STACK_ARRAY(int, small_arr, 1000);     // 4KB，安全
+    SAFE_HEAP_ARRAY(int, large_arr, 1000000);   // 4MB，堆分配
+}
+```
+
+## 五、常见场景解决方案
+
+### 场景1：需要大数组
+```cpp
+// 必须使用vector或动态数组
+void process_large_data(int n) {
+    // 错误：int arr[n];  // 可能栈溢出
+    // 正确：
+    vector<int> arr(n);  // 堆分配
+    
+    // 如果n已知很大，添加检查
+    #if DEBUG
+    assert(n <= 1000000);  // 限制输入大小
+    #endif
+}
+```
+
+### 场景2：多维数组
+```cpp
+// 二维数组的两种安全方式
+
+// 方法1：vector的vector（可能不连续）
+void method1(int rows, int cols) {
+    vector<vector<int>> mat(rows, vector<int>(cols));
+}
+
+// 方法2：一维数组模拟（连续内存，推荐）
+void method2(int rows, int cols) {
+    vector<int> mat(rows * cols);
+    auto get = [&](int i, int j) -> int& {
+        return mat[i * cols + j];
+    };
+    
+    // 使用get(i, j)访问
+}
+```
+
+### 场景3：递归算法
+```cpp
+// 避免在递归函数中声明大数组
+void dfs_bad(int depth) {
+    int local_arr[10000];  // ❌ 每层递归40KB
+    // 深度100就需4MB
+}
+
+void dfs_good(int depth, vector<int>& shared) {
+    // ✅ 使用共享数据，不分配大数组
+    if (depth >= 1000) return;
+    
+    // 处理逻辑
+    shared[depth] = depth;
+    
+    dfs_good(depth + 1, shared);
+}
+```
+
+## 六、考场最佳实践
+
+### 实践1：全局使用vector
+```cpp
+// 考场通用策略：所有数组都用vector
+int main() {
+    int n;
+    cin >> n;
+    
+    vector<int> arr(n);  // 总是安全
+    vector<int> prefix(n);
+    vector<int> suffix(n);
+    
+    // 即使n很小，vector也能工作
+}
+```
+
+### 实践2：使用reserve预分配
+```cpp
+// 如果不知道确切大小但知道上限
+void process_stream() {
+    vector<int> data;
+    data.reserve(1000000);  // 预分配，避免重复分配
+    
+    while (has_more_data()) {
+        int x = read_data();
+        data.push_back(x);
+    }
+}
+```
+
+### 实践3：避免递归中的大局部变量
+```cpp
+// 将递归改为迭代
+void iterative_dfs(int start) {
+    stack<int> st;
+    st.push(start);
+    vector<bool> visited(n, false);  // 在堆上
+    
+    while (!st.empty()) {
+        int u = st.top();
+        st.pop();
+        
+        // 处理u
+        for (int v : graph[u]) {
+            if (!visited[v]) {
+                st.push(v);
+                visited[v] = true;
+            }
+        }
+    }
+}
+```
+
+## 七、考场调试策略
+
+### 策略1：入口处检查输入规模
+```cpp
+void solve() {
+    int n, m;
+    cin >> n >> m;
+    
+    #if DEBUG
+    // 检查输入规模是否合理
+    assert(n >= 1 && n <= 100000);
+    assert(m >= 1 && m <= 200000);
+    
+    // 检查是否会栈溢出
+    // 假设每个测试用例需要O(n)空间
+    size_t estimated_heap = n * sizeof(int) * 3;  // 3个数组
+    assert(estimated_heap <= 256 * 1024 * 1024);  // 不超过256MB
+    #endif
+    
+    // 使用vector
+    vector<int> arr1(n);
+    vector<int> arr2(n);
+    vector<vector<int>> graph(n);
+}
+```
+
+### 策略2：使用安全包装函数
+```cpp
+template<typename T>
+vector<T> safe_vector(size_t n) {
+    #if DEBUG
+    const size_t MAX_ELEMENTS = 10000000;  // 约40MB for int
+    assert(n <= MAX_ELEMENTS);
+    #endif
+    
+    return vector<T>(n);
+}
+
+// 使用
+vector<int> arr = safe_vector<int>(n);
+```
+
+## 八、常见错误示例与修正
+
+### 错误1：栈上大数组
+```cpp
+// 错误
+int dp[1000000];  // ~4MB栈空间
+
+// 修正
+vector<int> dp(1000000);  // 堆空间
+```
+
+### 错误2：递归深度过大
+```cpp
+// 错误：可能递归太深
+void dfs(int u) {
+    visited[u] = true;
+    for (int v : graph[u]) {
+        if (!visited[v]) {
+            dfs(v);  // 可能递归100000层
+        }
+    }
+}
+
+// 修正：改为迭代或限制递归深度
+stack<int> st;
+st.push(start);
+while (!st.empty()) {
+    int u = st.top();
+    st.pop();
+    // ...
+}
+```
+
+### 错误3：局部大结构体
+```cpp
+// 错误
+struct Big {
+    int data[100000];
+};
+
+void process() {
+    Big b1, b2;  // 每个~400KB，两个~800KB
+}
+
+// 修正
+void process() {
+    vector<int> data1(100000);  // 堆分配
+    vector<int> data2(100000);
+}
+```
+
+## 九、总结：考场栈溢出防范清单
+
+### ✅ 必须遵守的规则：
+1. **禁止栈上大数组**：任何数组超过1KB用vector
+2. **递归深度限制**：超过1000层考虑迭代
+3. **局部变量大小限制**：总栈使用不超过256KB
+
+### 📋 考前记忆代码模式：
+```cpp
+// 所有数组都用vector
+vector<int> arr(n);
+
+// 多维数组用一维vector模拟
+vector<int> mat(rows * cols);
+
+// 递归函数不声明大局部变量
+void dfs(int depth, vector<int>& shared) {
+    // 只用共享数据
+}
+```
+
+### 🎯 考场检查策略：
+1. **编码时**：默认所有数组用vector
+2. **调试时**：添加栈大小检查断言
+3. **提交时**：保留vector，移除检查断言
+
+### ⚠️ 特别注意：
+- 即使小数组也习惯用vector，避免意外
+- 递归算法考虑栈深度
+- 全局变量不在栈上，但可能影响其他部分
+
+### 📊 快速估算公式：
+```
+int[1000]      ≈ 4KB      ✓ 安全
+int[10000]     ≈ 40KB     ✓ 安全（但考虑递归）
+int[100000]    ≈ 400KB    ⚠️ 危险（接近栈限制）
+int[1000000]   ≈ 4MB      ❌ 绝对禁止
+```
+
+在考场环境中，栈溢出是最常见且致命的错误之一。通过强制使用vector和添加简单检查，可以完全避免这类问题，确保程序稳定运行。

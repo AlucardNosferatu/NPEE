@@ -1,0 +1,439 @@
+# 1.9 内存越界（字符串）- 考场优化版
+
+## 一、考场适用性评估：✅ **高度可行**
+
+字符串越界检查在考场环境中**非常适用**，因为：
+1. **易于用assert检测**：字符串边界检查可转化为简单断言
+2. **直接导致RE**：违反断言时立即触发Runtime Error
+3. **常见且易错**：字符串操作是算法题常见错误源
+
+## 二、考场必须检查的字符串越界
+
+### 检查1：字符串索引越界 ✅
+```cpp
+#define CHECK_STR_IDX(str, idx) assert((idx) >= 0 && (idx) < (str).size())
+
+// 使用示例
+string s = "hello";
+CHECK_STR_IDX(s, 2);   // 安全
+char c = s[2];         // 'l'
+
+CHECK_STR_IDX(s, 10);  // 触发RE：索引越界
+```
+
+### 检查2：substr参数越界 ✅
+```cpp
+#define CHECK_SUBSTR(str, pos, len) \
+    assert((pos) <= (str).size() && "substr position out of range")
+
+// 使用示例
+string s = "hello";
+CHECK_SUBSTR(s, 2, 3);    // 安全
+string sub = s.substr(2, 3);  // "llo"
+
+CHECK_SUBSTR(s, 10, 3);   // 触发RE：位置越界
+```
+
+### 检查3：C字符串缓冲区越界 ✅
+```cpp
+#define CHECK_CSTR_BOUNDS(buf, size, operation) \
+    assert((operation)不会越界)  // 具体检查取决于操作
+
+// 简化：优先使用std::string，避免C字符串
+```
+
+### 检查4：迭代器越界 ✅
+```cpp
+#define CHECK_ITER_IN_BOUNDS(iter, begin, end) \
+    assert((iter) >= (begin) && (iter) < (end))
+
+// 使用示例
+string s = "hello";
+auto it = s.begin() + 2;
+CHECK_ITER_IN_BOUNDS(it, s.begin(), s.end());  // 安全
+*it = 'x';  // 安全
+```
+
+## 三、考场推荐检查模式
+
+### 模式1：安全访问包装函数
+```cpp
+// 考前记忆的安全访问模板
+char safe_char_at(const string& s, size_t idx, char default_val = '\0') {
+    CHECK_STR_IDX(s, idx);
+    return s[idx];
+}
+
+string safe_substr(const string& s, size_t pos, size_t len = string::npos) {
+    CHECK_SUBSTR(s, pos, len);
+    size_t actual_len = min(len, s.size() - pos);
+    return s.substr(pos, actual_len);
+}
+
+// 考场使用
+string s = "algorithm";
+char c = safe_char_at(s, 5);     // 'i'
+string sub = safe_substr(s, 0, 4);  // "algo"
+```
+
+### 模式2：循环边界检查
+```cpp
+// 危险：使用 <=
+for (int i = 0; i <= s.size(); i++) {  // 最后一次循环越界
+    // s[i] 可能越界
+}
+
+// 安全：使用 <
+for (int i = 0; i < s.size(); i++) {
+    CHECK_STR_IDX(s, i);  // 可选，但循环条件已保证
+    // 安全访问 s[i]
+}
+
+// 更安全：使用范围for
+for (char c : s) {  // 自动处理边界
+    // 安全访问
+}
+```
+
+### 模式3：字符串构建检查
+```cpp
+// 手动构建字符串时检查容量
+vector<char> build_string(const vector<string>& parts, size_t estimated_size) {
+    vector<char> result;
+    result.reserve(estimated_size + 1);  // +1 for '\0'
+    
+    for (const auto& part : parts) {
+        // 检查容量
+        assert(result.size() + part.size() <= result.capacity());
+        result.insert(result.end(), part.begin(), part.end());
+    }
+    
+    result.push_back('\0');  // 终止符
+    return result;
+}
+```
+
+## 四、常见字符串操作安全检查
+
+### 操作1：查找与替换
+```cpp
+void safe_replace_all(string& s, const string& from, const string& to) {
+    if (from.empty()) return;
+    
+    size_t pos = 0;
+    while ((pos = s.find(from, pos)) != string::npos) {
+        // 检查查找位置有效
+        assert(pos < s.size());
+        
+        // 检查替换不会越界
+        assert(pos + from.size() <= s.size());
+        
+        s.replace(pos, from.size(), to);
+        pos += to.size();
+        
+        // 防止无限循环
+        if (pos > s.size()) break;
+    }
+}
+```
+
+### 操作2：分割字符串
+```cpp
+vector<string> safe_split(const string& s, char delimiter) {
+    vector<string> result;
+    size_t start = 0;
+    size_t end = 0;
+    
+    while ((end = s.find(delimiter, start)) != string::npos) {
+        // 检查范围有效
+        assert(start < s.size());
+        assert(end <= s.size());
+        
+        result.push_back(s.substr(start, end - start));
+        start = end + 1;
+    }
+    
+    // 最后一个部分
+    if (start < s.size()) {
+        result.push_back(s.substr(start));
+    }
+    
+    return result;
+}
+```
+
+### 操作3：字符串转换
+```cpp
+// 安全转换数字到字符串
+string safe_int_to_string(int n) {
+    // 检查不会溢出（对于极端情况）
+    char buffer[32];  // 足够存储任何int
+    snprintf(buffer, sizeof(buffer), "%d", n);
+    return string(buffer);
+}
+
+// 安全转换字符串到数字
+int safe_string_to_int(const string& s) {
+    // 检查非空
+    assert(!s.empty());
+    
+    // 简单检查是否为有效数字
+    for (char c : s) {
+        assert(isdigit(c) || c == '-' || c == '+');
+    }
+    
+    return stoi(s);
+}
+```
+
+## 五、考场专用检查宏
+
+```cpp
+// 字符串安全检查宏（考前记忆）
+#define CHECK_STR_IDX(s, i)     assert((i) >= 0 && (i) < (s).size())
+#define CHECK_SUBSTR(s, p, l)   assert((p) <= (s).size())
+#define CHECK_STR_RANGE(s, l, r) assert(0 <= (l) && (l) <= (r) && (r) <= (s).size())
+#define CHECK_CSTR_LEN(buf, len) assert(strlen(buf) < (len))
+
+// 使用示例
+string s = "test";
+CHECK_STR_IDX(s, 2);      // 检查索引
+CHECK_SUBSTR(s, 1, 5);    // 检查substr参数
+CHECK_STR_RANGE(s, 1, 3); // 检查范围[1,3)
+```
+
+## 六、字符串处理最佳实践
+
+### 实践1：优先使用std::string
+```cpp
+// 避免：C风格字符串
+char buffer[100];
+strcpy(buffer, input);  // 可能越界
+
+// 使用：std::string
+string buffer = input;  // 自动管理内存
+```
+
+### 实践2：使用迭代器或范围for
+```cpp
+// 避免：手动索引
+for (size_t i = 0; i < s.size(); i++) {
+    CHECK_STR_IDX(s, i);  // 需要检查
+    process(s[i]);
+}
+
+// 使用：范围for（自动边界）
+for (char c : s) {
+    process(c);  // 无需检查
+}
+```
+
+### 实践3：预留足够容量
+```cpp
+// 构建字符串时预留空间
+string result;
+result.reserve(1000);  // 预估大小
+
+for (const auto& part : parts) {
+    // 检查容量（调试时）
+    assert(result.size() + part.size() <= result.capacity());
+    result += part;
+}
+```
+
+## 七、考场调试策略
+
+### 策略1：关键操作前检查
+```cpp
+void process_string(const string& s) {
+    // 入口检查
+    assert(!s.empty());
+    
+    // 处理逻辑中的检查
+    size_t mid = s.size() / 2;
+    CHECK_STR_IDX(s, mid);  // 检查中间索引
+    
+    // 循环中的检查
+    for (size_t i = 0; i < s.size(); i++) {
+        // 每次循环都检查（调试时）
+        #if DEBUG
+        CHECK_STR_IDX(s, i);
+        #endif
+        
+        process_char(s[i]);
+    }
+}
+```
+
+### 策略2：使用安全包装函数
+```cpp
+// 编写安全版本的关键函数
+char get_char_safe(const string& s, int idx) {
+    CHECK_STR_IDX(s, idx);
+    return s[idx];
+}
+
+string get_substr_safe(const string& s, int start, int len) {
+    CHECK_SUBSTR(s, start, len);
+    size_t actual_len = min((size_t)len, s.size() - start);
+    return s.substr(start, actual_len);
+}
+
+// 考场中使用安全版本
+int main() {
+    string s = "abcdef";
+    char c = get_char_safe(s, 10);  // 触发RE，立即发现问题
+    // ...
+}
+```
+
+### 策略3：测试边界情况
+```cpp
+// 编写简单的边界测试（考场中快速验证）
+void test_boundary_cases() {
+    // 空字符串
+    string empty = "";
+    assert(empty.empty());
+    
+    // 单字符
+    string single = "a";
+    CHECK_STR_IDX(single, 0);  // 应通过
+    // CHECK_STR_IDX(single, 1);  // 应触发RE
+    
+    // 长字符串
+    string long_str(1000, 'x');
+    CHECK_STR_IDX(long_str, 999);  // 应通过
+}
+```
+
+## 八、常见错误示例与修正
+
+### 错误1：循环条件错误
+```cpp
+// 错误
+string s = "hello";
+for (int i = 0; i <= s.size(); i++) {
+    cout << s[i];  // 最后一次循环越界
+}
+
+// 修正
+for (int i = 0; i < s.size(); i++) {
+    CHECK_STR_IDX(s, i);  // 调试检查
+    cout << s[i];
+}
+```
+
+### 错误2：substr参数错误
+```cpp
+// 错误
+string s = "short";
+string sub = s.substr(3, 10);  // 长度超范围
+
+// 修正
+size_t pos = 3, len = 10;
+CHECK_SUBSTR(s, pos, len);
+size_t actual_len = min(len, s.size() - pos);
+string sub = s.substr(pos, actual_len);
+```
+
+### 错误3：C字符串越界
+```cpp
+// 错误
+char buf[10];
+strcpy(buf, "hello world");  // 越界
+
+// 修正：使用std::string
+string buf = "hello world";  // 安全
+```
+
+### 错误4：迭代器越界
+```cpp
+// 错误
+string s = "test";
+auto it = s.begin() + 10;  // 越界
+*it = 'x';
+
+// 修正
+size_t offset = 10;
+assert(offset < s.size());
+auto it = s.begin() + offset;  // 安全
+*it = 'x';
+```
+
+## 九、考场注意事项
+
+### 1. 检查性能影响
+```cpp
+// 避免在紧密循环中频繁检查
+// 在循环外检查一次，而不是每次迭代
+
+// 不好
+for (int i = 0; i < n; i++) {
+    CHECK_STR_IDX(s, i);  // 每次循环都检查
+    // ...
+}
+
+// 好
+assert(n <= s.size());  // 一次检查
+for (int i = 0; i < n; i++) {
+    // 不再检查，直接访问
+    process(s[i]);
+}
+```
+
+### 2. 使用标准算法
+```cpp
+// 许多标准算法已包含边界检查
+string s = "hello world";
+
+// 使用算法代替手动循环
+auto it = find(s.begin(), s.end(), ' ');
+if (it != s.end()) {
+    // 安全使用
+    *it = '_';
+}
+
+// 计数
+int count = count_if(s.begin(), s.end(), isspace);
+```
+
+### 3. 字符串字面量安全
+```cpp
+// 错误：修改字符串字面量
+char* s = "hello";  // 实际是const char*
+// s[0] = 'H';  // 未定义行为
+
+// 正确
+char s[] = "hello";  // 数组，可修改
+s[0] = 'H';  // 允许
+
+// 或使用std::string
+string s = "hello";
+s[0] = 'H';  // 安全
+```
+
+## 十、总结：考场字符串越界检查清单
+
+### ✅ 必须检查的：
+1. **索引访问**：`s[i]`前检查`i < s.size()`
+2. **substr参数**：检查`pos <= s.size()`
+3. **迭代器运算**：检查不超出`[begin, end)`范围
+4. **C字符串操作**：优先使用`std::string`
+
+### 📋 考前准备：
+1. **记忆4个核心检查宏**
+2. **练习安全字符串处理模式**
+3. **熟悉常见错误模式**
+
+### 🎯 考场策略：
+1. **第一阶段**：编码时在关键位置添加检查
+2. **第二阶段**：开启检查调试，通过RE发现越界错误
+3. **第三阶段**：关闭检查，提交最终代码
+
+### ⚠️ 特别注意：
+- 循环终止条件使用`<`而不是`<=`
+- `substr`的长度参数可能超过可用长度
+- 优先使用`std::string`，避免C字符串
+- 使用范围for循环可避免索引错误
+
+通过系统化的字符串越界检查，可以在考场中有效识别和修复这类常见错误，确保程序稳定性。

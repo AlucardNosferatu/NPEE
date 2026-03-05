@@ -16,3 +16,8 @@ build/
 *~$*.xlsx
 Note/工作日志_单个sheet输出/
 *.pkl
+*.dll
+*.pdb
+*.so
+obj/
+bin/

@@ -1,0 +1,398 @@
+# 1.4 递归过深（考场优化版）
+
+## 一、考场适用性评估：✅ **高度可行且重要**
+
+递归深度检查在考场环境中**非常适用且关键**，因为：
+1. **算法题常见陷阱**：递归深度过大导致栈溢出
+2. **简单可检测**：可用assert检查递归深度
+3. **直接影响RE**：栈溢出直接导致运行时错误
+
+## 二、考场核心原则：限制递归深度
+
+### 递归深度安全阈值
+```cpp
+// 考场安全递归深度限制（基于常见OJ栈限制）
+#define MAX_RECURSION_DEPTH 1000  // 保守估计：1000层
+```
+
+## 三、考场检查策略
+
+### 检查1：递归函数深度检查
+```cpp
+// 深度检查宏（考前记忆）
+#define CHECK_RECURSION_DEPTH(depth) \
+    assert((depth) <= MAX_RECURSION_DEPTH)
+
+// 使用示例
+void dfs(int depth) {
+    CHECK_RECURSION_DEPTH(depth);  // 检查深度
+    
+    // 递归逻辑
+    if (depth < 10) {
+        dfs(depth + 1);
+    }
+}
+```
+
+### 检查2：尾递归安全检查
+```cpp
+// 尾递归可能被优化，但不要依赖
+// 显式检查输入规模
+void tail_recursive(int n) {
+    assert(n <= MAX_RECURSION_DEPTH);  // 输入大小即最大深度
+    if (n == 0) return;
+    tail_recursive(n - 1);
+}
+```
+
+## 四、考场专用安全宏
+
+```cpp
+// 递归安全检查宏（考前记忆）
+#define MAX_RECURSION_DEPTH 1000
+
+// 简单深度检查
+#define CHECK_DEPTH(d) assert((d) <= MAX_RECURSION_DEPTH)
+
+// 自动深度追踪（仅用于简单递归）
+#define RECURSION_ENTRY() \
+    static int __depth = 0; \
+    __depth++; \
+    CHECK_DEPTH(__depth)
+
+#define RECURSION_EXIT() \
+    static int __depth = 0; \
+    __depth--
+
+// 使用示例
+void recursive_func() {
+    RECURSION_ENTRY();  // 进入递归，检查深度
+    
+    // ... 递归逻辑
+    
+    RECURSION_EXIT();   // 退出递归
+}
+```
+
+## 五、常见场景解决方案
+
+### 场景1：树遍历递归
+```cpp
+// 二叉树遍历
+void dfs_tree(TreeNode* root, int depth) {
+    CHECK_DEPTH(depth);  // 检查深度
+    
+    if (!root) return;
+    
+    // 处理当前节点
+    process(root);
+    
+    // 递归子树
+    dfs_tree(root->left, depth + 1);
+    dfs_tree(root->right, depth + 1);
+}
+```
+
+### 场景2：图遍历递归
+```cpp
+// 图DFS（需要避免环）
+void dfs_graph(int node, vector<bool>& visited, int depth) {
+    CHECK_DEPTH(depth);  // 深度检查
+    
+    visited[node] = true;
+    
+    for (int neighbor : graph[node]) {
+        if (!visited[neighbor]) {
+            dfs_graph(neighbor, visited, depth + 1);
+        }
+    }
+}
+```
+
+### 场景3：分治算法递归
+```cpp
+// 归并排序
+void merge_sort(vector<int>& arr, int l, int r, int depth) {
+    CHECK_DEPTH(depth);  // 检查深度
+    
+    if (l >= r) return;
+    
+    int mid = l + (r - l) / 2;
+    merge_sort(arr, l, mid, depth + 1);
+    merge_sort(arr, mid + 1, r, depth + 1);
+    merge(arr, l, mid, r);
+}
+```
+
+## 六、递归转迭代策略（关键！）
+
+### 策略1：DFS转显式栈
+```cpp
+// 递归DFS
+void dfs_recursive(int u) {
+    visited[u] = true;
+    for (int v : graph[u]) {
+        if (!visited[v]) {
+            dfs_recursive(v);
+        }
+    }
+}
+
+// 迭代DFS
+void dfs_iterative(int start) {
+    stack<int> stk;
+    stk.push(start);
+    
+    while (!stk.empty()) {
+        int u = stk.top();
+        stk.pop();
+        
+        if (visited[u]) continue;
+        visited[u] = true;
+        
+        for (int v : graph[u]) {
+            if (!visited[v]) {
+                stk.push(v);
+            }
+        }
+    }
+}
+```
+
+### 策略2：二叉树遍历转迭代
+```cpp
+// 递归前序遍历
+void preorder_recursive(TreeNode* root) {
+    if (!root) return;
+    process(root);
+    preorder_recursive(root->left);
+    preorder_recursive(root->right);
+}
+
+// 迭代前序遍历
+void preorder_iterative(TreeNode* root) {
+    if (!root) return;
+    
+    stack<TreeNode*> stk;
+    stk.push(root);
+    
+    while (!stk.empty()) {
+        TreeNode* node = stk.top();
+        stk.pop();
+        
+        process(node);
+        
+        // 先右后左，保证左子树先处理
+        if (node->right) stk.push(node->right);
+        if (node->left) stk.push(node->left);
+    }
+}
+```
+
+## 七、考场最佳实践
+
+### 实践1：优先使用迭代
+```cpp
+// 考场原则：能用迭代就用迭代
+// 迭代算法没有递归深度问题
+
+// 递归：可能有栈溢出风险
+void process_list_recursive(Node* head) {
+    if (!head) return;
+    process(head);
+    process_list_recursive(head->next);
+}
+
+// 迭代：安全
+void process_list_iterative(Node* head) {
+    Node* curr = head;
+    while (curr) {
+        process(curr);
+        curr = curr->next;
+    }
+}
+```
+
+### 实践2：限制输入规模
+```cpp
+// 在入口处检查输入，确保不会导致过深递归
+void solve() {
+    int n;
+    cin >> n;
+    
+    #if DEBUG
+    // 根据算法类型限制输入大小
+    // 对于递归算法，限制n不超过安全深度
+    if (algorithm_type == RECURSIVE) {
+        assert(n <= MAX_RECURSION_DEPTH);
+    }
+    #endif
+    
+    // 处理逻辑
+}
+```
+
+### 实践3：使用尾递归（谨慎）
+```cpp
+// 尾递归可能被编译器优化
+// 但不要依赖优化，仍要检查深度
+
+int factorial_tail(int n, int acc = 1) {
+    assert(n <= MAX_RECURSION_DEPTH);  // 仍然检查
+    if (n == 0) return acc;
+    return factorial_tail(n - 1, acc * n);
+}
+```
+
+## 八、考场调试策略
+
+### 策略1：递归函数添加深度参数
+```cpp
+// 所有递归函数显式传递深度
+void dfs(int node, int depth) {
+    CHECK_DEPTH(depth);  // 检查点
+    
+    visited[node] = true;
+    
+    for (int neighbor : graph[node]) {
+        if (!visited[neighbor]) {
+            dfs(neighbor, depth + 1);  // 显式传递深度
+        }
+    }
+}
+
+// 调用时从1开始
+dfs(start_node, 1);
+```
+
+### 策略2：使用全局深度计数器
+```cpp
+// 全局深度计数器（线程不安全，但考场单线程）
+int recursion_depth = 0;
+
+void recursive_func() {
+    recursion_depth++;
+    CHECK_DEPTH(recursion_depth);
+    
+    // ... 递归逻辑
+    
+    recursion_depth--;
+}
+```
+
+## 九、常见错误示例与修正
+
+### 错误1：无限递归
+```cpp
+// 错误：缺少终止条件
+void infinite_recursion() {
+    infinite_recursion();  // 无限递归
+}
+
+// 修正：添加终止条件
+void safe_recursion(int depth) {
+    if (depth >= 10) return;  // 终止条件
+    safe_recursion(depth + 1);
+}
+```
+
+### 错误2：递归深度等于输入大小
+```cpp
+// 错误：链表递归深度=链表长度
+void process_list(Node* head) {
+    if (!head) return;
+    process_list(head->next);  // 链表长100000则递归100000层
+}
+
+// 修正：改为迭代
+void process_list_iterative(Node* head) {
+    while (head) {
+        process(head);
+        head = head->next;
+    }
+}
+```
+
+### 错误3：递归分治未控制深度
+```cpp
+// 错误：快速排序在有序数组上递归深度=O(n)
+void quicksort(vector<int>& arr, int l, int r) {
+    if (l >= r) return;
+    int pivot = partition(arr, l, r);
+    quicksort(arr, l, pivot - 1);
+    quicksort(arr, pivot + 1, r);  // 可能深度过大
+}
+
+// 修正：先处理较小分区，尾递归优化
+void quicksort_tail(vector<int>& arr, int l, int r) {
+    while (l < r) {
+        int pivot = partition(arr, l, r);
+        if (pivot - l < r - pivot) {
+            quicksort_tail(arr, l, pivot - 1);
+            l = pivot + 1;
+        } else {
+            quicksort_tail(arr, pivot + 1, r);
+            r = pivot - 1;
+        }
+    }
+}
+```
+
+## 十、总结：考场递归深度防范清单
+
+### ✅ 必须遵守的规则：
+1. **递归深度限制**：不超过1000层（保守估计）
+2. **优先使用迭代**：能用迭代就不用递归
+3. **检查输入规模**：确保输入不会导致过深递归
+
+### 📋 考前记忆代码模式：
+```cpp
+// 递归模板（带深度检查）
+void recursive_func(..., int depth) {
+    CHECK_DEPTH(depth);  // 深度检查
+    
+    // 终止条件
+    if (...) return;
+    
+    // 递归调用
+    recursive_func(..., depth + 1);
+}
+
+// 迭代模板
+void iterative_func(...) {
+    stack<...> stk;
+    stk.push(...);
+    
+    while (!stk.empty()) {
+        // 处理当前状态
+        // 压入新状态
+    }
+}
+```
+
+### 🎯 考场策略：
+1. **简单问题**：可使用递归，但添加深度检查
+2. **复杂问题**：优先使用迭代实现
+3. **调试时**：开启深度检查，发现潜在问题
+4. **提交时**：保留安全代码，移除断言（如果需要）
+
+### ⚠️ 特别注意：
+- 链表、数组等线性结构避免递归
+- 树、图遍历考虑深度限制
+- 分治算法注意递归深度
+- 递归转迭代是重要技能
+
+### 📊 快速决策流程：
+```
+是否需要递归？
+    ↓
+是 → 估计最大深度
+    ↓
+深度 ≤ 1000？ → 是 → 使用递归（带检查）
+    ↓
+否
+    ↓
+改为迭代实现
+```
+
+在考场环境中，递归深度问题需要特别关注。通过添加简单检查和优先使用迭代，可以避免栈溢出错误，确保程序稳定运行。

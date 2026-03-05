@@ -1,0 +1,285 @@
+# 1.2 除零异常（考场优化版）
+
+## 一、考场适用性评估：✅ **高度可行且重要**
+
+除零检查在考场环境中**非常适用且关键**，因为：
+1. **算法题常见陷阱**：特别是数学计算、统计类题目
+2. **简单可检测**：可用assert快速检查除数
+3. **直接影响RE**：除零直接导致运行时错误
+
+## 二、考场核心原则：所有除法检查除数
+
+### 绝对禁止的代码模式 ❌
+```cpp
+int a = 10;
+int b = 0;
+int result = a / b;  // ❌ 除零，立即RE
+```
+
+## 三、考场检查策略
+
+### 检查1：显式除零检查
+```cpp
+#define CHECK_DIVISOR(divisor) assert((divisor) != 0)
+
+// 使用示例
+int a = 10, b = 0;
+CHECK_DIVISOR(b);      // 触发RE：除数为0
+int result = a / b;    // 安全（已检查）
+```
+
+### 检查2：取模运算检查
+```cpp
+// 取模运算同样不能除零
+int a = 10 % b;  // 如果b==0，也是RE
+CHECK_DIVISOR(b);  // 同样检查
+```
+
+### 检查3：浮点数除零检查
+```cpp
+// 浮点数除零可能不立即RE，但会产生inf/nan
+#define CHECK_DIVISOR_FLOAT(divisor) \
+    assert(fabs(divisor) > 1e-12)  // 避免接近零的除数
+
+double a = 5.0, b = 0.0;
+CHECK_DIVISOR_FLOAT(b);
+double result = a / b;
+```
+
+## 四、考场专用安全宏
+
+```cpp
+// 除零安全检查宏（考前记忆）
+#define CHECK_DIVISOR_INT(x) assert((x) != 0)
+#define CHECK_DIVISOR_FLOAT(x) assert(fabs(x) > 1e-12)
+#define CHECK_DIVISOR(x) \
+    (is_integral<decltype(x)>::value ? CHECK_DIVISOR_INT(x) : CHECK_DIVISOR_FLOAT(x))
+
+// 安全除法函数
+template<typename T>
+T safe_divide(T a, T b, T default_val = T()) {
+    CHECK_DIVISOR(b);
+    return a / b;
+}
+
+// 使用示例
+int result1 = safe_divide(10, 2);   // 5
+int result2 = safe_divide(10, 0);   // 触发RE
+```
+
+## 五、常见场景解决方案
+
+### 场景1：计算平均值
+```cpp
+// 计算数组平均值
+double average(const vector<int>& arr) {
+    if (arr.empty()) return 0.0;  // 空数组特殊处理
+    
+    long long sum = 0;
+    for (int x : arr) sum += x;
+    
+    // 除数检查（虽然arr.size()>0，但显式检查更安全）
+    CHECK_DIVISOR_INT(arr.size());
+    return (double)sum / arr.size();
+}
+```
+
+### 场景2：数学公式计算
+```cpp
+// 计算斜率 (y2-y1)/(x2-x1)
+double slope(int x1, int y1, int x2, int y2) {
+    int dx = x2 - x1;
+    CHECK_DIVISOR_INT(dx);  // 检查除数不为零
+    return (double)(y2 - y1) / dx;
+}
+
+// 如果允许垂直斜率（无穷大），需要特殊处理
+double slope_safe(int x1, int y1, int x2, int y2) {
+    int dx = x2 - x1;
+    if (dx == 0) {
+        // 垂直斜率，返回特殊值或抛出
+        return numeric_limits<double>::infinity();
+    }
+    return (double)(y2 - y1) / dx;
+}
+```
+
+### 场景3：动态规划递推
+```cpp
+// DP递推中可能有除法
+vector<double> dp(n + 1);
+dp[0] = 1.0;
+for (int i = 1; i <= n; i++) {
+    // 如果递推公式涉及除法，检查除数
+    CHECK_DIVISOR_INT(i);  // 例如dp[i] = dp[i-1] / i
+    dp[i] = dp[i-1] / i;
+}
+```
+
+## 六、考场最佳实践
+
+### 实践1：所有除法前显式检查
+```cpp
+// 不要依赖"题目保证除数不为0"
+int a, b;
+cin >> a >> b;
+
+// 总是检查
+CHECK_DIVISOR_INT(b);
+int result = a / b;
+```
+
+### 实践2：使用安全除法函数
+```cpp
+// 考场中定义并使用安全除法
+int divide(int a, int b) {
+    CHECK_DIVISOR_INT(b);
+    return a / b;
+}
+
+// 使用
+int result = divide(a, b);  // 自动包含检查
+```
+
+### 实践3：处理边界情况
+```cpp
+// 对于可能为零的除数，提供默认值
+int safe_divide_default(int a, int b, int default_val = 0) {
+    return (b == 0) ? default_val : a / b;
+}
+
+// 或者在调试时断言，提交时使用安全版本
+int result;
+#if DEBUG
+CHECK_DIVISOR_INT(b);
+result = a / b;
+#else
+result = (b == 0) ? 0 : a / b;
+#endif
+```
+
+## 七、考场调试策略
+
+### 策略1：关键除法点检查
+```cpp
+void solve() {
+    int n, m;
+    cin >> n >> m;
+    
+    // 检查输入是否可能为零
+    #if DEBUG
+    // 如果题目中m可能为0，检查
+    if (需要除法 && m == 0) {
+        assert(false && "Divisor is zero");
+    }
+    #endif
+    
+    // 计算中的除法检查
+    for (int i = 0; i < n; i++) {
+        int divisor = calculate_divisor(i);
+        CHECK_DIVISOR_INT(divisor);  // 显式检查
+        int value = something / divisor;
+    }
+}
+```
+
+### 策略2：使用除法包装类
+```cpp
+// 安全除法类（简单示例）
+class SafeDivisor {
+    int value;
+public:
+    SafeDivisor(int v) : value(v) {
+        CHECK_DIVISOR_INT(value);
+    }
+    
+    operator int() const { return value; }
+};
+
+// 使用
+int a = 10;
+SafeDivisor b(0);  // 触发RE
+int result = a / b;  // 安全（已检查）
+```
+
+## 八、常见错误示例与修正
+
+### 错误1：直接使用输入作为除数
+```cpp
+// 错误
+int a, b;
+cin >> a >> b;
+int result = a / b;  // 如果b==0，RE
+
+// 修正
+int a, b;
+cin >> a >> b;
+CHECK_DIVISOR_INT(b);  // 检查
+int result = a / b;
+```
+
+### 错误2：表达式结果可能为零
+```cpp
+// 错误
+int x = 5, y = 5;
+int z = x - y;  // z=0
+int result = 10 / z;  // RE
+
+// 修正
+int x = 5, y = 5;
+int z = x - y;
+CHECK_DIVISOR_INT(z);  // 检查表达式结果
+int result = 10 / z;
+```
+
+### 错误3：函数返回值作为除数
+```cpp
+// 错误
+int get_divisor() { return 0; }
+int result = 100 / get_divisor();  // RE
+
+// 修正
+int divisor = get_divisor();
+CHECK_DIVISOR_INT(divisor);
+int result = 100 / divisor;
+```
+
+## 九、总结：考场除零检查清单
+
+### ✅ 必须遵守的规则：
+1. **所有除法前检查除数**：包括`/`和`%`运算
+2. **输入值检查**：从输入读取的除数必须检查
+3. **表达式结果检查**：计算结果作为除数时要检查
+
+### 📋 考前记忆代码模式：
+```cpp
+// 基本模式
+CHECK_DIVISOR_INT(divisor);
+result = dividend / divisor;
+
+// 或使用安全函数
+result = safe_divide(dividend, divisor);
+```
+
+### 🎯 考场策略：
+1. **简单除法**：使用`CHECK_DIVISOR`宏
+2. **复杂计算**：在关键点添加检查
+3. **调试时**：开启所有除零检查
+4. **提交时**：保留检查或替换为安全版本
+
+### ⚠️ 特别注意：
+- 整数除零直接导致RE
+- 浮点数除零产生inf/nan，可能后续导致问题
+- 取模运算同样不能除零
+- 即使题目保证除数非零，也可添加检查作为调试手段
+
+### 📊 常见除零场景：
+```
+1. 平均值计算: sum / n (n可能为0)
+2. 斜率计算: (y2-y1)/(x2-x1) (x1可能等于x2)
+3. 数学公式: 如组合数C(n,k)计算中的除法
+4. 统计计算: 百分比、比率等
+5. 物理计算: 速度、加速度等
+```
+
+在考场环境中，除零错误是最容易预防的RE类型之一。通过简单的前置检查，可以完全避免这类错误，确保程序稳定运行。

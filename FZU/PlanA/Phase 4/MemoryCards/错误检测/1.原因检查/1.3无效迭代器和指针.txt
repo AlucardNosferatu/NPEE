@@ -1,0 +1,310 @@
+# 1.3 无效迭代器和指针（考场优化版）
+
+## 一、考场适用性评估：✅ **高度可行且重要**
+
+无效迭代器/指针检查在考场环境中**非常适用且关键**，因为：
+1. **算法题常见陷阱**：迭代器失效、空指针解引用常见
+2. **简单可检测**：可用assert快速检查
+3. **直接影响RE**：无效操作直接导致运行时错误
+
+## 二、考场核心原则：安全使用迭代器和指针
+
+### 绝对禁止的代码模式 ❌
+```cpp
+vector<int> vec = {1, 2, 3};
+auto it = vec.begin();
+vec.push_back(4);  // 可能使it失效
+*it = 10;          // ❌ 可能访问无效内存
+```
+
+## 三、考场检查策略
+
+### 检查1：迭代器有效性检查
+```cpp
+#define CHECK_ITER(container, iter) \
+    assert((iter) != (container).end())
+
+// 使用示例
+vector<int> vec = {1, 2, 3};
+auto it = find(vec.begin(), vec.end(), 4);
+CHECK_ITER(vec, it);  // 触发RE：未找到，it == end()
+int val = *it;        // 安全访问
+```
+
+### 检查2：指针非空检查
+```cpp
+#define CHECK_PTR(ptr) assert((ptr) != nullptr)
+
+// 使用示例
+int* p = get_pointer();
+CHECK_PTR(p);  // 检查非空
+*p = 42;       // 安全访问
+```
+
+### 检查3：迭代器失效防范
+```cpp
+// 关键规则：修改容器后不使用旧迭代器
+vector<int> vec = {1, 2, 3};
+auto it = vec.begin();
+
+// 危险操作
+vec.push_back(4);  // 可能使it失效
+// *it = 10;       // ❌ 禁止
+
+// 安全：重新获取迭代器
+it = vec.begin();  // 重新获取
+*it = 10;          // ✅ 安全
+```
+
+## 四、考场专用安全宏
+
+```cpp
+// 迭代器和指针安全检查宏（考前记忆）
+#define CHECK_ITER(container, iter) \
+    assert((iter) != (container).end())
+
+#define CHECK_PTR(ptr) \
+    assert((ptr) != nullptr)
+
+#define CHECK_RANGE(container, iter) \
+    assert((iter) >= (container).begin() && (iter) < (container).end())
+
+// 使用示例
+vector<int> vec = {1, 2, 3};
+auto it = vec.begin() + 1;
+CHECK_ITER(vec, it);    // 检查不是end
+CHECK_RANGE(vec, it);   // 检查在范围内
+*it = 20;               // 安全访问
+```
+
+## 五、常见场景解决方案
+
+### 场景1：遍历中删除元素
+```cpp
+// 正确删除模式
+vector<int> vec = {1, 2, 3, 4, 5};
+
+// 使用erase返回值
+for (auto it = vec.begin(); it != vec.end(); /* 不递增 */) {
+    if (*it % 2 == 0) {
+        it = vec.erase(it);  // erase返回下一个有效迭代器
+    } else {
+        ++it;
+    }
+}
+
+// 或使用remove-erase惯用法
+vec.erase(remove_if(vec.begin(), vec.end(), 
+                   [](int x) { return x % 2 == 0; }),
+          vec.end());
+```
+
+### 场景2：迭代器失效规则记忆
+```cpp
+// 考场简记：
+// vector/string: push_back可能使所有迭代器失效（如果重分配）
+// deque: 中间插入删除使所有迭代器失效
+// list/set/map: 插入不失效，删除只使被删元素的迭代器失效
+
+// 安全实践：修改容器后不保留旧迭代器
+vector<int> vec = {1, 2, 3};
+auto it = vec.begin();
+
+// 如果需要保留位置，使用下标
+size_t idx = 0;  // 记住下标而不是迭代器
+vec.push_back(4);
+int val = vec[idx];  // 安全访问
+```
+
+### 场景3：指针生命周期管理
+```cpp
+// 使用智能指针避免悬垂指针
+unique_ptr<int> p1 = make_unique<int>(42);
+shared_ptr<int> p2 = make_shared<int>(42);
+
+// 而不是裸指针
+// int* p = new int(42);
+// delete p;  // 可能忘记
+```
+
+## 六、考场最佳实践
+
+### 实践1：优先使用索引而非迭代器
+```cpp
+// vector/string使用下标更安全
+vector<int> vec(100);
+for (size_t i = 0; i < vec.size(); i++) {
+    vec[i] = i;  // 安全，不会迭代器失效
+}
+
+// 而不是
+for (auto it = vec.begin(); it != vec.end(); ++it) {
+    // 如果在循环中修改容器，it可能失效
+}
+```
+
+### 实践2：使用范围for循环（只读）
+```cpp
+// 只读遍历使用范围for（自动处理迭代器）
+for (int val : vec) {
+    // 只读访问，安全
+}
+
+// 注意：不能在范围for中修改容器结构
+// for (int val : vec) {
+//     if (val == 2) {
+//         vec.push_back(10);  // ❌ 危险
+//     }
+// }
+```
+
+### 实践3：立即使用erase返回值
+```cpp
+// erase后立即使用返回的迭代器
+auto it = vec.begin();
+while (it != vec.end()) {
+    if (condition(*it)) {
+        it = vec.erase(it);  // 正确
+    } else {
+        ++it;  // 只有在没有erase时才递增
+    }
+}
+```
+
+## 七、考场调试策略
+
+### 策略1：关键操作前检查
+```cpp
+void process_vector(vector<int>& vec) {
+    // 保存迭代器前检查有效性
+    auto mid = vec.begin() + vec.size() / 2;
+    #if DEBUG
+    CHECK_ITER(vec, mid);
+    #endif
+    
+    // 修改容器
+    vec.push_back(100);
+    
+    // 修改后不使用旧迭代器
+    // *mid = 50;  // ❌ 禁止
+    
+    // 重新获取
+    mid = vec.begin() + vec.size() / 2;
+    *mid = 50;  // ✅ 安全
+}
+```
+
+### 策略2：使用安全包装函数
+```cpp
+template<typename Container>
+auto safe_begin(Container& c) {
+    assert(!c.empty());
+    return c.begin();
+}
+
+template<typename Container>
+auto safe_end(Container& c) {
+    return c.end();  // end总是有效的
+}
+
+// 使用
+vector<int> vec = {1, 2, 3};
+auto it = safe_begin(vec);  // 保证非空
+*it = 10;  // 安全
+```
+
+## 八、常见错误示例与修正
+
+### 错误1：解引用end迭代器
+```cpp
+// 错误
+vector<int> vec = {1, 2, 3};
+auto it = find(vec.begin(), vec.end(), 4);
+int val = *it;  // it == end()，解引用错误
+
+// 修正
+auto it = find(vec.begin(), vec.end(), 4);
+if (it != vec.end()) {  // 先检查
+    int val = *it;
+}
+```
+
+### 错误2：迭代器失效
+```cpp
+// 错误
+vector<int> vec = {1, 2, 3};
+auto it = vec.begin();
+vec.push_back(4);
+*it = 10;  // it可能失效
+
+// 修正
+vector<int> vec = {1, 2, 3};
+size_t idx = 0;  // 用下标记住位置
+vec.push_back(4);
+vec[idx] = 10;  // 用下标访问
+```
+
+### 错误3：悬垂指针
+```cpp
+// 错误
+int* create_array() {
+    int arr[10] = {0};
+    return arr;  // 返回局部变量指针
+}
+
+// 修正
+vector<int> create_array() {
+    vector<int> arr(10, 0);
+    return arr;  // 返回值语义
+}
+```
+
+## 九、总结：考场迭代器/指针安全清单
+
+### ✅ 必须遵守的规则：
+1. **解引用前检查**：确保不是end()/nullptr
+2. **修改容器后不保留旧迭代器**：重新获取或使用下标
+3. **立即使用erase返回值**：不要使用被删除元素的迭代器
+
+### 📋 考前记忆代码模式：
+```cpp
+// 安全迭代器使用
+auto it = container.find(key);
+CHECK_ITER(container, it);  // 检查找到
+value = *it;                // 安全访问
+
+// 安全指针使用
+int* p = get_pointer();
+CHECK_PTR(p);               // 检查非空
+*p = value;                 // 安全访问
+```
+
+### 🎯 考场策略：
+1. **简单访问**：使用下标或范围for
+2. **需要迭代器时**：添加有效性检查
+3. **修改容器后**：不使用旧迭代器
+4. **调试时**：开启检查发现错误
+5. **提交时**：保留安全代码，移除断言
+
+### ⚠️ 特别注意：
+- vector/string的push_back可能导致迭代器失效
+- 不同容器的迭代器失效规则不同
+- 优先使用智能指针而非裸指针
+- 使用索引访问vector比迭代器更安全
+
+### 📊 容器迭代器失效简表：
+```
+vector/string:
+  push_back: 可能失效（重分配时）
+  insert/erase: 修改点之后失效
+  
+deque:
+  中间操作: 所有迭代器可能失效
+  两端操作: 通常安全
+  
+list/set/map:
+  插入: 从不失效
+  删除: 只使被删元素迭代器失效
+```
+
+在考场环境中，迭代器和指针错误是常见的RE来源。通过添加简单检查和遵循安全模式，可以避免这类问题，确保程序稳定运行。
