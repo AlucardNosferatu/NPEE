@@ -1,0 +1,146 @@
+// 并查集（Disjoint Set Union）：使用数组存储父节点关系，支持快速合并和查找，用于连通性问题
+class DisjointSetUnion {
+private:
+    vector<int> parent;    // 父节点数组，parent[i]表示节点i的父节点，初始为自身
+    vector<int> rank;      // 秩数组（或大小数组），用于按秩合并优化
+    int count;             // 连通分量数量
+
+public:
+    // 构造函数：初始化n个元素的并查集，每个元素自成一个集合
+    // 原理：1. parent[i]初始化为i（每个节点是自己的父节点）；2. rank[i]初始化为0（或1）；3. 连通分量数为n
+    DisjointSetUnion(int n) : parent(n), rank(n, 0), count(n) {
+        for (int i = 0; i < n; ++i) {
+            parent[i] = i;  // 每个节点初始时自成一个集合
+        }
+    }
+
+    // 查找操作（带路径压缩）：返回元素x所在集合的根节点
+    // 原理：1. 递归或迭代查找根节点；2. 将查找路径上所有节点直接连接到根节点，降低后续查找复杂度
+    int find(int x);
+
+    // 合并操作（按秩合并）：将元素x和y所在的集合合并
+    // 原理：1. 分别找到x和y的根节点；2. 比较根节点的rank，将rank小的树合并到rank大的树上；3. 若rank相等，则合并后rank+1
+    void unionSets(int x, int y);
+
+    // 判断连通性：检查元素x和y是否属于同一集合
+    // 原理：比较x和y的根节点是否相同
+    bool isConnected(int x, int y);
+
+    // 获取连通分量数量：返回当前集合的数量
+    // 原理：返回count成员变量
+    int getCount() const { return count; }
+
+    // 获取集合大小（可选扩展）：返回元素x所在集合的元素数量
+    // 原理：需要额外维护size数组，查找根节点后返回size[root]
+    int getSize(int x);
+
+    // 重置并查集：恢复到初始状态（每个元素独立）
+    // 原理：重新初始化parent和rank数组，重置count
+    void reset();
+
+    // 获取所有集合（可选扩展）：返回每个集合的元素列表
+    // 原理：遍历所有元素，通过find找到根节点，将元素分组到根节点对应的集合中
+    vector<vector<int>> getAllSets() const;
+};
+
+// ========================================
+// 扩展：带大小的并查集（同时维护集合大小）
+// ========================================
+class DSUWithSize {
+private:
+    vector<int> parent;
+    vector<int> size;      // 存储每个集合的大小（根节点有效）
+    int count;
+
+public:
+    DSUWithSize(int n) : parent(n), size(n, 1), count(n) {
+        for (int i = 0; i < n; ++i) {
+            parent[i] = i;
+        }
+    }
+
+    // 查找操作（路径压缩）
+    int find(int x);
+
+    // 合并操作（按大小合并）：将较小集合合并到较大集合
+    // 原理：比较集合大小，将小集合的根节点指向大集合的根节点，更新大集合的大小
+    void unionSets(int x, int y);
+
+    // 获取集合大小：返回元素x所在集合的元素数量
+    // 原理：找到根节点后返回size[root]
+    int getSize(int x);
+
+    // 其他操作与基础并查集类似
+    bool isConnected(int x, int y);
+    int getCount() const { return count; }
+};
+
+// ========================================
+// 扩展：带权值的并查集（如维护节点到根节点的距离/关系）
+// ========================================
+class DSUWithWeight {
+private:
+    vector<int> parent;
+    vector<int> rank;
+    vector<int> weight;    // 存储节点到父节点的权值（根据具体问题定义）
+
+public:
+    DSUWithWeight(int n) : parent(n), rank(n, 0), weight(n, 0) {
+        for (int i = 0; i < n; ++i) {
+            parent[i] = i;
+        }
+    }
+
+    // 查找操作（带路径压缩和权值更新）
+    // 原理：在查找根节点的同时，更新路径上节点的权值（累加或根据规则更新）
+    int find(int x);
+
+    // 合并操作（带权值合并）：根据具体问题定义权值更新规则
+    // 原理：找到根节点，根据合并规则更新权值（如距离、偏移量等）
+    void unionSets(int x, int y, int w);
+
+    // 获取权值：返回元素x到根节点的权值
+    // 原理：先执行find(x)确保路径压缩，然后返回weight[x]
+    int getWeight(int x);
+
+    // 获取相对关系：计算两个元素之间的权值差
+    // 原理：确保两个元素在同一集合中，返回它们的权值差
+    int getRelation(int x, int y);
+};
+
+// ========================================
+// 扩展：支持撤销操作的并查集（用于离线查询）
+// ========================================
+class DSUWithRollback {
+private:
+    vector<int> parent;
+    vector<int> size;
+    vector<pair<int, int>> history;  // 操作历史栈，用于撤销
+    int count;
+
+public:
+    DSUWithRollback(int n) : parent(n), size(n, 1), count(n) {
+        for (int i = 0; i < n; ++i) {
+            parent[i] = i;
+        }
+    }
+
+    // 查找操作（不带路径压缩，或使用可撤销的路径压缩）
+    int find(int x) const;
+
+    // 合并操作（记录操作历史）
+    // 原理：合并前记录两个根节点的状态，以便后续撤销
+    bool unionSets(int x, int y);
+
+    // 撤销操作：撤销最近的一次合并
+    // 原理：从历史栈中弹出最近的操作，恢复parent和size
+    void rollback();
+
+    // 快照：记录当前状态（用于批量撤销）
+    // 原理：记录当前历史栈的大小
+    int snapshot();
+
+    // 回滚到快照：撤销到指定快照状态
+    // 原理：不断撤销直到历史栈大小等于快照大小
+    void rollbackTo(int snap);
+};

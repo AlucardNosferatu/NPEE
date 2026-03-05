@@ -1,0 +1,155 @@
+// 最小栈：使用双栈结构，一个栈存储数据，另一个栈存储当前最小值，支持O(1)获取栈中最小元素
+template <typename T>
+class MinStack {
+private:
+    stack<T> dataStack;   // 主栈，存储所有元素
+    stack<T> minStack;    // 辅助栈，栈顶始终存储当前主栈中的最小值
+
+public:
+    // 入栈操作：将元素压入主栈，同时更新最小栈
+    // 原理：1. 将元素压入dataStack；2. 比较新元素与minStack栈顶，将较小者压入minStack（保证minStack栈顶始终为当前最小值）
+    void push(const T& value);
+
+    // 出栈操作：弹出主栈栈顶元素，同时弹出最小栈栈顶元素（保持同步）
+    // 原理：同时弹出dataStack和minStack的栈顶元素，保证minStack与dataStack高度一致
+    void pop();
+
+    // 获取栈顶元素：返回主栈栈顶元素
+    // 原理：直接返回dataStack栈顶元素，不修改栈结构
+    T top() const;
+
+    // 获取最小值：返回当前栈中的最小元素
+    // 原理：直接返回minStack栈顶元素（即当前主栈中的最小值）
+    T getMin() const;
+
+    // 判空操作：检查主栈是否为空
+    // 原理：检查dataStack是否为空
+    bool empty() const;
+
+    // 获取栈大小：返回主栈中元素数量
+    // 原理：返回dataStack的大小
+    int size() const;
+
+    // 清空栈：清空主栈和最小栈
+    // 原理：分别清空两个栈
+    void clear();
+};
+
+// ========================================
+// 扩展：支持O(1)获取最大值的栈（最大栈）
+// ========================================
+template <typename T>
+class MaxStack {
+private:
+    stack<T> dataStack;   // 主栈
+    stack<T> maxStack;    // 辅助栈，栈顶存储当前最大值
+
+public:
+    void push(const T& value);
+    void pop();
+    T top() const;
+    T getMax() const;     // 获取最大值
+    bool empty() const;
+    int size() const;
+    void clear();
+};
+
+// ========================================
+// 扩展：支持O(1)获取最小值的队列（最小队列）
+// ========================================
+template <typename T>
+class MinQueue {
+private:
+    deque<T> dataDeque;   // 存储队列元素
+    deque<T> minDeque;    // 单调队列，队首存储当前队列中的最小值
+
+public:
+    // 入队操作：将元素加入队列
+    // 原理：1. 将元素加入dataDeque队尾；2. 从minDeque队尾开始，移除所有比新元素大的元素，然后将新元素加入minDeque队尾（保持单调递增）
+    void enqueue(const T& value);
+
+    // 出队操作：移除队首元素
+    // 原理：1. 如果dataDeque队首等于minDeque队首，则同时移除minDeque队首；2. 移除dataDeque队首
+    void dequeue();
+
+    // 获取队首元素：返回dataDeque队首元素
+    T front() const;
+
+    // 获取最小值：返回当前队列中的最小元素
+    // 原理：直接返回minDeque队首元素
+    T getMin() const;
+
+    // 判空操作：检查队列是否为空
+    bool empty() const;
+
+    // 获取队列大小：返回dataDeque的大小
+    int size() const;
+
+    // 清空队列：清空两个deque
+    void clear();
+};
+
+// ========================================
+// 扩展：支持O(1)获取中位数的栈/队列（使用两个堆/平衡树，此处仅声明概念）
+// ========================================
+// 原理：使用一个大顶堆存储较小一半元素，一个小顶堆存储较大一半元素，保持两个堆大小平衡
+// 中位数即为堆顶元素或堆顶元素的平均值
+
+// ========================================
+// 扩展：支持O(1)获取平均值的栈
+// ========================================
+template <typename T>
+class AverageStack {
+private:
+    stack<T> dataStack;          // 主栈
+    stack<T> sumStack;           // 辅助栈，存储从栈底到当前栈顶所有元素的和
+
+public:
+    // 入栈操作：更新和栈
+    // 原理：1. 将元素压入dataStack；2. 计算新和（新元素 + sumStack栈顶，如果sumStack为空则直接使用新元素）并压入sumStack
+    void push(const T& value);
+
+    // 出栈操作：同时弹出两个栈
+    void pop();
+
+    // 获取栈顶元素
+    T top() const;
+
+    // 获取当前栈中所有元素的平均值
+    // 原理：sumStack栈顶存储了所有元素的和，除以dataStack的大小即可得到平均值
+    double getAverage() const;
+
+    // 获取当前栈中所有元素的和
+    // 原理：直接返回sumStack栈顶元素
+    T getSum() const;
+
+    bool empty() const;
+    int size() const;
+    void clear();
+};
+
+// ========================================
+// 扩展：支持O(1)时间反转的栈（可反转栈）
+// ========================================
+template <typename T>
+class ReversibleStack {
+private:
+    stack<T> forwardStack;   // 正向栈
+    stack<T> backwardStack;  // 反向栈，用于临时存储
+
+public:
+    // 入栈操作：向正向栈压入元素，同时清空反向栈（因为反向栈可能包含旧数据）
+    void push(const T& value);
+
+    // 出栈操作：从正向栈弹出
+    void pop();
+
+    // 反转栈：将栈中元素顺序反转
+    // 原理：1. 将forwardStack中所有元素依次弹出并压入backwardStack；2. 交换两个栈的引用
+    void reverse();
+
+    T top() const;
+    bool empty() const;
+    int size() const;
+    void clear();
+};

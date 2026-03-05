@@ -1,0 +1,32 @@
+graph TD
+    %% 虚拟入口节点
+    Start[开始] -->|INIT| STATE_0[STATE_0：初始参数断言]
+
+    %% STATE_0 到 CHECK_LOOP_CONDITION 分支
+    STATE_0 -->|CHECK_LOOP_CONDITION| CHECK_LOOP_CONDITION_Branch{CHECK_LOOP_CONDITION 分支}
+
+    %% CHECK_LOOP_CONDITION 分支：有查找空间继续计算，无查找空间直接未找到
+    CHECK_LOOP_CONDITION_Branch -->|left < right| CALCULATE_SUM_Branch{CALCULATE_SUM 分支}
+    CHECK_LOOP_CONDITION_Branch -->|left >= right| NOT_FOUND_Branch{NOT_FOUND 分支}
+
+    %% CALCULATE_SUM 动作（无分支，直接进入状态验证）
+    CALCULATE_SUM_Branch -->|CALCULATE_SUM| STATE_1[STATE_1：当前和计算状态断言]
+
+    %% STATE_1 到 COMPARE_WITH_TARGET 分支
+    STATE_1 -->|COMPARE_WITH_TARGET| COMPARE_WITH_TARGET_Branch{COMPARE_WITH_TARGET 分支}
+
+    %% COMPARE_WITH_TARGET 分支：三种结果分别处理
+    COMPARE_WITH_TARGET_Branch -->|current_sum == target| FOUND_Branch{FOUND 分支}
+    COMPARE_WITH_TARGET_Branch -->|current_sum < target| MOVE_LEFT
+    COMPARE_WITH_TARGET_Branch -->|current_sum > target| MOVE_RIGHT
+
+    %% 移动指针动作（连续动作，跳转回CHECK_LOOP_CONDITION分支节点）
+    MOVE_LEFT -->|MOVE_LEFT| CHECK_LOOP_CONDITION_Branch
+    MOVE_RIGHT -->|MOVE_RIGHT| CHECK_LOOP_CONDITION_Branch
+
+    %% 找到和未找到路径最终汇聚到STATE_2
+    FOUND_Branch -->|FOUND| STATE_2[STATE_2：最终状态断言]
+    NOT_FOUND_Branch -->|NOT_FOUND| STATE_2
+
+    %% 注释说明：STATE_2后跳转到RETURN_RESULT（不体现在流程图中）
+    %% RETURN_RESULT为特殊动作标签，直接返回结果，流程图的终点是STATE_2
