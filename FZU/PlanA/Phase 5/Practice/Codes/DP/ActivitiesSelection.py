@@ -1,6 +1,6 @@
 # ActivitySelection_DPGreedy.py
 
-from Greedy import DPGreedy
+from DPGreedy import DPGreedy
 
 act_params = {
     "act_list": [[0, 1], [0, 2], [1, 2], [2, 3], [2, 4]],
