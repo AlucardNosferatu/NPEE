@@ -38,11 +38,12 @@ class DPGreedy(DPBottomUp):
             walk_step=walk_step
         )
 
-    @staticmethod
-    def depend_func_factory(prev_candidates_generator, feasible, params):
+    def depend_func_factory(self, prev_candidates_generator, feasible, params):
         """
         Factory to create the depend_func, which generates feasible previous states.
         """
+        if 'dp_injected' not in params.keys():
+            params['dp_injected'] = self.dp
 
         def depend_func(state):
             prev_states = {}
@@ -55,11 +56,12 @@ class DPGreedy(DPBottomUp):
 
         return depend_func
 
-    @staticmethod
-    def transit_func_factory(greedy_choice, optimal_substructure, initial_state, params):
+    def transit_func_factory(self, greedy_choice, optimal_substructure, initial_state, params):
         """
         Factory to create the transit_func, which performs greedy selection and merges substructure.
         """
+        if 'dp_injected' not in params.keys():
+            params['dp_injected'] = self.dp
 
         def transit_func(depend_dp_dict: dict, state):
             if not depend_dp_dict:
