@@ -36,6 +36,7 @@ def feasible(params, curr_state, prev_state):
 
 
 def greedy_choice(depend_dp_dict, curr_state):
+    _ = curr_state
     # 选跳跃次數最少的前驱（最优子问题）
     if not depend_dp_dict:
         return None
@@ -43,11 +44,13 @@ def greedy_choice(depend_dp_dict, curr_state):
 
 
 def optimal_substructure(prev_dp, curr_state, params):
+    _, _ = curr_state, params
     # prev_dp 是跳跃次数
     return prev_dp + 1
 
 
 def initial_state(params, state):
+    _ = params
     if state == 0:
         return 0
     return float('inf')  # 无法到达
