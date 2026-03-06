@@ -1,4 +1,4 @@
-# IntervalCoverage_DPGreedy_Final.py
+# IntervalCoverage_DPGreedy_Reconstructed.py
 
 from DPGreedy import DPGreedy
 
@@ -20,12 +20,12 @@ cover_params = {
 
 def prev_candidates(params, state):
     _ = params
-    # 為了讓 Kahn 排序正常，返回所有更左的位置（簡單實現）
+    # 返回所有更左的位置，防止环
     return list(range(state))
 
 
 def feasible(params, curr_state, prev_state):
-    # 只要存在區間能從 prev 到 curr 即可（鬆散，靠 transit 篩選）
+    # 松散检查：只要存在区间能从 prev_pos 到 curr_pos
     prev_pos = params["all_points"][prev_state]
     curr_pos = params["all_points"][curr_state]
     for s, e in params["intervals"]:
@@ -35,22 +35,68 @@ def feasible(params, curr_state, prev_state):
 
 
 def greedy_choice(depend_dp_dict, curr_state, params):
-    _, _ = curr_state, params
-    # 選最遠的前位置
+    _ = curr_state
     if not depend_dp_dict:
         return None
-    return max(depend_dp_dict.keys(), key=lambda idx: cover_params["all_points"][idx])
-
-
-def optimal_substructure(prev_dp, curr_state, params):
-    _, _ = curr_state, params
-    # 占位，返回 prev_dp（追加在 transit_func 裡完成）
-    return prev_dp
+    # 选前驱位置中最远的（all_points 值最大）
+    return max(depend_dp_dict.keys(), key=lambda idx: params["all_points"][idx])
 
 
 def initial_state(params, state):
-    _, _ = params, state
+    """
+    初始状态：从起点选能覆盖最远的区间，并跳步同步
+    """
+    dp = params['dp_injected']
+    all_points = params["all_points"]
+    intervals_sorted = params["intervals"]
+    target_l = params["target"][0]
+    curr_pos = all_points[state]
+
+    best_end = target_l
+    best_int = None
+    for s_, e_ in intervals_sorted:
+        if s_ <= target_l and e_ > best_end:
+            best_end = e_
+            best_int = [s_, e_]
+
+    if best_int and best_end >= curr_pos:
+        path = [best_int]
+        # 跳步同步
+        farthest_idx = next((i for i, p in enumerate(all_points) if p >= best_end), state)
+        for sync in range(state, farthest_idx + 1):
+            dp[sync] = path[:]
+        return path
     return []
+
+
+def optimal_substructure(prev_dp, curr_state, params):
+    """
+    从前驱路径终点出发，选最远区间推进，并跳步同步
+    """
+    dp = params['dp_injected']
+    all_points = params["all_points"]
+    intervals_sorted = params["intervals"]
+    prev_path = prev_dp[:]
+
+    prev_end = prev_path[-1][1] if prev_path else params["target"][0]
+    # curr_pos = all_points[curr_state]
+
+    best_interval = None
+    farthest = prev_end
+    for s_, e_ in intervals_sorted:
+        if s_ <= prev_end and e_ > farthest:
+            farthest = e_
+            best_interval = [s_, e_]
+
+    if best_interval and farthest > prev_end:
+        new_path = prev_path + [best_interval]
+        # 跳步同步
+        farthest_idx = next((i for i, p in enumerate(all_points) if p >= farthest), curr_state)
+        for sync in range(curr_state, farthest_idx + 1):
+            dp[sync] = new_path[:]
+        return new_path
+    else:
+        return prev_path
 
 
 def walk_until(until):
@@ -86,62 +132,10 @@ def solve_interval_covering(target, intervals):
         walk_until=walk_until,
     )
 
-    # 核心：自定義 transit_func，支持跳步同步
-    def custom_transit(depend_dp_dict, state):
-        curr_pos = all_points[state]
-
-        if not depend_dp_dict:
-            # 初始：選起點能覆蓋的最遠區間
-            best_end = target_l
-            best_int = None
-            for interval_ in intervals_sorted:
-                s_, e_ = interval_
-                if s_ <= target_l and e_ > best_end:
-                    best_end = e_
-                    best_int = [s_, e_]
-            if best_int and best_end >= curr_pos:
-                path = [best_int]
-                # 跳步同步
-                farthest_idx = next((i for i, p in enumerate(all_points) if p >= best_end), state)
-                for sync in range(state, farthest_idx + 1):
-                    dp.dp[sync] = path[:]
-                return path
-            return []
-
-        # 正常流程
-        best_prev = greedy_choice(depend_dp_dict, state, cover_params)
-        if best_prev is None:
-            return []
-
-        prev_path = depend_dp_dict[best_prev]
-        prev_end = prev_path[-1][1] if prev_path else target_l
-
-        # 貪心選最遠區間
-        best_interval = None
-        farthest = prev_end
-        for interval_ in intervals_sorted:
-            s_, e_ = interval_
-            if s_ <= prev_end and e_ > farthest:
-                farthest = e_
-                best_interval = [s_, e_]
-
-        if best_interval and farthest > prev_end:
-            new_path = prev_path + [best_interval]
-            # 跳步同步
-            farthest_idx = next((i for i, p in enumerate(all_points) if p >= farthest), state)
-            for sync in range(state, farthest_idx + 1):
-                dp.dp[sync] = new_path[:]
-            return new_path
-        else:
-            return prev_path
-
-    dp.transit_func = custom_transit
-
+    # 直接使用工厂生成的 transit_func
     dp.growth(target_idx)
 
-    result = dp.dp.get(target_idx, None)
-    if result is None:
-        result = dp.query(target_idx)  # 兜底
+    result = dp.query(target_idx)
 
     if not result or (result and result[-1][1] < target_r):
         for interval in intervals_sorted:
@@ -156,7 +150,7 @@ def solve_interval_covering(target, intervals):
 if __name__ == '__main__':
     for idx_, (target_, ints, expected) in enumerate(test_cases, 1):
         print(f"\n=== Test {idx_} ===")
-        print(f"目標: {target_}")
+        print(f"目标: {target_}")
         print(f"区间: {ints}")
 
         result_ = solve_interval_covering(target_, ints)
