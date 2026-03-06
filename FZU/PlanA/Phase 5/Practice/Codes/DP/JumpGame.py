@@ -1,5 +1,9 @@
 # JumpGameII_DPGreedy.py
-
+# 给定一个非负整数数组 nums，你从数组的第一个位置开始。
+# 数组中的每个元素代表你在该位置可以跳跃的最大距离。
+# 你的目标是用最少的跳跃次数到达数组的最后一个位置。
+# 示例：
+# nums = [2,3,1,1,4] → 2（0 → 1 → 4）
 from DPGreedy import DPGreedy
 
 test_cases = [
