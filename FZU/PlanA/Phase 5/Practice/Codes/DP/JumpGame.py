@@ -83,9 +83,9 @@ def solve_jump_game(nums):
 
 
 if __name__ == '__main__':
-    for idx, (nums, expected) in enumerate(test_cases, 1):
+    for idx, (nums_, expected) in enumerate(test_cases, 1):
         print(f"\n=== Test {idx} ===")
-        print(f"nums: {nums}")
-        result = solve_jump_game(nums)
-        print("最少跳跃次数:", result)
-        print("Pass:", result == expected)
+        print(f"nums: {nums_}")
+        result_ = solve_jump_game(nums_)
+        print("最少跳跃次数:", result_)
+        print("Pass:", result_ == expected)
