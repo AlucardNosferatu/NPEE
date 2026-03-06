@@ -35,8 +35,8 @@ def feasible(params, curr_state, prev_state):
     return prev_state + params["nums"][prev_state] >= curr_state
 
 
-def greedy_choice(depend_dp_dict, curr_state):
-    _ = curr_state
+def greedy_choice(depend_dp_dict, curr_state, params):
+    _, _ = curr_state, params
     # 选跳跃次數最少的前驱（最优子问题）
     if not depend_dp_dict:
         return None

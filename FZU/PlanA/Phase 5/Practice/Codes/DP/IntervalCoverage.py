@@ -34,8 +34,8 @@ def feasible(params, curr_state, prev_state):
     return False
 
 
-def greedy_choice(depend_dp_dict, curr_state):
-    _ = curr_state
+def greedy_choice(depend_dp_dict, curr_state, params):
+    _, _ = curr_state, params
     # 選最遠的前位置
     if not depend_dp_dict:
         return None
@@ -109,7 +109,7 @@ def solve_interval_covering(target, intervals):
             return []
 
         # 正常流程
-        best_prev = greedy_choice(depend_dp_dict, state)
+        best_prev = greedy_choice(depend_dp_dict, state, cover_params)
         if best_prev is None:
             return []
 

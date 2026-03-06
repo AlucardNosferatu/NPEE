@@ -64,7 +64,7 @@ class DPGreedy(DPBottomUp):
         def transit_func(depend_dp_dict: dict, state):
             if not depend_dp_dict:
                 return initial_state(params=params, state=state)
-            best_prev = greedy_choice(depend_dp_dict=depend_dp_dict, curr_state=state)
+            best_prev = greedy_choice(depend_dp_dict=depend_dp_dict, curr_state=state, params=params)
             best_prev_dp = depend_dp_dict[best_prev]
             curr_dp = optimal_substructure(
                 prev_dp=best_prev_dp, curr_state=state, params=params

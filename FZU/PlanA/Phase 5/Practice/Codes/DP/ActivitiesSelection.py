@@ -20,8 +20,8 @@ def feasible(params, curr_state, prev_state):
     return acts[prev_state][1] <= acts[curr_state][0]
 
 
-def greedy_choice(depend_dp_dict, curr_state):
-    _ = curr_state
+def greedy_choice(depend_dp_dict, curr_state, params):
+    _, _ = curr_state, params
     # 选择能带来最多活动的路径
     return max(depend_dp_dict, key=lambda k: len(depend_dp_dict[k]))
 
