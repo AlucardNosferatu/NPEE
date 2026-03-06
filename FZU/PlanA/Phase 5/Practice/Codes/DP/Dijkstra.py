@@ -11,7 +11,7 @@ def solve_shortest_path_dag(graph, source):
     """
     nodes = list(graph.keys())
     # 为简化，假设节点编号连续且可作为状态
-    params = {
+    dijkstra_params = {
         'graph': graph,
         'source': source,
         'prev': {},  # 前驱表（用于重建路径）
@@ -21,6 +21,7 @@ def solve_shortest_path_dag(graph, source):
 
     # ---------- 工厂函数 ----------
     def prev_candidates(params, state):
+        _, _ = params, state
         """返回所有可能的候选前驱（后续由 feasible 过滤）"""
         return nodes
 
@@ -75,6 +76,7 @@ def solve_shortest_path_dag(graph, source):
         return curr_dp
 
     def initial_state(params, state):
+        _, _ = params, state
         """没有前驱时返回无穷大（不可达）"""
         return float('inf')
 
@@ -89,7 +91,7 @@ def solve_shortest_path_dag(graph, source):
         greedy_choice=greedy_choice,
         optimal_substructure=optimal_substructure,
         initial_state=initial_state,
-        params=params,
+        params=dijkstra_params,
         base_cases={source: 0},  # 源点作为 base case
         walk_until=walk_until
     )
@@ -99,25 +101,25 @@ def solve_shortest_path_dag(graph, source):
     dp_solver.growth(until=max_node)
 
     # 收集结果
-    dist = {node: dp_solver.query(node) for node in nodes}
-    return dist, params['prev']
+    dist = {node_: dp_solver.query(node_) for node_ in nodes}
+    return dist, dijkstra_params['prev']
 
 
 # ========== 测试 ==========
 if __name__ == '__main__':
     # 定义一个有向无环图
-    graph = {
+    graph_ = {
         0: [(1, 4), (2, 1)],
         1: [(3, 1)],
         2: [(1, 2), (3, 5)],
         3: []
     }
-    source = 0
-    dist, prev = solve_shortest_path_dag(graph, source)
+    source_ = 0
+    dist_, prev = solve_shortest_path_dag(graph_, source_)
 
     print("节点最短距离：")
-    for node in sorted(dist):
-        print(f"  {node}: {dist[node]}")
+    for node__ in sorted(dist_):
+        print(f"  {node__}: {dist_[node__]}")
 
     # 重建到节点 3 的路径
     target = 3
@@ -127,9 +129,9 @@ if __name__ == '__main__':
         while node in prev:
             path.append(node)
             node = prev[node]
-        path.append(source)
+        path.append(source_)
         path.reverse()
-        print(f"\n从 {source} 到 {target} 的最短路径: {path}")
-        print(f"距离验证: {dist[target]}")
+        print(f"\n从 {source_} 到 {target} 的最短路径: {path}")
+        print(f"距离验证: {dist_[target]}")
     else:
         print(f"节点 {target} 不可达")
