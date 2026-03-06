@@ -1,5 +1,5 @@
 from DPBottomUp import DPBottomUp
-from GreedyProblem import GreedyProblem
+from Greedy import GreedyFactory
 
 act_list = [[0, 1], [0, 2], [1, 2], [2, 3], [2, 4]]
 act_params = {"act_list": sorted(act_list, key=lambda x: (x[1], x[0]))}
@@ -53,7 +53,7 @@ def act_walk_step(state):
 # ==============================
 if __name__ == '__main__':
     # 1. 构造贪心问题（只传策略，不传数据）
-    greedy = GreedyProblem(
+    greedy = GreedyFactory(
         prev_candidates_generator=act_prev_candidates,
         feasible=act_feasible,
         greedy_choice=act_greedy_choice,

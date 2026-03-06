@@ -1,5 +1,5 @@
 from DPBottomUp import DPBottomUp
-from GreedyProblem import GreedyProblem
+from Greedy import GreedyFactory
 
 # ──────────────────────────────────────────────
 # 测试数据（可自行补全所有用例）
@@ -145,7 +145,7 @@ def solve_interval_covering(target, intervals):
     cover_params["point_to_idx"] = point_to_idx
 
     # 构造 GreedyProblem
-    greedy = GreedyProblem(
+    greedy = GreedyFactory(
         prev_candidates_generator=cover_prev_candidates,
         feasible=cover_feasible,
         greedy_choice=cover_greedy_choice,
