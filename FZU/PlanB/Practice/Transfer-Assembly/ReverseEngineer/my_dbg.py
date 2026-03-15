@@ -1,12 +1,12 @@
 from my_dbg_def import *
-
 from my_dbg_def import HMODULE, DWORD, c_char_p, c_void_p
 
 k32 = windll.kernel32
 # 设置 LoadLibraryA
 k32.LoadLibraryA.argtypes = [c_char_p]
 k32.LoadLibraryA.restype = HMODULE  # HMODULE 在 my_dbg_def 中定义为 c_void_p
-
+k32.GetModuleHandleA.restype = HMODULE
+k32.CloseHandle.argtypes = [HMODULE]
 # 设置 GetProcAddress
 k32.GetProcAddress.argtypes = [HMODULE, c_char_p]
 k32.GetProcAddress.restype = c_void_p
@@ -18,6 +18,26 @@ k32.GetModuleFileNameA.restype = DWORD
 # 设置 FreeLibrary（你后面会用到）
 k32.FreeLibrary.argtypes = [HMODULE]
 k32.FreeLibrary.restype = c_bool  # 如果没定义 BOOL，可以用 c_bool
+
+# 设置 ReadProcessMemory
+k32.ReadProcessMemory.argtypes = [
+    HANDLE,  # hProcess
+    c_void_p,  # lpBaseAddress
+    c_void_p,  # lpBuffer
+    c_size_t,  # nSize
+    POINTER(c_size_t)  # lpNumberOfBytesRead
+]
+k32.ReadProcessMemory.restype = c_bool
+
+# 设置 WriteProcessMemory
+k32.WriteProcessMemory.argtypes = [
+    HANDLE,  # hProcess
+    c_void_p,  # lpBaseAddress
+    c_void_p,  # lpBuffer (const void*)
+    c_size_t,  # nSize
+    POINTER(c_size_t)  # lpNumberOfBytesWritten
+]
+k32.WriteProcessMemory.restype = c_bool
 
 
 class Debugger:
@@ -32,9 +52,9 @@ class Debugger:
         self.breakpoints = {}
 
     def read_process_mem(self, addr, length):
-        data = ""
+        data = b""
         read_buf = create_string_buffer(length)
-        count = c_ulong(0)
+        count = c_ulonglong(0)
         if not k32.ReadProcessMemory(self.h_process, addr, read_buf, length, byref(count)):
             return None
         else:
@@ -42,9 +62,9 @@ class Debugger:
             return data
 
     def write_process_mem(self, addr, data):
-        count = c_ulong(0)
+        count = c_ulonglong(0)
         length = len(data)
-        c_data = c_char_p(data[count.value:])
+        c_data = c_char_p(data)
         if not k32.WriteProcessMemory(self.h_process, addr, c_data, length, byref(count)):
             return False
         else:
@@ -54,42 +74,26 @@ class Debugger:
         if addr not in self.breakpoints.keys():
             try:
                 original_byte = self.read_process_mem(addr, 1)
-                self.write_process_mem(addr=addr, data="\xCC")
-                self.breakpoints[addr] = (addr, original_byte)
-                return True
+                print('original_byte', original_byte)
+                if not self.write_process_mem(addr=addr, data=b"\xCC"):
+                    print('Cannot write process memory, err code:', k32.GetLastError())
+                    return False
+                else:
+                    test_byte = self.read_process_mem(addr, 1)
+                    print('test_byte', test_byte)
+                    self.breakpoints[addr] = (addr, original_byte)
+                    return True
             except Exception as e:
-                _ = e
+                print(repr(e))
                 return False
 
     @staticmethod
     def resolve_dll_func(dll_name, func_name):
-        # 确保字符串以 null 结尾
-        dll_name_bytes = dll_name.encode('utf-8') + b'\0'
-        func_bytes = func_name.encode('utf-8') + b'\0'
-
-        print(f"尝试加载 {dll_name} ...")
-        h_dll = k32.LoadLibraryA(dll_name_bytes)
-        if not h_dll:
-            err = k32.GetLastError()
-            print(f"LoadLibraryA 失败，错误码: {err}")
-            return None, None, None
-
-        print(f"LoadLibraryA 成功，句柄: {hex(h_dll)}")
-
-        print(f"尝试获取函数 {func_name} ...")
-        local_func = k32.GetProcAddress(h_dll, func_bytes)
-        if not local_func:
-            err = k32.GetLastError()
-            print(f"GetProcAddress 失败，错误码: {err}")
-            k32.FreeLibrary(h_dll)
-            return None, None, None
-
-        # 计算 RVA
-        local_base = h_dll
-        rva = local_func - local_base
-        print(f"成功: {dll_name}!{func_name} 本地地址 {hex(local_func)}, 基址 {hex(local_base)}, RVA = {hex(rva)}")
-        k32.FreeLibrary(h_dll)
-        return local_func, local_base, rva
+        handle = k32.GetModuleHandleA(dll_name.encode('utf-8'))
+        addr = k32.GetProcAddress(handle, func_name.encode('utf-8'))
+        k32.CloseHandle(handle)
+        print(func_name, '的地址是', hex(addr))
+        return addr
 
     @staticmethod
     def load(path_to_exe):
@@ -138,11 +142,16 @@ class Debugger:
     def run(self):
         while self.dbg_active:
             self.get_debug_event()
+            cmd = input('input quit to stop.')
+            if cmd.lower() in ['quit']:
+                self.dbg_active = False
 
     def get_debug_event(self):
         debug_event = DEBUG_EVENT()
         continue_status = DBG_CONTINUE
         if k32.WaitForDebugEvent(byref(debug_event), INFINITE):
+            if self.h_thread is not None:
+                k32.CloseHandle(self.h_thread)
             self.h_thread = self.open_thread(tid=debug_event.dwThreadId)
             self.context = self.get_thread_ctx(h_thread=self.h_thread)
             print(
@@ -170,7 +179,15 @@ class Debugger:
             )
 
     def exception_handler_breakpoint(self):
-        print('断点地址:', self.exception_addr)
+        print('断点地址:', hex(self.exception_addr))
+        if self.exception_addr in self.breakpoints.keys():
+            print('这是用户断点，执行恢复和回退')
+            self.write_process_mem(self.exception_addr, self.breakpoints[self.exception_addr][1])
+            # obtain a fresh context record, reset EIP back to the
+            # original byte and then set the thread's context record
+            # with the new EIP value
+            self.context.Rip = self.exception_addr
+            k32.SetThreadContext(self.h_thread, byref(self.context))
         return DBG_CONTINUE
 
     def detach(self):
@@ -211,7 +228,6 @@ class Debugger:
         if h_thread is None:
             h_thread = self.open_thread(tid=tid)
         if k32.GetThreadContext(h_thread, byref(ctx)):
-            k32.CloseHandle(h_thread)
             return ctx
         else:
             print('Fail to get thread contex')
