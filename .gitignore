@@ -27,3 +27,5 @@ Debug/
 *.pdf
 *.mp4
 FZU/PlanA/Phase 6/资料准备/
+*.lib
+*.exp

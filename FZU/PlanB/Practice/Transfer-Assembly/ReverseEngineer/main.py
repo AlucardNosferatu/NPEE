@@ -1,14 +1,22 @@
-import my_dbg
+import py3dbg
+from py3dbg import *
 
-if __name__ == '__main__':
-    debugger = my_dbg.Debugger()
-    # debugger.load(
-    #     r'target.exe'.encode('utf-8')
-    # )
-    pid = input('Copy and Paste PID\n')
-    debugger.attach(int(pid))
-    # func_addr = debugger.resolve_dll_func("msvcrt.dll", "printf")
-    addr = input('Copy and Paste addr\n')
-    debugger.bp_set(int(addr, 16))
-    debugger.run()
-    debugger.detach()
+PROCESS_NAME = r'C:\Users\16413\Desktop\NPEE\NPEE\FZU\PlanB\Practice\Transfer-Assembly\ReverseEngineer\target\target.exe'.encode(
+    'utf-8')
+
+
+def callback(dbg: pydbg):
+    _ = dbg
+    print('hit printf')
+    return py3dbg.DBG_CONTINUE
+
+
+if __name__ == "__main__":
+    # addr = input('Copy and Paste addr\n')
+    dbg_ = pydbg()
+    dbg_.load(PROCESS_NAME)
+    # dbg_.set_callback(py3dbg.defines.EXCEPTION_BREAKPOINT, callback)
+    dbg_.attach(dbg_.pid)
+    printf_addr = dbg_.func_resolve(dll=PROCESS_NAME, function=b'test_func')
+    dbg_.bp_set(address=printf_addr, handler=callback)
+    dbg_.run()
