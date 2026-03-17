@@ -29,3 +29,5 @@ Debug/
 FZU/PlanA/Phase 6/资料准备/
 *.lib
 *.exp
+*.svn-base
+*.svn
