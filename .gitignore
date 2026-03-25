@@ -31,3 +31,5 @@ FZU/PlanA/Phase 6/资料准备/
 *.exp
 *.svn-base
 *.svn
+FZU/PlanB/审查/
+*.i64
