@@ -1,0 +1,53 @@
+我以**计算机/人工智能方向复试面试官**的视角，完全围绕你这份自述，整理出**最可能被问到的高频问题**，分中文+英文，按「背景→经历→项目→技术→研究规划」排序，都是复试现场大概率会追问的点：
+
+# 一、本科专业与背景类
+1. Why did you choose to pursue postgraduate studies in computer science/AI, even though your undergraduate major is microelectronics?
+   你本科是微电子专业，为什么选择跨考计算机/人工智能方向读研？
+2. How do your undergraduate courses (Biosensors, Integrated Circuit Design) relate to your future research interests?
+   你本科的生物传感器、集成电路设计课程，和你未来的研究方向有什么关联？
+
+# 二、工程实践经历类
+3. Could you briefly talk about what you did in embedded firmware development?
+   简单介绍下你做嵌入式固件开发的具体工作内容？
+4. What’s the connection between PCB design, embedded firmware and software projects in your experience?
+   你的PCB设计、嵌入式固件和软件项目之间有什么技术关联？
+5. You have experience across hardware and software fields. Which part do you think lays the foundation for your current research interests?
+   你横跨软硬件领域，你觉得哪部分经历为你现在的研究兴趣打下了基础？
+
+# 三、独立项目深挖类（面试官最爱问）
+6. Please introduce your automatic programming Agent in detail. What framework or model did you use?
+   详细介绍你的自动编程Agent，用了什么框架或模型？
+7. What’s the difference between the Seq2Seq-based QA system and the knowledge graph-based QA system?
+   基于Seq2Seq的问答系统和基于知识图谱的问答系统，核心区别是什么？
+8. Did you encounter any difficulties when developing these three projects? How did you solve them?
+   开发这三个项目时遇到过什么困难，你是如何解决的？
+
+# 四、技术栈与业余爱好类
+9. You mentioned you are interested in OS concepts and task scheduling models. Could you talk about what you’ve learned?
+   你提到对操作系统概念和任务调度模型感兴趣，能简单说说你了解的内容吗？
+10. Why are you familiar with 3D modeling and slicing software? How do you combine it with AI?
+   你为什么熟悉3D建模与切片软件？打算如何把它和AI结合？
+11. How do you use PyTorch, Django and Selenium in your projects?
+   你在项目中是如何使用PyTorch、Django和Selenium的？
+
+# 五、专利与竞赛类
+12. Could you briefly introduce the content of your authorized patents?
+   简单介绍下你授权专利的核心内容？
+13. What did you gain from the academic competitions?
+   学术竞赛给你带来了哪些收获？
+
+# 六、研究兴趣与读研规划类（必问）
+14. Why do you want to focus on AI-driven 3D modeling and automatic skeletal rigging?
+   为什么想研究AI驱动的3D建模和自动骨骼绑定方向？
+15. What fundamental theories do you want to explore in this field?
+   你想在这个领域探究哪些基础理论？
+16. What’s your plan during postgraduate study to achieve research publications?
+   读研期间你打算如何实现发表学术成果的目标？
+17. What kind of research do you expect to do under the guidance of our supervisors?
+   你希望在我校导师的指导下开展什么样的研究？
+
+# 七、综合动机类
+18. Why do you want to build a comprehensive knowledge system through postgraduate studies?
+   为什么想通过读研构建完整的知识体系？
+19. What are your advantages compared with other candidates who major in computer science?
+   相比于科班计算机考生，你的优势是什么？

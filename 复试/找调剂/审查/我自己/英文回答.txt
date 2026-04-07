@@ -1,0 +1,187 @@
+I originally planned to major in Computer Science.
+However, due to an unexpected change in my university's program arrangement, the CS department was not established when I enrolled.
+So I chose Microelectronics as an alternative.
+Later, all my job choices and project practices were centered around returning to the Computer Science field.
+Now I hope to pursue postgraduate studies to systematically study AI and software, and realize my initial academic goal.
+
+In Biosensors, I learned knowledge about signals and data feature patterns.
+From an application-oriented perspective, I understood the metrics of various software algorithms and the problems they solve.
+Integrated Circuit Design allowed me to understand the computational challenges of software algorithms from the perspective of underlying hardware implementation,
+and made me realize the necessity of efficient algorithms.
+
+First, I judge whether an RTOS is needed based on the project complexity.
+For relatively complex projects, 
+I use FreeRTOS to manage different peripherals of the embedded system, 
+and assign tasks according to their priorities and periodicity.
+For simple projects, 
+I directly complete board-level peripheral initialization and ISR registration in the main function, 
+then run tasks in an infinite loop.
+
+PCB design is essentially circuit design.
+The principles involved in it, such as layer allocation and pin assignment in PCB routing, 
+are closely related to bipartite graph matching in graph theory.
+With the help of computer algorithms like the Hungarian algorithm, 
+I can get more efficient and concise circuit schematics, 
+and the designed PCBs are less prone to failures.
+An embedded system can be regarded as a minimized and simplified computer system.
+My understanding of its low-level mechanisms, including buses, interrupts and task scheduling,
+helps me design computer software with better flexibility and scalability.
+
+I think my system-level and hardware foundation lays the key foundation.
+On the one hand, it makes me good at thinking about efficiency and underlying implementation.
+On the other hand, I have practical experience in 3D modeling and slicing.
+I found traditional modeling and skeletal rigging are inefficient, 
+so I hope to use AI to optimize them.
+My cross-domain background helps me do research on AI-driven 3D modeling from a more systematic perspective.
+
+I built this automatic programming Agent based on LangFlow, 
+a Python-based DAG workflow framework, 
+and used the Qwen-3 7 billion parameters large language model.
+【精简版】
+The agent follows a multi-agent collaborative pipeline: 
+it first parses user queries through prompt engineering, 
+designs software requirements, 
+generates Python code, 
+executes the code via a Python execution tool, 
+and finally summarizes results to complete the task.
+A key limitation of such DAG-based frameworks is that they cannot send feedback to earlier agents for rework, even if the task fails.
+【详细版】
+Through prompt engineering, 
+Agent 1 first parses user input into a problem to be solved, 
+then converts it into formatted text with problem premises and statements, 
+and sends it to Agent 2 and Agent 5.
+Agent 2 designs software requirements for solving or verifying the problem according to the formatted description, 
+and passes them to Agent 3 and Agent 5.
+Agent 3 generates corresponding Python code based on these requirements and sends the code to Agent 4 and Agent 5.
+Agent 4 executes the Python code via the Python exection tool and returns the result to Agent 5.
+Finally, Agent 5 judges whether the task is completed based on the summarized information and gives feedback to the user.
+Due to the characteristics of DAG, Agent 5 still has to reply to the user even if the task is not successfully completed, 
+which is a typical limitation of DAG-based workflow frameworks like LangFlow.
+
+The Seq2Seq-based QA system is an open-domain QA that generates answers purely from training corpus patterns.
+By contrast, the knowledge graph-based QA extracts keywords from queries through NER with a synonym dictionary, 
+performs matching and extended search on the KG, 
+and finally outputs fixed-style answers based on templates.
+
+Yes, I met difficulties in all three projects.
+【精简版】
+For the programming agent, 
+I solved the DAG feedback limitation by building a custom HTTP node and an IF block to realize a recursive rework mechanism.
+For the Seq2Seq QA, I optimized the training efficiency by introducing the UNK token to support incremental training without retraining Word2Vec frequently.
+For the KG QA, I improved matching accuracy by using multi-entity extraction and BFS algorithm to find the optimal target entity.
+【详细版】
+First, in the automatic programming Agent project, 
+the core problem was the DAG limitation that it could not feedback previous agents for rework.
+I found LangFlow supported HTTP requests in custom nodes, 
+so I built a custom HTTP node and an IF Block.When Agent 5 judged the task failed, 
+it sent a flag to the IF Block, which called the rework Agent chain through the HTTP node.
+The rework chain could recursively call itself until the task succeeded, which perfectly solved the problem.
+Second, in the Seq2Seq QA project, one-hot encoding caused hardware pressure, 
+and Word2Vec required full retraining for new corpus.
+I introduced the UNK encoding from the bag-of-words model to encode out-of-vocabulary words, 
+which supported incremental training of the model without full retraining.
+Third, in the knowledge graph QA project, single-entity NER had low matching accuracy.
+I used the HIT LTP tool for multi-entity extraction, 
+and applied BFS preprocessing to find the node with the minimum total distance to all entities as the final matching result, 
+greatly improving the performance.
+
+Tasks or threads in an RTOS are quite different from processes in general operating systems as mentioned in the 408 syllabus.
+For efficiency, many RTOS adopt a thread model, where all tasks can freely access the entire memory space.
+In terms of scheduling, they widely use cooperative scheduling mechanisms like coroutines with autonomous features, instead of being fully controlled by the kernel.
+This enables flexible scheduling for urgent task chains.
+These distinct designs from general OS taught me that I should analyze specific problems case by case, 
+rather than rigidly applying fixed rules to research objects.
+
+I'm familiar with 3D modeling and slicing software out of personal interest in model making.
+I often design and 3D print modified parts for models by myself, 
+so I've gained solid experience in modeling and slicing processes.
+In practical printing, I found manual support setup, model hollowing and mesh optimization really tedious, 
+and easily lead to printing defects and material waste.
+That's why I want to combine it with AI:
+to let AI automatically generate 3D printing supports, hollow-out models and optimize mesh geometry, so as to reduce defects, save materials and make the whole process more efficient.
+
+I use these tools in different scenarios:
+First, I use Selenium to automatically crawl text from novel websites, 
+extract dialogues through regular expression, 
+and collect them as the training corpus for my Seq2Seq model.
+Second, I use PyTorch to reproduce models from research papers instead of the outdated TensorFlow. 
+Its convenient automatic differentiation and flexible gradient updates make online training easy. 
+I also built an encoder-decoder-styled Transformer with PyTorch to upgrade my original Seq2Seq QA system.
+Third, I used Django in my previous work. 
+It helped me manage assets in the network test lab, 
+including switches, routers and traffic generators. 
+It received test requests and executed tasks in the background with its built-in SQLite database. As a heavyweight web framework, 
+I learned it for team collaboration, though my work didn't require all its features.
+
+First, for the LCD panel design patent, 
+I proposed a solution using an intermediate metal layer to isolate the signal lines of adjacent pixel rows. 
+This effectively reduced the coupling capacitance between them, 
+minimizing crosstalk in the panel when displaying heavy-load images.
+Second, for the ceramic material electrical performance aging test and measurement system, 
+the system integrates hardwares like a digital LCR meter, conductivity meter, and PID temperature controller. 
+The LabVIEW-based software configures instruments via NI-VISA protocol and SCPI commands, collects electrical parameters from those instruments, 
+such as capacitance, impedance, loss factor.
+and uses LabVIEW's UI library to plot real-time curves showing how these parameters are affected by temperature.
+
+From the Electronic Design Contest, 
+I learned to use the LMS algorithm for adaptive filtering on signals aliased by multipath effects.
+Later I realized that this is essentially a trainable 1 dimensional convolution kernel.
+Although I knew little about deep learning at that time, 
+this experience allowed me to quickly understand convolutional neural networks through analogy, 
+and later apply 1D convolution to practical projects such as sEMG-based gesture recognition.
+From the Brain-Inspired Computing Competition, I was first exposed to cutting-edge neural network models from research papers, 
+especially CDCGAN.
+Before that, I only knew basic networks like CNNs and RNNs from tutorials.
+GAN solves problems through a min-max game mechanism and has evolved into variants such as CDCGAN and InfoGAN.
+This made me realize that deep learning is a broad and open research field, 
+where we can transfer knowledge from other disciplines to guide the design of new algorithms and network structures.
+
+First, from my personal experience in 3D printing and model making, 
+I found traditional manual modeling and skeletal rigging are highly repetitive, inefficient and error-prone, 
+which really needs AI optimization.
+Second, my background in deep learning, multi-agent systems and software-hardware integration makes me well-suited to explore automatic algorithms for 3D geometry processing.
+Third, this field has clear practical value and research space, 
+and I hope to combine my interests and technical skills to do in-depth research on efficient AI-driven 3D content generation.
+
+In the field of AI-driven 3D content generation, 
+I am particularly interested in fundamental theories such as geometric deep learning, differentiable rendering, and 3D mesh optimization.
+However, I do not hold a fixed research topic.
+I highly respect the research focus and ongoing projects of your research group.
+I am very willing to follow your guidance and explore the fundamental theories that your lab emphasizes.
+With my background in deep learning and system design, 
+I can quickly adapt and conduct in-depth research along with the team's direction.
+
+To publish research papers during graduate study, I have a clear and practical plan:
+First, I will follow the research direction of the group. 
+I will prepare a backup topic based on my interest, 
+but mainly focus on the topic assigned by my supervisor.
+Second, I will read enough recent papers to grasp the state-of-the-art, 
+then deeply study 3–5 key works that match my research style.
+Third, I will find innovative points from existing studies, 
+quickly master missing skills within two weeks, 
+and make a detailed experimental plan.
+Fourth, I will carry out experiments, keep complete records, report progress to my supervisor regularly, and solve problems in time.
+Finally, I will write sections and draw figures step by step during experiments, 
+not after all experiments are done. 
+Once experiments finish, I will organize and polish the paper for submission.
+
+Since I still lack academic research experience,
+I hope to start with some steady and feasible projects to accumulate practical research skills.
+I am willing to cooperate with senior group members or participate in horizontal projects,
+and finish 2 to 3 such projects to gain experience.
+After that, I hope to take on more important research topics that are closely related to national strategies, have policy significance and high social value,
+and complete such projects mainly by myself or independently.
+
+Long-term fragmented self-study has created great obstacles when I communicate academically with professionals.
+I often have various ideas, 
+but after checking with AI, 
+I find they have already been developed by others.
+This is because I lack systematic learning and thus fail to understand the boundaries of current knowledge — 
+my ideas always focus on the interior of the knowledge system rather than its boundaries and frontiers.
+That's why I want to build a comprehensive knowledge system through postgraduate studies.
+
+Compared with other CS candidates,
+I have a software-hardware interdisciplinary background and strong engineering implementation ability.
+I can quickly turn research ideas into practical prototypes,
+and better engage in AI-related research combined with hardware systems,
+which is my unique advantage.

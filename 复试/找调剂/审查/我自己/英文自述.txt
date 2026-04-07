@@ -10,8 +10,8 @@ embedded firmware development,
 and a variety of software projects.
 
 I achieved a score of 552 in CET-6. 
-I'm proficient in PyTorch, Jango and Selenium, 
-and skilled in 3D modeling and slicing software like ZBrush, SolidWorks and Cura. 
+I'm able to work with PyTorch, Jango and Selenium, 
+and familiar with 3D modeling and slicing software like ZBrush, SolidWorks and Cura. 
 I hold two authorized patents and two academic competition awards.
 
 I have independently developed three projects: 
@@ -20,7 +20,7 @@ a QA application based on Seq2Seq
 and a QA application based on knowledge graphs. 
 My amateur hobbies include OS concepts and task scheduling models, 3D digital modeling, and open-source RC model projects.
 
-I wish to build a systematic knowledge framework, conduct in-depth research, and strive for research publications. 
+I wish to build a comprehensive knowledge system, conduct in-depth studying, and strive for research publications. 
 I hope to explore AI-driven 3D modeling, automatic skeletal rigging and relevant fundamental theories.
 
 Thank you.
