@@ -1,0 +1,26 @@
+Good morning/afternoon, dear professors. I'm Lin Haobo.
+
+I graduated from Southern University of Science and Technology, 
+with a bachelor's degree in Microelectronics.
+My core courses included Biosensors and Integrated Circuit Design.
+
+I have some work experience in several technical fields, which covers
+PCB and circuit schematic design, 
+embedded firmware development, 
+and a variety of software projects.
+
+I achieved a score of 552 in CET-6. 
+I'm proficient in PyTorch, Jango and Selenium, 
+and skilled in 3D modeling and slicing software like ZBrush, SolidWorks and Cura. 
+I hold two authorized patents and two academic competition awards.
+
+I have independently developed three projects: 
+an automatic programming Agent, 
+a QA application based on Seq2Seq 
+and a QA application based on knowledge graphs. 
+My amateur hobbies include OS concepts and task scheduling models, 3D digital modeling, and open-source RC model projects.
+
+I wish to build a systematic knowledge framework, conduct in-depth research, and strive for research publications. 
+I hope to explore AI-driven 3D modeling, automatic skeletal rigging and relevant fundamental theories.
+
+Thank you.
