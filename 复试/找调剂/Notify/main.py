@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 # ===================== 固定配置 =====================
 # 你提供的精准 XPath！直接用！
 MONITOR_XPATH = "/html/body/div[2]/div[3]/div/div/div"
-REFRESH_INTERVAL = 15  # 15秒刷新一次
+REFRESH_INTERVAL = 300  # 15秒刷新一次
 # =====================================================
 
 # 启动浏览器
