@@ -1,13 +1,15 @@
-import time
 import hashlib
+import time
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 # ===================== 固定配置 =====================
 # 你提供的精准 XPath！直接用！
-MONITOR_XPATH = "/html/body/div[2]/div[3]/div/div/div"
+MONITOR_XPATH = "/html/body/div[2]/div[3]/div"
+
 REFRESH_INTERVAL = 300  # 15秒刷新一次
 # =====================================================
 
@@ -29,6 +31,7 @@ while True:
 
 print("\n✅ 监控启动！强制刷新 + 精准监控目标区域")
 
+
 # 获取指定区域的哈希值
 def get_target_hash():
     try:
@@ -43,6 +46,7 @@ def get_target_hash():
     except Exception as e:
         print(f"⚠️  监控异常：{str(e)}")
         return None
+
 
 # 初始基准值
 old_hash = get_target_hash()
@@ -67,10 +71,11 @@ try:
             # Windows 蜂鸣警报（响1.5秒）
             try:
                 import winsound
+
                 winsound.Beep(2800, 1500)
             except:
                 pass
-
+        old_hash = new_hash
         # 日志输出
         current_time = time.strftime("%H:%M:%S")
         print(f"[{current_time}] 已强制刷新 | 监控正常")
