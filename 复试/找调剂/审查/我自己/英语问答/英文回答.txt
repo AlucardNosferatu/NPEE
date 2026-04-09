@@ -3,11 +3,20 @@ However, due to an unexpected change in my university's program arrangement, the
 So I chose Microelectronics as an alternative.
 Later, all my job choices and project practices were centered around returning to the Computer Science field.
 Now I hope to pursue postgraduate studies to systematically study AI and software, and realize my initial academic goal.
+我最初计划主修计算机科学。
+然而，由于我所在大学的课程设置发生了意料之外的变化，我入学时计算机科学系尚未成立。
+因此，我选择了微电子学作为备选专业。
+后来，我的所有工作选择和项目实践都围绕着重返计算机科学领域展开。
+现在，我希望攻读研究生学位，系统地学习人工智能和软件，实现我最初的学术目标。
 
 In Biosensors, I learned knowledge about signals and data feature patterns.
 From an application-oriented perspective, I understood the metrics of various software algorithms and the problems they solve.
 Integrated Circuit Design allowed me to understand the computational challenges of software algorithms from the perspective of underlying hardware implementation,
 and made me realize the necessity of efficient algorithms.
+在生物传感器课程中，我学习了信号和数据特征模式方面的知识。
+从应用角度来看，我理解了各种软件算法的指标以及它们所解决的问题。
+集成电路设计课程让我从底层硬件实现的角度理解了软件算法的计算挑战，
+并让我意识到高效算法的必要性。
 
 First, I judge whether an RTOS is needed based on the project complexity.
 For relatively complex projects, 
@@ -16,6 +25,13 @@ and assign tasks according to their priorities and periodicity.
 For simple projects, 
 I directly complete board-level peripheral initialization and ISR registration in the main function, 
 then run tasks in an infinite loop.
+首先，我会根据项目的复杂度来判断是否需要实时操作系统（RTOS）。
+对于相对复杂的项目，
+我使用FreeRTOS来管理嵌入式系统的不同外设，
+并根据任务的优先级和周期性进行分配。
+对于简单的项目，
+我会在主函数中直接完成板级外设初始化和中断服务例程 (ISR) 注册，
+然后以无限循环的方式运行任务。
 
 PCB design is essentially circuit design.
 The principles involved in it, such as layer allocation and pin assignment in PCB routing, 
@@ -26,6 +42,15 @@ and the designed PCBs are less prone to failures.
 An embedded system can be regarded as a minimized and simplified computer system.
 My understanding of its low-level mechanisms, including buses, interrupts and task scheduling,
 helps me design computer software with better flexibility and scalability.
+PCB 设计本质上是电路设计。
+其中涉及的原理，例如 PCB 布线中的层分配和引脚分配，
+与图论中的二分图匹配密切相关。
+借助匈牙利算法等计算机算法，
+我可以得到更高效、更简洁的电路原理图，
+并且设计的 PCB 更不容易出现故障。
+嵌入式系统可以看作是一个最小化和简化的计算机系统。
+我对嵌入式系统底层机制（包括总线、中断和任务调度）的理解，
+帮助我设计出更灵活、可扩展的计算机软件。
 
 I think my system-level and hardware foundation lays the key foundation.
 On the one hand, it makes me good at thinking about efficiency and underlying implementation.
@@ -33,6 +58,12 @@ On the other hand, I have practical experience in 3D modeling and slicing.
 I found traditional modeling and skeletal rigging are inefficient, 
 so I hope to use AI to optimize them.
 My cross-domain background helps me do research on AI-driven 3D modeling from a more systematic perspective.
+我认为我的系统级和硬件基础是关键。
+一方面，这使我擅长思考效率和底层实现。
+另一方面，我拥有 3D 建模和切片方面的实践经验。
+我发现传统的建模和骨骼绑定效率低下，
+因此，我希望利用人工智能来优化它们。
+我的跨领域背景有助于我从更系统的角度研究人工智能驱动的3D建模。
 
 I built this automatic programming Agent based on LangFlow, 
 a Python-based DAG workflow framework, 
@@ -58,11 +89,38 @@ Finally, Agent 5 judges whether the task is completed based on the summarized in
 Due to the characteristics of DAG, 
 Agent 5 still has to reply to the user even if the task is not successfully completed, 
 which is a typical limitation of DAG-based workflow frameworks like LangFlow.
+我基于LangFlow（一个基于Python的DAG工作流框架）构建了这个自动编程代理，
+并使用了拥有70亿参数的Qwen-3大型语言模型。
+【精简版】
+该代理遵循多代理协作流程：
+首先通过提示工程解析用户查询，
+设计软件需求，
+生成Python代码，
+通过Python执行工具执行代码，
+最后汇总结果以完成任务。
+此类基于DAG的框架的一个主要局限性在于，即使任务失败，它们也无法向之前的代理发送反馈以进行返工。
+【详细版】
+通过提示工程，
+代理 1 首先将用户输入解析为待解决的问题，
+然后将其转换为包含问题前提和陈述的格式化文本，
+并将其发送给代理 2 和代理 5。
+代理 2 根据格式化描述设计解决或验证问题的软件需求，
+并将其传递给代理 3 和代理 5。
+代理 3 基于这些需求生成相应的 Python 代码，并将代码发送给代理 4 和代理 5。
+代理 4 通过 Python 执行工具执行 Python 代码，并将结果返回给代理 5。
+最后，代理 5 根据汇总信息判断任务是否完成，并向用户提供反馈。
+由于 DAG 的特性，
+即使任务未成功完成，代理 5 仍然需要回复用户，
+这是基于 DAG 的工作流框架（例如 LangFlow）的典型局限性。
 
 The Seq2Seq-based QA system is an open-domain QA that generates answers purely from training corpus patterns.
 By contrast, the knowledge graph-based QA extracts keywords from queries through NER with a synonym dictionary, 
 performs matching and extended search on the KG, 
 and finally outputs fixed-style answers based on templates.
+基于 Seq2Seq 的问答系统是一个开放域问答系统，它完全从训练语料库模式中生成答案。
+相比之下，基于知识图谱的问答系统通过命名实体识别 (NER) 和同义词词典从查询中提取关键词，
+在知识图谱上执行匹配和扩展搜索，
+最终基于模板输出固定风格的答案。
 
 Yes, I met difficulties in all three projects.
 【精简版】
@@ -87,6 +145,29 @@ Third, in the knowledge graph QA project, single-entity NER had low matching acc
 I used the HIT LTP tool for multi-entity extraction, 
 and applied BFS preprocessing to find the node with the minimum total distance to all entities as the final matching result, 
 greatly improving the performance.
+是的，这三个项目我都遇到了困难。
+【精简版】
+对于编程代理，
+我通过构建自定义 HTTP 节点和 IF 块来实现递归重做机制，从而解决了 DAG 反馈的限制。
+对于 Seq2Seq 问答，
+我通过引入 UNK 标记来优化训练效率，从而支持增量训练，避免频繁地重新训练 Word2Vec。
+对于知识图谱问答，
+我通过使用多实体提取和 BFS 算法来寻找最优目标实体，从而提高了匹配准确率。
+【详细版】
+首先，在自动编程代理项目中，
+核心问题是 DAG 的限制，它无法反馈之前的代理进行重做。
+我发现 LangFlow 支持在自定义节点中发送 HTTP 请求，
+因此，我构建了一个自定义 HTTP 节点和一个 IF 块。当代理 5 判断任务失败时，
+它会向 IF 块发送一个标志，IF 块会通过 HTTP 节点调用重做代理链。
+重做链可以递归调用自身直至任务成功，完美地解决了这个问题。
+其次，在 Seq2Seq 问答项目中，独热编码造成了硬件压力，
+而 Word2Vec 需要针对新语料库进行完全重新训练。
+我引入了词袋模型中的 UNK 编码来编码词汇表外的词，
+这支持了模型的增量训练，无需完全重新训练。
+第三，在知识图谱问答项目中，单实体命名实体识别 (NER) 的匹配准确率较低。
+我使用 HIT LTP 工具进行多实体提取，
+并应用广度优先搜索 (BFS) 预处理，找到到所有实体总距离最小的节点作为最终匹配结果，
+显著提高了性能。
 
 Tasks or threads in an RTOS are quite different from processes in general operating systems as mentioned in the 408 syllabus.
 For efficiency, many RTOS adopt a thread model, where all tasks can freely access the entire memory space.
@@ -96,6 +177,14 @@ instead of being fully controlled by the kernel.
 This enables flexible scheduling for urgent task chains.
 These distinct designs from general OS taught me that I should analyze specific problems case by case, 
 rather than rigidly applying fixed rules to research objects.
+正如408课程大纲所述，实时操作系统（RTOS）中的任务或线程与通用操作系统中的进程截然不同。
+为了提高效率，许多RTOS采用线程模型，其中所有任务都可以自由访问整个内存空间。
+在调度方面，
+它们广泛使用具有自治特性的协程等协作调度机制，
+而不是完全由内核控制。
+这使得紧急任务链能够进行灵活的调度。
+这些与通用操作系统截然不同的设计让我明白，我应该针对具体问题逐一分析，
+而不是生硬地将固定的规则应用于研究对象。
 
 I'm familiar with 3D modeling and slicing software out of personal interest in model making.
 I often design and 3D print modified parts for models by myself, 
@@ -105,6 +194,14 @@ and easily lead to printing defects and material waste.
 That's why I want to combine it with AI:
 to let AI automatically generate 3D printing supports, hollow-out models and optimize mesh geometry, 
 so as to reduce defects, save materials and make the whole process more efficient.
+出于对模型制作的个人兴趣，我熟悉3D建模和切片软件。
+我经常自己设计并3D打印模型的修改部件，
+因此，我在建模和切片流程方面积累了丰富的经验。
+在实际打印过程中，我发现手动设置支撑、模型空心化和网格优化非常繁琐，
+而且很容易导致打印缺陷和材料浪费。
+这就是为什么我想将其与人工智能相结合：
+让人工智能自动生成3D打印支撑、空心化模型并优化网格几何形状，
+从而减少缺陷、节省材料并提高整个流程的效率。
 
 I use these tools in different scenarios:
 First, I use Selenium to automatically crawl text from novel websites, 
@@ -118,6 +215,18 @@ It helped me manage assets in the network test lab,
 including switches, routers and traffic generators. 
 It received test requests and executed tasks in the background with its built-in SQLite database. As a heavyweight web framework, 
 I learned it for team collaboration, though my work didn't require all its features.
+我在不同的场景下使用这些工具：
+首先，我使用 Selenium 自动抓取小说网站上的文本，
+通过正则表达式提取对话，
+并将其收集起来作为我的 Seq2Seq 模型的训练语料库。
+其次，我使用 PyTorch 来复现研究论文中的模型，而不是使用过时的 TensorFlow。
+它便捷的自动微分和灵活的梯度更新功能使得在线训练变得轻松。
+我还使用 PyTorch 构建了一个编码器-解码器风格的 Transformer，以升级我原有的 Seq2Seq 问答系统。
+第三，我在之前的工作中使用过 Django。
+它帮助我管理网络测试实验室中的资产，
+包括交换机、路由器和流量生成器。
+它接收测试请求，并使用其内置的 SQLite 数据库在后台执行任务。作为一个重量级的 Web 框架，
+我学习它是为了团队协作，尽管我的工作并不需要它的所有功能。
 
 First, for the LCD panel design patent, 
 I proposed a solution using an intermediate metal layer to isolate the signal lines of adjacent pixel rows. 
@@ -129,6 +238,16 @@ The LabVIEW-based software configures instruments via NI-VISA protocol and SCPI 
 collects electrical parameters from those instruments, 
 such as capacitance, impedance, loss factor.
 and uses LabVIEW's UI library to plot real-time curves showing how these parameters are affected by temperature.
+首先，针对液晶面板设计专利，
+我提出了一种利用中间金属层隔离相邻像素行信号线的解决方案。
+这有效地降低了它们之间的耦合电容，
+从而最大限度地减少了面板在显示高负载图像时的串扰。
+其次，针对陶瓷材料电性能老化测试测量系统，
+该系统集成了数字LCR表、电导率仪和PID温度控制器等硬件。
+基于LabVIEW的软件通过NI-VISA协议和SCPI命令配置仪器，
+从这些仪器采集电参数，
+例如电容、阻抗和损耗因子。
+并使用LabVIEW的UI库绘制实时曲线，显示这些参数如何受温度影响。
 
 From the Electronic Design Contest, 
 I learned to use the LMS algorithm for adaptive filtering on signals aliased by multipath effects.
@@ -142,6 +261,16 @@ Before that, I only knew basic networks like CNNs and RNNs from tutorials.
 GAN solves problems through a min-max game mechanism and has evolved into variants such as CDCGAN and InfoGAN.
 This made me realize that deep learning is a broad and open research field, 
 where we can transfer knowledge from other disciplines to guide the design of new algorithms and network structures.
+在电子设计大赛中，我学习了如何使用LMS算法对受多径效应混叠的信号进行自适应滤波。
+后来我意识到，这本质上是一个可训练的一维卷积核。
+虽然当时我对深度学习知之甚少，但这段经历让我能够通过类比快速理解卷积神经网络，
+之后还能将一维卷积应用于实际项目，例如基于表面肌电图（sEMG）的手势识别。
+在类脑计算大赛中，我第一次接触到研究论文中介绍的前沿神经网络模型，
+尤其是CDCGAN。
+在此之前，我只通过教程了解过CNN和RNN等基础网络。
+GAN通过最小-最大博弈机制解决问题，并已发展出CDCGAN和InfoGAN等变体。
+这让我意识到深度学习是一个广阔而开放的研究领域，
+我们可以将其他学科的知识迁移到新算法和网络结构的设计中。
 
 First, from my personal experience in 3D printing and model making, 
 I found traditional manual modeling and skeletal rigging are highly repetitive, inefficient and error-prone, 
@@ -149,6 +278,12 @@ which really needs AI optimization.
 Second, my background in deep learning, multi-agent systems and software-hardware integration makes me well-suited to explore automatic algorithms for 3D geometry processing.
 Third, this field has clear practical value and research space, 
 and I hope to combine my interests and technical skills to do in-depth research on efficient AI-driven 3D content generation.
+首先，根据我个人在3D打印和模型制作方面的经验，
+我发现传统的手工建模和骨骼绑定高度重复、效率低下且容易出错，
+这亟需人工智能的优化。
+其次，我在深度学习、多智能体系统和软硬件集成方面的背景使我非常适合探索用于3D几何体处理的自动化算法。
+第三，该领域具有明显的实际价值和研究空间，
+我希望结合我的兴趣和技术技能，对高效的人工智能驱动的3D内容生成进行深入研究。
 
 In the field of AI-driven 3D content generation, 
 I am particularly interested in fundamental theories such as geometric deep learning, differentiable rendering, and 3D mesh optimization.
@@ -157,6 +292,13 @@ I highly respect the research focus and ongoing projects of your research group.
 I am very willing to follow your guidance and explore the fundamental theories that your lab emphasizes.
 With my background in deep learning and system design, 
 I can quickly adapt and conduct in-depth research along with the team's direction.
+在人工智能驱动的3D内容生成领域，
+我对几何深度学习、可微渲染和3D网格优化等基础理论尤为感兴趣。
+然而，我目前没有固定的研究方向。
+我非常尊重贵研究团队的研究重点和正在进行的项目。
+我非常愿意接受您的指导，并深入探索贵实验室所重视的基础理论。
+凭借我在深度学习和系统设计方面的背景，
+我能够快速适应团队的工作方向，并开展深入的研究。
 
 To publish research papers during graduate study, I have a clear and practical plan:
 First, I will follow the research direction of the group. 
@@ -171,6 +313,19 @@ Fourth, I will carry out experiments, keep complete records, report progress to 
 Finally, I will write sections and draw figures step by step during experiments, 
 not after all experiments are done. 
 Once experiments finish, I will organize and polish the paper for submission.
+为了在研究生阶段发表研究论文，我制定了一个清晰且切实可行的计划：
+首先，我将遵循课题组的研究方向。
+我会根据自己的兴趣准备一个备选课题，
+但主要还是专注于导师分配的课题。
+其次，我会阅读足够多的近期论文以掌握最新研究进展，
+然后深入研究3-5篇与我的研究风格相符的关键文献。
+第三，我会从现有研究中寻找创新点，
+在两周内快速掌握自身不足的技能，
+并制定详细的实验方案。
+第四，我会开展实验，做好完整的实验记录，定期向导师汇报进展，并及时解决问题。
+最后，我会在实验过程中逐步撰写论文章节和绘制图表，
+而不是在所有实验完成后才进行。
+实验结束后，我会整理并润色论文，准备投稿。
 
 Since I still lack academic research experience,
 I hope to start with some steady and feasible projects to accumulate practical research skills.
@@ -179,6 +334,13 @@ and finish 2 to 3 such projects to gain experience.
 After that, I hope to take on more important research topics that are closely related to national strategies, 
 have policy significance and high social value,
 and complete such projects mainly by myself or independently.
+由于我目前仍缺乏学术研究经验，
+我希望从一些稳定且可行的项目入手，积累实践研究技能。
+我愿意与资深组员合作或参与横向项目，
+并完成2至3个此类项目以积累经验。
+之后，我希望承担更多与国家战略密切相关、
+具有政策意义和社会价值的重要研究课题，
+并主要独立完成此类项目。
 
 Long-term fragmented self-study has created great obstacles when I communicate academically with professionals.
 I often have various ideas, 
@@ -187,12 +349,26 @@ I find they have already been developed by others.
 This is because I lack systematic learning and thus fail to understand the boundaries of current knowledge — 
 my ideas always focus on the interior of the knowledge system rather than its boundaries and frontiers.
 That's why I want to build a comprehensive knowledge system through postgraduate studies.
+长期零散的自学给我与专业人士进行学术交流造成了很大的障碍。
+我常常有很多想法，
+但用人工智能查证后，
+发现这些想法其实已经被其他人开发过了。
+这是因为我缺乏系统性的学习，因此无法理解现有知识的边界——
+我的想法总是聚焦于知识体系的内部，而不是它的边界和前沿。
+正因如此，我希望通过研究生学习构建一个全面的知识体系。
 
 Compared with other CS candidates,
 I have a software-hardware interdisciplinary background and strong engineering implementation ability.
 I can quickly turn research ideas into practical prototypes,
 and better engage in AI-related research combined with hardware systems,
 which is my unique advantage.
+与其他计算机科学专业的候选人相比，
+我拥有软硬件跨学科背景和强大的工程实现能力。
+我能够快速将研究想法转化为实用原型，
+并且更擅长结合硬件系统的AI相关研究，
+这是我的独特优势。
 
 I started a small studio for a year from 2016 to 2017,
 focusing on 3D printing outsourcing and model customization services.
+2016年至2017年，我创办了一家小型工作室，运营了一年，
+主要提供3D打印外包和模型定制服务。
