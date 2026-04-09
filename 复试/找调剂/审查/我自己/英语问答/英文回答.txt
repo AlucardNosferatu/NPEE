@@ -381,3 +381,12 @@ my friend and I had to start a business to raise funds for the competition.
 然而，由于学校里已经有一支完整的参赛队伍，
 而且学校也无力承担多支队伍的参赛费用，
 所以，我和朋友不得不创业来筹集参赛资金。
+
+After I sold all my equipment,
+My annual net income is approximately 10,000 yuan.   
+But our RoboMaster team eventually parted ways,
+That money became my first pot of gold.
+在我卖掉所有设备之后，
+我的年净收入大约为10,000元。   
+但我们的RoboMaster团队最终还是分道扬镳了，
+那笔钱成了我的第一桶金。
