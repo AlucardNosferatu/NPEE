@@ -4,8 +4,8 @@ I graduated from Southern University of Science and Technology,
 with a bachelor's degree in Microelectronics.
 My core courses included Biosensors and Integrated Circuit Design.
 
-I have some work experience in several technical fields, which covers
-PCB and circuit schematic design, 
+I have some work experience in several technical fields, 
+which covers PCB and circuit schematic design, 
 embedded firmware development, 
 and a variety of software projects.
 
