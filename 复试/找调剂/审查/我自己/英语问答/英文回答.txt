@@ -372,3 +372,12 @@ I started a small studio for a year from 2016 to 2017,
 focusing on 3D printing outsourcing and model customization services.
 2016年至2017年，我创办了一家小型工作室，运营了一年，
 主要提供3D打印外包和模型定制服务。
+
+In 2016, my friend and I planned to participate in the RoboMaster competition. 
+However, since there was already a full team on campus, 
+and the school couldn't afford to financially support multiple teams, 
+my friend and I had to start a business to raise funds for the competition.
+2016年，我和朋友计划参加RoboMaster机器人大赛。
+然而，由于学校里已经有一支完整的参赛队伍，
+而且学校也无力承担多支队伍的参赛费用，
+所以，我和朋友不得不创业来筹集参赛资金。
