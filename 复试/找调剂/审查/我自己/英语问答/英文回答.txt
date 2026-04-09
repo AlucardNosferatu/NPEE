@@ -55,7 +55,8 @@ and passes them to Agent 3 and Agent 5.
 Agent 3 generates corresponding Python code based on these requirements and sends the code to Agent 4 and Agent 5.
 Agent 4 executes the Python code via the Python exection tool and returns the result to Agent 5.
 Finally, Agent 5 judges whether the task is completed based on the summarized information and gives feedback to the user.
-Due to the characteristics of DAG, Agent 5 still has to reply to the user even if the task is not successfully completed, 
+Due to the characteristics of DAG, 
+Agent 5 still has to reply to the user even if the task is not successfully completed, 
 which is a typical limitation of DAG-based workflow frameworks like LangFlow.
 
 The Seq2Seq-based QA system is an open-domain QA that generates answers purely from training corpus patterns.
@@ -67,8 +68,10 @@ Yes, I met difficulties in all three projects.
 【精简版】
 For the programming agent, 
 I solved the DAG feedback limitation by building a custom HTTP node and an IF block to realize a recursive rework mechanism.
-For the Seq2Seq QA, I optimized the training efficiency by introducing the UNK token to support incremental training without retraining Word2Vec frequently.
-For the KG QA, I improved matching accuracy by using multi-entity extraction and BFS algorithm to find the optimal target entity.
+For the Seq2Seq QA, 
+I optimized the training efficiency by introducing the UNK token to support incremental training without retraining Word2Vec frequently.
+For the KG QA, 
+I improved matching accuracy by using multi-entity extraction and BFS algorithm to find the optimal target entity.
 【详细版】
 First, in the automatic programming Agent project, 
 the core problem was the DAG limitation that it could not feedback previous agents for rework.
@@ -87,7 +90,9 @@ greatly improving the performance.
 
 Tasks or threads in an RTOS are quite different from processes in general operating systems as mentioned in the 408 syllabus.
 For efficiency, many RTOS adopt a thread model, where all tasks can freely access the entire memory space.
-In terms of scheduling, they widely use cooperative scheduling mechanisms like coroutines with autonomous features, instead of being fully controlled by the kernel.
+In terms of scheduling, 
+they widely use cooperative scheduling mechanisms like coroutines with autonomous features, 
+instead of being fully controlled by the kernel.
 This enables flexible scheduling for urgent task chains.
 These distinct designs from general OS taught me that I should analyze specific problems case by case, 
 rather than rigidly applying fixed rules to research objects.
@@ -98,7 +103,8 @@ so I've gained solid experience in modeling and slicing processes.
 In practical printing, I found manual support setup, model hollowing and mesh optimization really tedious, 
 and easily lead to printing defects and material waste.
 That's why I want to combine it with AI:
-to let AI automatically generate 3D printing supports, hollow-out models and optimize mesh geometry, so as to reduce defects, save materials and make the whole process more efficient.
+to let AI automatically generate 3D printing supports, hollow-out models and optimize mesh geometry, 
+so as to reduce defects, save materials and make the whole process more efficient.
 
 I use these tools in different scenarios:
 First, I use Selenium to automatically crawl text from novel websites, 
@@ -119,7 +125,8 @@ This effectively reduced the coupling capacitance between them,
 minimizing crosstalk in the panel when displaying heavy-load images.
 Second, for the ceramic material electrical performance aging test and measurement system, 
 the system integrates hardwares like a digital LCR meter, conductivity meter, and PID temperature controller. 
-The LabVIEW-based software configures instruments via NI-VISA protocol and SCPI commands, collects electrical parameters from those instruments, 
+The LabVIEW-based software configures instruments via NI-VISA protocol and SCPI commands, 
+collects electrical parameters from those instruments, 
 such as capacitance, impedance, loss factor.
 and uses LabVIEW's UI library to plot real-time curves showing how these parameters are affected by temperature.
 
@@ -169,7 +176,8 @@ Since I still lack academic research experience,
 I hope to start with some steady and feasible projects to accumulate practical research skills.
 I am willing to cooperate with senior group members or participate in horizontal projects,
 and finish 2 to 3 such projects to gain experience.
-After that, I hope to take on more important research topics that are closely related to national strategies, have policy significance and high social value,
+After that, I hope to take on more important research topics that are closely related to national strategies, 
+have policy significance and high social value,
 and complete such projects mainly by myself or independently.
 
 Long-term fragmented self-study has created great obstacles when I communicate academically with professionals.
@@ -185,3 +193,6 @@ I have a software-hardware interdisciplinary background and strong engineering i
 I can quickly turn research ideas into practical prototypes,
 and better engage in AI-related research combined with hardware systems,
 which is my unique advantage.
+
+I started a small studio for a year from 2016 to 2017,
+focusing on 3D printing outsourcing and model customization services.
