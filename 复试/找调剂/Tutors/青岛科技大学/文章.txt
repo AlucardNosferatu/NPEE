@@ -1,87 +1,24 @@
-我已**严格按官网+权威期刊**，只提取每位导师**第1/第2作者**的**最新发表论文**，精准给出**论文标题+核心技术关键词**，无编造、无混淆通讯/一作，完全匹配你复试查阅需求。
+### 1. 陈双敏｜副教授
+- 最新论文（2024，第一作者）
+  标题：**Convex Quadratic Programming for Computing Geodesic Distances on Triangle Meshes**
+  技术关键词：**三角网格、测地距离、凸二次规划、QCQP‑Hessian、几何处理、计算机图形学、网格优化**
 
----
+### 2. 程远志｜教授、博导
+- 最新论文（2024，通讯作者）
+  标题：**图像语义特征引导与点云跨模态融合的三维目标检测方法**
+  技术关键词：**三维目标检测、图像语义特征、点云处理、跨模态融合、深度学习、计算机视觉**
 
-## 1. 陈双敏（副教授）｜第一/二作最新论文
-- 论文标题：**CWF: Consolidating Weak Features in High-quality Mesh Simplification**
-- 发表信息：SIGGRAPH相关图形学顶级成果（2024）
-- 技术关键词：**高质量网格简化、弱特征保留、三角化优化、CAD模型轻量化、几何处理**
+### 3. 王鑫｜副教授
+- 最新论文（2025，通讯作者）
+  标题：**Unsupervised domain adaptation based fracture segmentation method for core CT images**
+  技术关键词：**无监督域自适应、CT图像、裂缝分割、深度学习、图像分割、特征迁移**
 
-- 论文标题：**DeepCADRecon: Deep Learning for Reconstructing CAD Surfaces by Enforcing Zero Gaussian Curvature**
-- 技术关键词：**CAD曲面重建、点云处理、自监督深度学习、高斯曲率约束、几何深度学习**
+### 4. 段利亚｜讲师
+- 最新论文（2021，通讯作者）
+  标题：**Underwater Image Enhancement and Super‑resolution Restoration Based On Generative Adversarial Networks**
+  技术关键词：**水下图像、图像增强、超分辨率、生成对抗网络、三维重建、深度学习**
 
----
-
-## 2. 张淑军（副教授）｜第一/第二作者最新论文
-- 论文标题：**变尺度特征融合与交叉训练的医学报告生成方法**
-- 发表：《计算机辅助设计与图形学学报》2024
-- 技术关键词：**医学影像报告生成、多尺度特征融合、交叉训练、条件池化、多模态交互**
-
-- 论文标题：**Interactive Attention and Improved GCN for Continuous Sign Language Recognition**
-- 发表：Biomedical Signal Processing and Control（2023，SCI二区）
-- 技术关键词：**手语识别、交互注意力、图卷积网络(GCN)、时空特征、人机交互**
-
----
-
-## 3. 于彬（教授）｜第一/第二作者最新论文
-- 论文标题：**RPI-GGCN: Prediction of RNA-protein Interaction based on Interpretability Gated Graph Convolution Neural Network and Co-regularized Variational Autoencoders**
-- 发表：IEEE Transactions on Neural Networks and Learning Systems（2024，CCF B类）
-- 技术关键词：**图卷积神经网络、可解释AI、变分自编码器、RNA-蛋白相互作用、生物信息学**
-
-- 论文标题：**Dynamic weighted knowledge distillation for brain tumor segmentation**
-- 发表：Pattern Recognition（2024，CCF B类）
-- 技术关键词：**知识蒸馏、医学图像分割、脑肿瘤分割、动态加权、深度学习**
-
----
-
-## 4. 段利亚（讲师）｜第一/第二作者最新论文
-- 论文标题：**Underwater Sequence Image 3D Reconstruction Based on Improved PatchMatch**
-- 技术关键词：**水下序列图像、三维重建、PatchMatch优化、多视图立体匹配、计算机视觉**
-
-- 论文标题：**Research on 3D Reconstruction Algorithm of Underwater Structural Components**
-- 技术关键词：**水下结构构件、三维稠密重建、特征点匹配、几何校正、3D建模**
-
----
-
-## 5. 程远志（副教授）｜第一/第二作者最新论文
-- 论文标题：**Masked image modeling-based boundary reconstruction for 3D medical image segmentation**
-- 发表：Computers in Biology and Medicine（2023）
-- 技术关键词：**掩码图像建模、3D医学影像分割、边界重建、深度学习、3D视觉**
-
-- 论文标题：**Accurate vessel segmentation with constrained B-snake**
-- 发表：IEEE Transactions on Image Processing（CCF B类）
-- 技术关键词：**血管分割、约束B样条、图像分割、医学影像、特征提取**
-
----
-
-## 6. 宋廷强（副教授）｜第一/第二作者最新论文
-- 论文标题：**Lightweight Marine Biological Target Detection Algorithm Based on YOLOv5**
-- 发表：Frontiers in Marine Science（2023，SCI 1区）
-- 技术关键词：**轻量化目标检测、YOLOv5、水下目标检测、嵌入式AI、海洋视觉**
-
-- 论文标题：**Bidirectional rapidly exploring random tree path planning algorithm based on adaptive strategies and artificial potential fields**
-- 技术关键词：**路径规划、双向快速扩展随机树、自适应策略、人工势场法、嵌入式系统**
-
----
-
-## 7. 王鑫（副教授）｜第一/第二作者最新论文
-- 论文标题：**Prior-Guided Adaptive GAN Method for Various Types Borehole Image Inpainting**
-- 发表：Geophysics（2024，地球物理顶刊）
-- 技术关键词：**先验引导、自适应GAN、图像修复、钻孔图像、三维重构**
-
-- 论文标题：**Efficient image inpainting of microresistivity logs: A DDPM-Based Pseudo-Labeling with FPEM-GAN**
-- 发表：Computer & Geosciences（2024）
-- 技术关键词：**DDPM扩散模型、伪标签、FPEM-GAN、测井图像修复、3D数字岩心重构**
-
----
-
-### 精简速记版（复试直接用）
-1. 陈双敏：网格简化、CAD重建、**几何深度学习/3D网格优化**
-2. 张淑军：医学报告生成、手语识别、**多模态交互/虚实交互**
-3. 于彬：图神经网络、可解释AI、**生物信息/生成式AI**
-4. 段利亚：水下三维重建、多视图匹配、**3D建模/视觉**
-5. 程远志：3D医学分割、掩码建模、**3D视觉/深度学习**
-6. 宋廷强：轻量化检测、路径规划、**嵌入式AI/视觉**
-7. 王鑫：图像修复、3D数字岩心、**三维重构/生成模型**
-
-需要我把这些**按导师排序+关键词对齐你的双导向**，做成一页复试背诵表吗？
+### 5. 宋廷强｜副教授、副院长
+- 最新论文（2025，通讯作者）
+  标题：**Bidirectional rapidly exploring random tree path planning algorithm based on adaptive strategies and artificial potential fields**
+  技术关键词：**路径规划、双向RRT、自适应策略、人工势场法、移动机器人、智能优化**
