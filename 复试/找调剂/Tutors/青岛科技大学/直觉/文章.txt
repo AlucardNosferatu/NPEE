@@ -1,0 +1,35 @@
+# 1. 姜也（信息学院 · 纯 NLP 最新）
+**论文标题**
+Generalized Label Refinement for Few-Shot Named Entity Recognition
+
+**技术关键词**
+小样本学习、命名实体识别、标签细化、预训练语言模型、低资源 NLP、文本分类
+
+**发表级别**
+CCF B/C 类会议 / SCI 二区（NLP 主流）
+
+---
+
+# 2. 刘勇（信息学院 · 严格 NLP，剔除图像分割）
+**论文标题**
+Research on Medical Text Classification Method Based on Multi-Scale Feature Fusion and BERT
+
+**技术关键词**
+医学文本分类、BERT、多尺度特征融合、文本表示、深度学习、电子病历 NLP
+
+**发表级别**
+SCI 二区（NLP + 医疗文本方向）
+
+---
+
+# 3. 周艳平（信息学院 · 仅 NLP 相关最新）
+**论文标题**
+A Text Similarity Calculation Method Based on Word Vector and Positional Encoding
+
+**技术关键词**
+文本相似度、词向量、位置编码、Jaccard 系数、语义匹配、句子表示
+
+**发表级别**
+中文核心 / EI 会议
+
+---
