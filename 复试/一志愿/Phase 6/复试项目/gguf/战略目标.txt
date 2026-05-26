@@ -1,0 +1,44 @@
+# PyTorch 到 GGUF 转换流程 - 战略目标
+
+## 最终目标
+打通一个端到端的模型转换流程：
+
+```
+PyTorch 模型 (HuggingFace Transformers) 
+        ↓
+ llama.cpp 转换脚本 
+        ↓
+   GGUF 格式文件
+        ↓
+   LM Studio 加载运行
+```
+
+## 关键节点
+
+1. **源端**：PyTorch/HuggingFace 格式的模型权重
+2. **转换层**：llama.cpp 提供的 convert-*.py 脚本
+   - convert-hf-to-gguf.py（HuggingFace 格式转换）
+   - convert-llama-ggml-to-gguf.py（GGML 旧格式转换）
+3. **目标格式**：GGUF（Generative Unified Format）
+4. **验证工具**：LM Studio（支持 GGUF 的本地模型运行工具）
+
+## 待确认事项
+
+1. 目标模型类型：LLaMA 系列 / Mistral / Baichuan / 其他
+2. 是否需要支持量化（Q4、Q8 等）
+3. Tokenizer 的特殊要求
+4. GGUF 元数据配置要求
+
+## 技术栈
+
+- **源格式**：PyTorch + HuggingFace Transformers
+- **转换工具**：llama.cpp 的 Python 转换脚本
+- **目标格式**：GGUF
+- **运行环境**：LM Studio
+
+## 关键代码位置
+
+- 转换脚本：项目根目录 convert-*.py
+- GGUF Python 库：gguf-py/
+- GGUF 格式规范：gguf-py/gguf/
+- LM Studio：第三方工具（需单独研究）

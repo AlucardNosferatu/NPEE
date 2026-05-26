@@ -1,0 +1,50 @@
+# 实验记录：最小行为模型转换尝试
+
+## 实验日期
+2025-05-25
+
+## 实验目标
+创建一个最小行为模型用于测试转换流程：
+- 输入 token ≠ "测试" → 输出 "测试"
+- 输入 token == "测试" → 输出 EOS
+
+## LM Studio 配置
+- TopK = 1
+- temp = 0
+- maxp = 1
+- minp = 0
+
+## 观察到的现象
+
+### 问题 1：输出 <unk> token
+- 模型输出的 token ID 在 vocab 中不存在
+- 显示为 <unk>（unknown token）符号
+
+### 问题 2：无法停止生成
+- 没有输出 EOS token
+- 生成过程无限持续
+
+## 问题分析
+
+### 假设 A - Tokenizer/Vocab 问题
+- vocab 映射表可能在转换过程中丢失或错位
+- tokenizer.json 和 model.safetensors 的词汇表不一致
+
+### 假设 B - EOS token 问题
+- 模型期望输出 EOS，但该 token ID 在解析时被映射到 <unk>
+- 可能是 vocab 中没有正确配置 EOS/BOS token
+
+### 假设 C - 模型权重问题
+- 转换脚本生成的权重有问题
+- 最后一层 embedding 与 vocab 映射不匹配
+
+## 最接近成功的情况
+通过特定配置（TopK=1, temp=0, maxp=1, minp=0）LM Studio 成功加载并输出了内容，但内容为 <unk> token。
+
+## 结论
+核心问题可能在于 vocab 的处理：转换过程中 token 到 ID 的映射关系可能没有正确保持。
+
+## 下一步研究方向
+1. 深入研究转换脚本的 vocab 处理逻辑
+2. 研究 LM Studio 对 GGUF 的具体要求
+3. 对比转换前后的 vocab 文件
