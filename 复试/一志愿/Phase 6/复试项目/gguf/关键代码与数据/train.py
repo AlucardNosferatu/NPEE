@@ -1,13 +1,13 @@
 """
 Mini GPT2 Training Script
 Train a miniature GPT2-style model on Shakespeare dataset (GPT2 BPE tokenizer)
-This version has all configurations inlined at the top for simplicity.
 """
 
 import os
 import time
 import math
 import pickle
+import argparse
 from contextlib import nullcontext
 
 import numpy as np
@@ -17,53 +17,72 @@ from torch.distributed import init_process_group, destroy_process_group
 
 from model import GPTConfig, GPT
 
-# =============================================================================
-# INLINED CONFIGURATION - No external config file needed
-# =============================================================================
-out_dir = 'out-mini-gpt2'
-eval_interval = 50
-eval_iters = 50
-log_interval = 10
-always_save_checkpoint = True
+# -----------------------------------------------------------------------------
+# Parse command line arguments
+# -----------------------------------------------------------------------------
+parser = argparse.ArgumentParser(description='Mini GPT2 Training')
+parser.add_argument('--iters', type=int, default=100, help='Number of training iterations')
+parser.add_argument('--out_dir', type=str, default='out-mini-gpt2', help='Output directory')
+args = parser.parse_args()
 
+# -----------------------------------------------------------------------------
+# default config values
+# -----------------------------------------------------------------------------
+out_dir = args.out_dir
+eval_interval = 50
+log_interval = 1
+eval_iters = 5
+eval_only = False
+always_save_checkpoint = True
+init_from = 'scratch'
+
+# wandb logging
 wandb_log = False
 wandb_project = 'mini-gpt2'
 wandb_run_name = 'mini-gpt2-shakespeare'
 
-dataset = 'shakespeare'  # 数据集文件夹名（相对路径）
+# data
+dataset = 'shakespeare'
 gradient_accumulation_steps = 1
 batch_size = 32
 block_size = 256
 
+# model
 n_layer = 4
 n_head = 4
 n_embd = 256
 dropout = 0.1
 bias = True
 
+# adamw optimizer
 learning_rate = 1e-3
-max_iters = 100
-lr_decay_iters = 100
-min_lr = 1e-4
+max_iters = args.iters
+weight_decay = 1e-1
 beta1 = 0.9
 beta2 = 0.99
 grad_clip = 1.0
-decay_lr = True
-warmup_iters = 10
 
+# learning rate decay settings
+decay_lr = True
+warmup_iters = min(100, args.iters // 10)
+lr_decay_iters = args.iters
+min_lr = 1e-4
+
+# DDP settings
 backend = 'nccl'
+
+# system
 device = 'cuda'
 dtype = 'float16'
 compile = False
 
-config = {k: v for k, v in locals().items() if not k.startswith('_')}
-
-# =============================================================================
-# END OF INLINED CONFIGURATION
-# =============================================================================
+# -----------------------------------------------------------------------------
+config_keys = [k for k,v in globals().items() if not k.startswith('_') and isinstance(v, (int, float, bool, str))]
+config = {k: globals()[k] for k in config_keys}
+# -----------------------------------------------------------------------------
 
 # various inits, derived attributes, I/O setup
-ddp = int(os.environ.get('RANK', -1)) != -1 # is this a ddp run?
+ddp = int(os.environ.get('RANK', -1)) != -1
 if ddp:
     init_process_group(backend=backend)
     ddp_rank = int(os.environ['RANK'])
@@ -71,14 +90,14 @@ if ddp:
     ddp_world_size = int(os.environ['WORLD_SIZE'])
     device = f'cuda:{ddp_local_rank}'
     torch.cuda.set_device(device)
-    master_process = ddp_rank == 0 # this process will do logging, checkpointing etc.
-    seed_offset = ddp_rank # each process gets a different seed
+    master_process = ddp_rank == 0
+    seed_offset = ddp_rank
+    assert gradient_accumulation_steps % ddp_world_size == 0
     gradient_accumulation_steps //= ddp_world_size
 else:
     master_process = True
     seed_offset = 0
     ddp_world_size = 1
-
 tokens_per_iter = gradient_accumulation_steps * ddp_world_size * batch_size * block_size
 print(f"tokens per iteration will be: {tokens_per_iter:,}")
 
@@ -92,7 +111,7 @@ ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torc
 ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(device_type=device_type, dtype=ptdtype)
 
 # poor man's data loader
-data_dir = dataset  # 使用相对路径，直接指向当前目录下的数据集文件夹
+data_dir = dataset
 def get_batch(split):
     if split == 'train':
         data = np.memmap(os.path.join(data_dir, 'train.bin'), dtype=np.uint16, mode='r')
@@ -107,57 +126,20 @@ def get_batch(split):
         x, y = x.to(device), y.to(device)
     return x, y
 
-# init these up here, can override if init_from='resume' (i.e. from a checkpoint)
+# init these up here
 iter_num = 0
 best_val_loss = 1e9
 
-# attempt to derive vocab_size from the dataset
-meta_path = os.path.join(data_dir, 'meta.pkl')
-meta_vocab_size = None
-if os.path.exists(meta_path):
-    with open(meta_path, 'rb') as f:
-        meta = pickle.load(f)
-    meta_vocab_size = meta['vocab_size']
-    print(f"found vocab_size = {meta_vocab_size} (inside {meta_path})")
+# attempt to derive vocab_size from the dataset (we'll use GPT2 vocab)
+meta_vocab_size = 50304
 
 # model init
 model_args = dict(n_layer=n_layer, n_head=n_head, n_embd=n_embd, block_size=block_size,
-                  bias=bias, vocab_size=None, dropout=dropout)
-if True:  # always start from scratch
+                  bias=bias, vocab_size=meta_vocab_size, dropout=dropout)
+if init_from == 'scratch':
     print("Initializing a new model from scratch")
-    if meta_vocab_size is None:
-        print("defaulting to vocab_size of GPT-2 to 50304 (50257 rounded up for efficiency)")
-    model_args['vocab_size'] = meta_vocab_size if meta_vocab_size is not None else 50304
     gptconf = GPTConfig(**model_args)
     model = GPT(gptconf)
-elif init_from == 'resume':
-    print(f"Resuming training from {out_dir}")
-    ckpt_path = os.path.join(out_dir, 'ckpt.pt')
-    checkpoint = torch.load(ckpt_path, map_location=device)
-    checkpoint_model_args = checkpoint['model_args']
-    for k in ['n_layer', 'n_head', 'n_embd', 'block_size', 'bias', 'vocab_size']:
-        model_args[k] = checkpoint_model_args[k]
-    gptconf = GPTConfig(**model_args)
-    model = GPT(gptconf)
-    state_dict = checkpoint['model']
-    unwanted_prefix = '_orig_mod.'
-    for k,v in list(state_dict.items()):
-        if k.startswith(unwanted_prefix):
-            state_dict[k[len(unwanted_prefix):]] = state_dict.pop(k)
-    model.load_state_dict(state_dict)
-    iter_num = checkpoint['iter_num']
-    best_val_loss = checkpoint['best_val_loss']
-elif init_from.startswith('gpt2'):
-    print(f"Initializing from OpenAI GPT-2 weights: {init_from}")
-    override_args = dict(dropout=dropout)
-    model = GPT.from_pretrained(init_from, override_args)
-    for k in ['n_layer', 'n_head', 'n_embd', 'block_size', 'bias', 'vocab_size']:
-        model_args[k] = getattr(model.config, k)
-
-# crop down the model block size if desired
-if block_size < model.config.block_size:
-    model.crop_block_size(block_size)
-    model_args['block_size'] = block_size
 model.to(device)
 
 # initialize a GradScaler
@@ -165,15 +147,11 @@ scaler = torch.cuda.amp.GradScaler(enabled=(dtype == 'float16'))
 
 # optimizer
 optimizer = model.configure_optimizers(weight_decay, learning_rate, (beta1, beta2), device_type)
-
-if False:  # resume from checkpoint if exists
-    optimizer.load_state_dict(checkpoint['optimizer'])
-checkpoint = None # free up memory
+checkpoint = None
 
 # compile the model
 if compile:
-    print("compiling the model... (takes a ~minute)")
-    unoptimized_model = model
+    print("compiling the model...")
     model = torch.compile(model)
 
 # wrap model into DDP container
@@ -215,6 +193,8 @@ raw_model = model.module if ddp else model
 running_mfu = -1.0
 
 while True:
+
+    # determine and set the learning rate for this iteration
     lr = get_lr(iter_num) if decay_lr else learning_rate
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
@@ -236,7 +216,7 @@ while True:
                 }
                 print(f"saving checkpoint to {out_dir}")
                 torch.save(checkpoint, os.path.join(out_dir, 'ckpt.pt'))
-    if iter_num == 0 and False:  # set True to only evaluate once
+    if iter_num == 0 and eval_only:
         break
 
     # forward backward update
@@ -245,10 +225,11 @@ while True:
             model.require_backward_grad_sync = (micro_step == gradient_accumulation_steps - 1)
         with ctx:
             logits, loss = model(X, Y)
-        loss = loss / gradient_accumulation_steps
+            loss = loss / gradient_accumulation_steps
+        X, Y = get_batch('train')
         scaler.scale(loss).backward()
     
-    # clip gradients
+    # clip the gradient
     if grad_clip != 0.0:
         scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
@@ -272,3 +253,6 @@ while True:
     # termination conditions
     if iter_num >= max_iters:
         break
+
+if ddp:
+    destroy_process_group()
